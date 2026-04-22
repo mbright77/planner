@@ -1,0 +1,14 @@
+{
+  "name": "@planner/web",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "format": "prettier --check .",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  }
+}
