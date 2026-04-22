@@ -422,20 +422,22 @@ Use in-process background tasks only where needed:
 - Generate migrations using `dotnet ef` commands only
 - Apply migrations through `dotnet ef database update` locally and through the migration job in production
 - If `dotnet ef` commands fail because required tooling is missing, install the missing EF Core tools before proceeding
+- Use the repo-local tool manifest rather than assuming a global EF tool installation
 
 Recommended commands:
 
 ```bash
-dotnet tool install --global dotnet-ef
-dotnet ef migrations add InitialCreate --project apps/api/src/Planner.Infrastructure --startup-project apps/api/src/Planner.Api
-dotnet ef database update --project apps/api/src/Planner.Infrastructure --startup-project apps/api/src/Planner.Api
+dotnet tool restore
+dotnet dotnet-ef migrations add InitialCreate --project apps/api/src/Planner.Infrastructure/Planner.Infrastructure.csproj --startup-project apps/api/src/Planner.Api/Planner.Api.csproj --output-dir Persistence/Migrations
+dotnet dotnet-ef database update --project apps/api/src/Planner.Infrastructure/Planner.Infrastructure.csproj --startup-project apps/api/src/Planner.Api/Planner.Api.csproj
 ```
 
 For future schema changes:
 
 ```bash
-dotnet ef migrations add <MeaningfulMigrationName> --project apps/api/src/Planner.Infrastructure --startup-project apps/api/src/Planner.Api
-dotnet ef database update --project apps/api/src/Planner.Infrastructure --startup-project apps/api/src/Planner.Api
+dotnet tool restore
+dotnet dotnet-ef migrations add <MeaningfulMigrationName> --project apps/api/src/Planner.Infrastructure/Planner.Infrastructure.csproj --startup-project apps/api/src/Planner.Api/Planner.Api.csproj --output-dir Persistence/Migrations
+dotnet dotnet-ef database update --project apps/api/src/Planner.Infrastructure/Planner.Infrastructure.csproj --startup-project apps/api/src/Planner.Api/Planner.Api.csproj
 ```
 
 ---
@@ -920,17 +922,26 @@ Examples of essential cookies:
 
 ### Phase 1: Foundation
 
-- [ ] Create the monorepo structure
-- [ ] Initialize `apps/web`, `apps/api`, and shared packages
+- [x] Create the monorepo structure
+- [x] Initialize `apps/web`, `apps/api`, and shared packages
 - [ ] Extract Kinship UI tokens into a reusable token package
 - [ ] Set up React app shell, routing, and provider composition
-- [ ] Set up ASP.NET Core solution and project boundaries
-- [ ] Configure PostgreSQL and EF Core migrations
-- [ ] Document the `dotnet ef` workflow for creating and applying migrations
+- [x] Set up ASP.NET Core solution and project boundaries
+- [x] Configure PostgreSQL and EF Core migrations
+- [x] Document the `dotnet ef` workflow for creating and applying migrations
 - [ ] Implement auth, refresh flow, and membership model
-- [ ] Add local development tooling
+- [x] Add local development tooling
 - [ ] Configure CI/CD baseline
 - [ ] Add Kubernetes manifests and environment templates
+
+Completed in current implementation pass:
+
+- Monorepo scaffold created with `apps`, `packages`, `infra`, and supporting docs folders
+- Root workspace files added: `package.json`, `pnpm-workspace.yaml`, `.editorconfig`, `justfile`, `planner.sln`
+- ASP.NET Core API, class libraries, and test projects created and wired into the solution
+- Vite React TypeScript app created under `apps/web`
+- Initial persistence layer added with `PlannerDbContext`, first entities, and first generated EF Core migration
+- Local `dotnet-ef` tool manifest added and aligned to EF Core 9
 
 ### Phase 2: Core Features
 
@@ -1042,9 +1053,10 @@ Examples of essential cookies:
 
 Use this document as the implementation baseline.
 
-Recommended immediate next actions:
+Best next steps:
 
-1. Approve the architecture and stack decisions
-2. Create the monorepo scaffold and base tooling
-3. Convert this plan into tracked implementation tickets by phase
+1. Reshape `apps/web` from the default Vite starter into the planned app shell and FSA folder structure
+2. Add backend configuration for auth, family bootstrap, and the first real API feature slice
+3. Add a migration runbook under `docs/runbooks` using the repo-local `dotnet dotnet-ef` workflow
+4. Add initial K3s manifests and a minimal GitHub Actions pipeline for build and migration execution
 4. Start Phase 1 foundation work

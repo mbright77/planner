@@ -52,3 +52,10 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Node / frontend
+node_modules/
+dist/
+.pnpm-store/
+.vite/
+coverage/
