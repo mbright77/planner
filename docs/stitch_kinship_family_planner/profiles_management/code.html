@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Our Family - Profiles</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Public+Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#5da9e9",
+                        "tertiary-container": "#84ac8e",
+                        "tertiary-fixed-dim": "#a7d0b0",
+                        "on-surface-variant": "#404750",
+                        "surface-tint": "#00639a",
+                        "primary-fixed": "#cee5ff",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#2d3135",
+                        "inverse-on-surface": "#eff1f6",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#c0c7d1",
+                        "on-primary-fixed": "#001d32",
+                        "on-surface": "#181c20",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "on-background": "#181c20",
+                        "on-primary-fixed-variant": "#004a76",
+                        "on-primary-container": "#003c61",
+                        "primary-fixed-dim": "#96ccff",
+                        "secondary-fixed": "#ffdad8",
+                        "secondary-fixed-dim": "#ffb3b1",
+                        "tertiary": "#41664c",
+                        "surface-dim": "#d8dadf",
+                        "surface-container": "#eceef3",
+                        "on-secondary-container": "#752126",
+                        "secondary": "#9e4042",
+                        "surface-container-high": "#e6e8ee",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e0e2e8",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#00639a",
+                        "secondary-container": "#fd898a",
+                        "surface-container-highest": "#e0e2e8",
+                        "on-secondary-fixed": "#410008",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f1f3f9",
+                        "outline": "#707881",
+                        "background": "#f7f9ff",
+                        "error-container": "#ffdad6",
+                        "surface": "#f7f9ff",
+                        "inverse-primary": "#96ccff",
+                        "on-secondary-fixed-variant": "#7f282c",
+                        "on-tertiary-container": "#1c4029",
+                        "on-tertiary-fixed": "#00210e",
+                        "surface-bright": "#f7f9ff",
+                        "on-tertiary-fixed-variant": "#2a4e36",
+                        "tertiary-fixed": "#c3edcb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit-4": "16px",
+                        "unit-8": "32px",
+                        "gutter": "16px",
+                        "margin-mobile": "20px",
+                        "unit-2": "8px",
+                        "touch-target-min": "48px",
+                        "unit-6": "24px",
+                        "unit-1": "4px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Public Sans"],
+                        "body-md": ["Public Sans"],
+                        "display": ["Plus Jakarta Sans"],
+                        "title-lg": ["Public Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-lg": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        [data-weight="fill"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md text-body-md pb-[80px]">
+<!-- TopAppBar -->
+<header class="bg-[#FDFDFB] dark:bg-stone-950 font-['Plus_Jakarta_Sans'] text-base font-semibold docked full-width top-0 border-b border-[#F0F0F0] dark:border-stone-800 shadow-[0_4px_12px_rgba(45,49,50,0.05)] flex justify-between items-center h-16 px-5 w-full sticky z-40">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container font-bold overflow-hidden">
+<img alt="Current User" class="w-full h-full object-cover" data-alt="close up portrait of a smiling woman with warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBE33Y_BwEXeFJGZ9YdtrjIzYH3L1e2BTKn4Rwh3qvOGj3_tBdB1Dmv1MiT4xtD13QlkjIYxguAL2s6lUWufxPIUBMG0Q7PJRIZGS2lxqBopLgMI-Cs-HgzjXCI3ESv2Sh1WM3XoBKD47C92ebkLSW3CCDKg8KBRd4F9M3_EZha5p6aHiZQ_El-2ftuqgvN4rS74gnIbRzle91yVGzT5RvTmC6lST7_AXtHPTRvKojc7A_7KS2gXLnFFyw08MtCgTDT3LLkRza0Gvw"/>
+</div>
+<span class="text-xl font-extrabold text-[#5DA9E9] tracking-tight">Our Family</span>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-[#5DA9E9] dark:text-sky-400 hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-margin-mobile py-unit-6 w-full max-w-3xl mx-auto space-y-unit-8">
+<!-- Header Section -->
+<section class="flex justify-between items-end">
+<div>
+<h1 class="font-display text-display text-on-background">Family Profiles</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Manage everyone's details and colors.</p>
+</div>
+<button class="h-touch-target-min px-4 bg-primary-container text-on-primary rounded-[12px] font-label-sm text-label-sm flex items-center gap-2 hover:bg-opacity-90 active:scale-95 transition-all shadow-[0_4px_12px_rgba(45,49,50,0.05)]">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                Add Profile
+            </button>
+</section>
+<!-- Profiles Bento Grid -->
+<section class="grid grid-cols-1 sm:grid-cols-2 gap-unit-4">
+<!-- Profile Card: Mom -->
+<div class="bg-surface-container-lowest rounded-[20px] p-5 border border-surface-variant shadow-[0_4px_12px_rgba(45,49,50,0.05)] relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-full h-2 bg-tertiary-container"></div>
+<div class="flex items-start justify-between mt-2">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-surface-container-lowest shadow-sm relative">
+<img alt="Mom" class="w-full h-full object-cover" data-alt="close up portrait of a smiling woman with warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPcw9CUpj7RjInyZULieKKjBT3lskkGUtNYYaw8T_JMJH1Aa2EHakeZMuT0Ap3-b4BeKun2KFywYhIaOlNKD1TbP8ZHZ8M82sp_KkLCGRd9FEiHrrS3BNDYttIvqzxNgj46lRFq-F3QhLsXculINi3Lwblli-bY_hg1qJcc95pWHz-KQbicYNAaPCmoxSudDp1gUQkxJf1Ck8P90bcZn1tUUXt5UYFJPu94VoFcxefqu2rilgNuDCZRv_iUKKlUX45EfFqKEh3N1M"/>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-tertiary-container rounded-full border-2 border-surface-container-lowest"></div>
+</div>
+<div>
+<h2 class="font-title-lg text-title-lg text-on-surface">Mom</h2>
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-tertiary-container/10 text-tertiary font-label-sm text-[10px] mt-1">Admin</span>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-outline hover:bg-surface-container-low transition-colors active:scale-95">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+</div>
+<div class="mt-5 grid grid-cols-2 gap-2">
+<div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-1">
+<span class="font-label-sm text-[10px] text-outline uppercase tracking-wider">Assigned Chores</span>
+<span class="font-headline-md text-headline-md text-on-surface">4</span>
+</div>
+<div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-1">
+<span class="font-label-sm text-[10px] text-outline uppercase tracking-wider">Color Identity</span>
+<div class="flex items-center gap-2 mt-1">
+<div class="w-5 h-5 rounded-full bg-tertiary-container"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Green</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Profile Card: Dad -->
+<div class="bg-surface-container-lowest rounded-[20px] p-5 border border-surface-variant shadow-[0_4px_12px_rgba(45,49,50,0.05)] relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-full h-2 bg-primary-container"></div>
+<div class="flex items-start justify-between mt-2">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-surface-container-lowest shadow-sm relative">
+<img alt="Dad" class="w-full h-full object-cover" data-alt="close up portrait of a smiling man with short hair and a beard, casual attire, natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCID5glvOIVV-LPOUwmMcwCZwrW1kwwrrPNri4-a3nxVBWmXoaul1iznPZvqEFvG2VOI8j-Q5BcMknfwqRPwT0O_kXYp9eShGDnDkpAtBi0qk2n60-qnSTHRlteDZn37ku5s8xFCD0Djx5zG01UHD5o6q5Xcdzuvt12iMlJkjBY1AQddIpF2aGlC7GNS0zuHnfKnaJEsFmlwoQlC3YRkv7AiiYAvGGaXsthj-6p_YMhBkgdP_GEz_qhG1qcKyqWWVs-gY3sNfB7TUw"/>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-primary-container rounded-full border-2 border-surface-container-lowest"></div>
+</div>
+<div>
+<h2 class="font-title-lg text-title-lg text-on-surface">Dad</h2>
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-primary-container/10 text-on-primary-container font-label-sm text-[10px] mt-1">Admin</span>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-outline hover:bg-surface-container-low transition-colors active:scale-95">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+</div>
+<div class="mt-5 grid grid-cols-2 gap-2">
+<div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-1">
+<span class="font-label-sm text-[10px] text-outline uppercase tracking-wider">Assigned Chores</span>
+<span class="font-headline-md text-headline-md text-on-surface">2</span>
+</div>
+<div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-1">
+<span class="font-label-sm text-[10px] text-outline uppercase tracking-wider">Color Identity</span>
+<div class="flex items-center gap-2 mt-1">
+<div class="w-5 h-5 rounded-full bg-primary-container"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Blue</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Profile Card: Mia -->
+<div class="bg-surface-container-lowest rounded-[20px] p-5 border border-surface-variant shadow-[0_4px_12px_rgba(45,49,50,0.05)] relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-full h-2 bg-secondary-container"></div>
+<div class="flex items-start justify-between mt-2">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-surface-container-lowest shadow-sm relative">
+<img alt="Mia" class="w-full h-full object-cover" data-alt="close up portrait of a young girl with bright eyes and a slight smile, soft outdoor lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaoCooiWc-HZUN6_O0zWU6Vk_nh9-W5yDMuhrU64NXQfi1AtsgUr9hqkGinOyUGE94IVh5O4z7cRHf_jxGy5Ir4S3EXBhUC3Zxc9gox2SBz0J-WM5jngwwmrTwLo7Mq50LhXwk2OBu1b54HOIR5CPFVUz0hsz9_BDA5YxC3TEbTfDGLOKDSZH50A0MF9JpbYFl-sNV1ire2l9UFaYzTjPTkBIW49JliUh8rbbczmfLwhCAhOTm-DegJzE_CKEHsgATcfZ5ZVpG158"/>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-secondary-container rounded-full border-2 border-surface-container-lowest"></div>
+</div>
+<div>
+<h2 class="font-title-lg text-title-lg text-on-surface">Mia</h2>
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-[10px] mt-1">Member</span>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-outline hover:bg-surface-container-low transition-colors active:scale-95">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+</div>
+<div class="mt-5 grid grid-cols-2 gap-2">
+<div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-1">
+<span class="font-label-sm text-[10px] text-outline uppercase tracking-wider">Assigned Chores</span>
+<span class="font-headline-md text-headline-md text-on-surface">5</span>
+</div>
+<div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-1">
+<span class="font-label-sm text-[10px] text-outline uppercase tracking-wider">Color Identity</span>
+<div class="flex items-center gap-2 mt-1">
+<div class="w-5 h-5 rounded-full bg-secondary-container"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Pink</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Profile Card: Sam -->
+<div class="bg-surface-container-lowest rounded-[20px] p-5 border border-surface-variant shadow-[0_4px_12px_rgba(45,49,50,0.05)] relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-full h-2 bg-[#F6D06B]"></div>
+<div class="flex items-start justify-between mt-2">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-surface-container-lowest shadow-sm relative bg-surface-variant flex items-center justify-center">
+<span class="font-headline-md text-headline-md text-outline">S</span>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-[#F6D06B] rounded-full border-2 border-surface-container-lowest"></div>
+</div>
+<div>
+<h2 class="font-title-lg text-title-lg text-on-surface">Sam</h2>
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-[10px] mt-1">Member</span>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-outline hover:bg-surface-container-low transition-colors active:scale-95">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+</div>
+<div class="mt-5 grid grid-cols-2 gap-2">
+<div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-1">
+<span class="font-label-sm text-[10px] text-outline uppercase tracking-wider">Assigned Chores</span>
+<span class="font-headline-md text-headline-md text-on-surface">1</span>
+</div>
+<div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-1">
+<span class="font-label-sm text-[10px] text-outline uppercase tracking-wider">Color Identity</span>
+<div class="flex items-center gap-2 mt-1">
+<div class="w-5 h-5 rounded-full bg-[#F6D06B]"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Yellow</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-white/90 dark:bg-stone-900/90 backdrop-blur-md fixed bottom-0 w-full z-50 rounded-t-[20px] shadow-[0_-4px_12px_rgba(45,49,50,0.05)] border-t border-[#F0F0F0] dark:border-stone-800 flex justify-around items-center px-4 pt-2 pb-6 w-full md:hidden">
+<a class="flex flex-col items-center justify-center text-stone-400 dark:text-stone-500 px-3 py-1.5 hover:text-sky-600 dark:hover:text-sky-300 active:scale-90 transition-transform duration-200 ease-out group" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1 group-hover:text-sky-600" data-icon="home">home</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-wider">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-400 dark:text-stone-500 px-3 py-1.5 hover:text-sky-600 dark:hover:text-sky-300 active:scale-90 transition-transform duration-200 ease-out group" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1 group-hover:text-sky-600" data-icon="calendar_month">calendar_month</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-wider">Calendar</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-400 dark:text-stone-500 px-3 py-1.5 hover:text-sky-600 dark:hover:text-sky-300 active:scale-90 transition-transform duration-200 ease-out group" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1 group-hover:text-sky-600" data-icon="restaurant">restaurant</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-wider">Meals</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-400 dark:text-stone-500 px-3 py-1.5 hover:text-sky-600 dark:hover:text-sky-300 active:scale-90 transition-transform duration-200 ease-out group" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1 group-hover:text-sky-600" data-icon="shopping_basket">shopping_basket</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-wider">Lists</span>
+</a>
+<!-- Active State: Family (Profiles) -->
+<a class="flex flex-col items-center justify-center bg-sky-50 dark:bg-sky-900/30 text-[#5DA9E9] rounded-2xl px-3 py-1.5 active:scale-90 transition-transform duration-200 ease-out" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1" data-icon="group" data-weight="fill">group</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-wider text-[#5DA9E9] font-bold">Family</span>
+</a>
+</nav>
+</body></html>

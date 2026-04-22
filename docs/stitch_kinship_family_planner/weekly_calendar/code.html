@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Family Planner - Calendar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Public+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#5da9e9",
+                        "tertiary-container": "#84ac8e",
+                        "tertiary-fixed-dim": "#a7d0b0",
+                        "on-surface-variant": "#404750",
+                        "surface-tint": "#00639a",
+                        "primary-fixed": "#cee5ff",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#2d3135",
+                        "inverse-on-surface": "#eff1f6",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#c0c7d1",
+                        "on-primary-fixed": "#001d32",
+                        "on-surface": "#181c20",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "on-background": "#181c20",
+                        "on-primary-fixed-variant": "#004a76",
+                        "on-primary-container": "#003c61",
+                        "primary-fixed-dim": "#96ccff",
+                        "secondary-fixed": "#ffdad8",
+                        "secondary-fixed-dim": "#ffb3b1",
+                        "tertiary": "#41664c",
+                        "surface-dim": "#d8dadf",
+                        "surface-container": "#eceef3",
+                        "on-secondary-container": "#752126",
+                        "secondary": "#9e4042",
+                        "surface-container-high": "#e6e8ee",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e0e2e8",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#00639a",
+                        "secondary-container": "#fd898a",
+                        "surface-container-highest": "#e0e2e8",
+                        "on-secondary-fixed": "#410008",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f1f3f9",
+                        "outline": "#707881",
+                        "background": "#f7f9ff",
+                        "error-container": "#ffdad6",
+                        "surface": "#f7f9ff",
+                        "inverse-primary": "#96ccff",
+                        "on-secondary-fixed-variant": "#7f282c",
+                        "on-tertiary-container": "#1c4029",
+                        "on-tertiary-fixed": "#00210e",
+                        "surface-bright": "#f7f9ff",
+                        "on-tertiary-fixed-variant": "#2a4e36",
+                        "tertiary-fixed": "#c3edcb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit-4": "16px",
+                        "unit-8": "32px",
+                        "gutter": "16px",
+                        "margin-mobile": "20px",
+                        "unit-2": "8px",
+                        "touch-target-min": "48px",
+                        "unit-6": "24px",
+                        "unit-1": "4px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Public Sans"],
+                        "body-md": ["Public Sans"],
+                        "display": ["Plus Jakarta Sans"],
+                        "title-lg": ["Public Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .ambient-shadow-card {
+            box-shadow: 0 4px 12px rgba(45, 49, 50, 0.05);
+        }
+        .ambient-shadow-fab {
+            box-shadow: 0 8px 24px rgba(45, 49, 50, 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased min-h-screen pb-32">
+<!-- TopAppBar Shared Component -->
+<header class="fixed top-0 w-full z-40 bg-[#FDFDFB] dark:bg-stone-950 border-b border-[#F0F0F0] dark:border-stone-800 shadow-[0_4px_12px_rgba(45,49,50,0.05)] flex justify-between items-center h-16 px-5 transition-colors">
+<div class="flex items-center gap-3">
+<img alt="Current User Avatar" class="w-8 h-8 rounded-full object-cover" data-alt="close-up portrait of a smiling middle-aged man with short brown hair in natural warm outdoor lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCR3dSFmFhDkPvysLwvGE6g0BJKWc2ruAH_o3ZICypTyqkSZ-NO_J4H3-eM5jH0yuvoscqoZklGczbqVUYrz9mNyKzFntQk-RK4y3dKyEKeXFgDvrox7LvO8IHLXkYCwcfbqIrzabKjUcy06-DlI4dKLNEGJziEDb1XdGMKJz_aHo8HIr-vyOH1fBRRni96xnmk1nn4kV1DhaGct_XfqUilQ4hLVkKTe2ammjXEGN4jN9ROqjwcKntRUn2Y4jEd8sSInDHRAS5QYKg"/>
+<span class="text-xl font-extrabold text-[#5DA9E9] tracking-tight font-['Plus_Jakarta_Sans']">Our Family</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors active:scale-95 duration-200 text-[#5DA9E9] dark:text-sky-400">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="pt-24 px-margin-mobile flex flex-col gap-unit-6">
+<!-- Header & Week Navigation -->
+<section class="flex flex-col gap-unit-4">
+<div class="flex justify-between items-end">
+<h1 class="font-display text-display text-on-surface">October</h1>
+<button class="font-label-sm text-label-sm text-primary flex items-center gap-1 active:scale-95 transition-transform">
+                    Today
+                    <span class="material-symbols-outlined text-[16px]">calendar_today</span>
+</button>
+</div>
+<!-- Horizontal Date Strip -->
+<div class="flex overflow-x-auto gap-unit-2 pb-2 hide-scrollbar -mx-margin-mobile px-margin-mobile">
+<div class="flex flex-col items-center justify-center min-w-[56px] h-[72px] rounded-xl bg-surface-container-lowest ambient-shadow-card text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase opacity-70">Mon</span>
+<span class="font-title-lg text-title-lg mt-1">12</span>
+</div>
+<div class="flex flex-col items-center justify-center min-w-[56px] h-[72px] rounded-xl bg-surface-container-lowest ambient-shadow-card text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase opacity-70">Tue</span>
+<span class="font-title-lg text-title-lg mt-1">13</span>
+</div>
+<!-- Active Day -->
+<div class="flex flex-col items-center justify-center min-w-[56px] h-[72px] rounded-xl bg-primary text-on-primary ambient-shadow-card shadow-primary/20 scale-105 transform origin-bottom transition-transform">
+<span class="font-label-sm text-label-sm uppercase opacity-90">Wed</span>
+<span class="font-title-lg text-title-lg mt-1">14</span>
+</div>
+<div class="flex flex-col items-center justify-center min-w-[56px] h-[72px] rounded-xl bg-surface-container-lowest ambient-shadow-card text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase opacity-70">Thu</span>
+<span class="font-title-lg text-title-lg mt-1">15</span>
+</div>
+<div class="flex flex-col items-center justify-center min-w-[56px] h-[72px] rounded-xl bg-surface-container-lowest ambient-shadow-card text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase opacity-70">Fri</span>
+<span class="font-title-lg text-title-lg mt-1">16</span>
+</div>
+<div class="flex flex-col items-center justify-center min-w-[56px] h-[72px] rounded-xl bg-surface-container-lowest ambient-shadow-card text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase opacity-70">Sat</span>
+<span class="font-title-lg text-title-lg mt-1">17</span>
+</div>
+</div>
+</section>
+<!-- Agenda List -->
+<section class="flex flex-col gap-unit-6 mt-unit-2">
+<!-- Event Group -->
+<div class="flex flex-col gap-unit-4">
+<h2 class="font-title-lg text-title-lg text-on-surface">Wednesday, Oct 14</h2>
+<!-- Event Card 1: Mia (Pink/Secondary) -->
+<div class="relative bg-surface-container-lowest rounded-xl p-unit-4 flex gap-unit-4 items-center ambient-shadow-card overflow-hidden active:scale-[0.98] transition-transform">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-secondary-container"></div>
+<div class="w-12 h-12 rounded-full bg-secondary-container/20 flex items-center justify-center text-on-secondary-container font-title-lg text-title-lg">M</div>
+<div class="flex-1 flex flex-col justify-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant mb-0.5">8:30 AM - 3:00 PM</span>
+<span class="font-headline-md text-headline-md text-on-surface leading-tight">School</span>
+</div>
+</div>
+<!-- Event Card 2: Sam (Green/Tertiary) -->
+<div class="relative bg-surface-container-lowest rounded-xl p-unit-4 flex gap-unit-4 items-center ambient-shadow-card overflow-hidden active:scale-[0.98] transition-transform">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-tertiary-container"></div>
+<img alt="Sam" class="w-12 h-12 rounded-full object-cover" data-alt="close-up of a smiling young boy with curly blonde hair outdoors in bright soft daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMm7_KqpXNKinmBmEtqs7eyHUhBlU1QLtXy90GxA10foptn5fk3OaS6uAmGqgdo_JPVK2bKUhSAnKB6a3PJ7J2vH8BqKVBqq7PJQ-qdRWJ6d1vWYiYdhlaZzRaJszQpGGZg9_Xm0GM7RiPYHSqepS1xGuNx_ADMVru9N2amfyW0EBdEfgUJp50Ko2vyw61uLJq6hLiMc63_ZnsNFVHb4S1FqIxNuR6otL0y7GNPTzsPeoiKlkKQtZVHrgUxAIRcldz5TJibHLG9LY"/>
+<div class="flex-1 flex flex-col justify-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant mb-0.5">4:00 PM - 5:30 PM</span>
+<span class="font-headline-md text-headline-md text-on-surface leading-tight">Soccer Practice</span>
+<div class="flex items-center gap-1 mt-1 text-outline">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<span class="font-body-md text-[13px]">Community Field</span>
+</div>
+</div>
+</div>
+<!-- Event Card 3: All/Family (Blue/Primary) -->
+<div class="relative bg-primary-container/10 rounded-xl p-unit-4 flex gap-unit-4 items-center ambient-shadow-card border border-primary-container/20 overflow-hidden active:scale-[0.98] transition-transform mt-unit-2">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-primary-container"></div>
+<div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary font-title-lg text-title-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+</div>
+<div class="flex-1 flex flex-col justify-center">
+<span class="font-label-sm text-label-sm text-primary mb-0.5">6:30 PM - 8:00 PM</span>
+<span class="font-headline-md text-headline-md text-on-surface leading-tight">Family Dinner</span>
+</div>
+<!-- Small stacked avatars -->
+<div class="flex -space-x-2 mr-2">
+<img alt="Dad" class="w-8 h-8 rounded-full border-2 border-surface-container-lowest z-30" data-alt="close-up portrait of a smiling middle-aged man with short brown hair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJIlJ4Z60PO4lSrhgQpYebEISFqyO15ZNAAq2HxMQ_Ue4F79MjNVmc5IyM4qs2tct7kTMHr-4YiBoAH3bAUujgj7LIwfneGJ0EpZpDuXPQQfV6NRVSVl9UYFNdXK2iAlkMIwhqbsgpGJNvXNTuJVTloblpWQQRaHYRve1wD0yvgP-7HccWaoXVLLz3NKGC8l4Ionr5rS4fWaPLuJej6zWLvPKKJ9KVwLJxW_GBVUtlICkwx0YnfLB5-FgqCmkYiB5tOg2HK2bFHqs"/>
+<div class="w-8 h-8 rounded-full border-2 border-surface-container-lowest z-20 bg-secondary-container flex items-center justify-center text-[10px] font-bold text-on-secondary-container">M</div>
+<img alt="Sam" class="w-8 h-8 rounded-full border-2 border-surface-container-lowest z-10" data-alt="close-up of a smiling young boy with curly blonde hair outdoors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjlKzKlFC0xlXtyDGv9c_7h1FkogQ2HcUtDpwv7tII1s-dpBpLyY7ZIiDeOH52GcFWeShzyuxUBLfUVNfj7aJMi6XxBb-xyL1TO2V3bHrJMvhp-Em8BOkxtcDUzrocS6DnCVBkAJTgnduiTqQ1hQr_XdeN9cCClJ-W2_GNf_lEbLEoywj_SqlIXY-bn_NYGHIeQxgBx6YBXOMP2K1ni7491ONQRCucl4aOi1rQwXe6flOUr1lf8__DuSTZtLgAjNpcQxF-ZkF5XNs"/>
+</div>
+</div>
+</div>
+<!-- Next Day Preview -->
+<div class="flex flex-col gap-unit-4 mt-unit-4 opacity-70">
+<h2 class="font-title-lg text-title-lg text-on-surface">Thursday, Oct 15</h2>
+<div class="relative bg-surface-container-lowest rounded-xl p-unit-4 flex gap-unit-4 items-center ambient-shadow-card overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-surface-variant"></div>
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant font-title-lg text-title-lg">
+<span class="material-symbols-outlined">pets</span>
+</div>
+<div class="flex-1 flex flex-col justify-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant mb-0.5">9:00 AM</span>
+<span class="font-headline-md text-[18px] font-semibold text-on-surface leading-tight">Vet Appointment</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button (+) -->
+<button class="fixed bottom-28 right-6 w-14 h-14 bg-primary text-on-primary rounded-[16px] ambient-shadow-fab flex items-center justify-center z-40 active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+<!-- BottomNavBar Shared Component -->
+<nav class="fixed bottom-0 w-full z-50 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md rounded-t-[20px] border-t border-[#F0F0F0] dark:border-stone-800 shadow-[0_-4px_12px_rgba(45,49,50,0.05)] flex justify-around items-center px-4 pt-2 pb-6">
+<!-- Home (Inactive) -->
+<button class="flex flex-col items-center justify-center text-stone-400 dark:text-stone-500 px-3 py-1.5 hover:text-sky-600 dark:hover:text-sky-300 active:scale-90 transition-transform duration-200 ease-out group">
+<span class="material-symbols-outlined mb-1 transition-colors" data-icon="home">home</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-wider">Home</span>
+</button>
+<!-- Calendar (Active) -->
+<button class="flex flex-col items-center justify-center bg-sky-50 dark:bg-sky-900/30 text-[#5DA9E9] rounded-2xl px-3 py-1.5 active:scale-90 transition-transform duration-200 ease-out">
+<span class="material-symbols-outlined mb-1" data-icon="calendar_month" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-wider">Calendar</span>
+</button>
+<!-- Meals (Inactive) -->
+<button class="flex flex-col items-center justify-center text-stone-400 dark:text-stone-500 px-3 py-1.5 hover:text-sky-600 dark:hover:text-sky-300 active:scale-90 transition-transform duration-200 ease-out group">
+<span class="material-symbols-outlined mb-1 transition-colors" data-icon="restaurant">restaurant</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-wider">Meals</span>
+</button>
+<!-- Lists (Inactive) -->
+<button class="flex flex-col items-center justify-center text-stone-400 dark:text-stone-500 px-3 py-1.5 hover:text-sky-600 dark:hover:text-sky-300 active:scale-90 transition-transform duration-200 ease-out group">
+<span class="material-symbols-outlined mb-1 transition-colors" data-icon="shopping_basket">shopping_basket</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-wider">Lists</span>
+</button>
+<!-- Family (Inactive) -->
+<button class="flex flex-col items-center justify-center text-stone-400 dark:text-stone-500 px-3 py-1.5 hover:text-sky-600 dark:hover:text-sky-300 active:scale-90 transition-transform duration-200 ease-out group">
+<span class="material-symbols-outlined mb-1 transition-colors" data-icon="group">group</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-wider">Family</span>
+</button>
+</nav>
+</body></html>

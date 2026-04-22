@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Family Planner - Shopping List</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#5da9e9",
+                    "tertiary-container": "#84ac8e",
+                    "tertiary-fixed-dim": "#a7d0b0",
+                    "on-surface-variant": "#404750",
+                    "surface-tint": "#00639a",
+                    "primary-fixed": "#cee5ff",
+                    "on-error-container": "#93000a",
+                    "inverse-surface": "#2d3135",
+                    "inverse-on-surface": "#eff1f6",
+                    "on-secondary": "#ffffff",
+                    "outline-variant": "#c0c7d1",
+                    "on-primary-fixed": "#001d32",
+                    "on-surface": "#181c20",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "on-background": "#181c20",
+                    "on-primary-fixed-variant": "#004a76",
+                    "on-primary-container": "#003c61",
+                    "primary-fixed-dim": "#96ccff",
+                    "secondary-fixed": "#ffdad8",
+                    "secondary-fixed-dim": "#ffb3b1",
+                    "tertiary": "#41664c",
+                    "surface-dim": "#d8dadf",
+                    "surface-container": "#eceef3",
+                    "on-secondary-container": "#752126",
+                    "secondary": "#9e4042",
+                    "surface-container-high": "#e6e8ee",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e0e2e8",
+                    "surface-container-lowest": "#ffffff",
+                    "primary": "#00639a",
+                    "secondary-container": "#fd898a",
+                    "surface-container-highest": "#e0e2e8",
+                    "on-secondary-fixed": "#410008",
+                    "on-primary": "#ffffff",
+                    "surface-container-low": "#f1f3f9",
+                    "outline": "#707881",
+                    "background": "#f7f9ff",
+                    "error-container": "#ffdad6",
+                    "surface": "#f7f9ff",
+                    "inverse-primary": "#96ccff",
+                    "on-secondary-fixed-variant": "#7f282c",
+                    "on-tertiary-container": "#1c4029",
+                    "on-tertiary-fixed": "#00210e",
+                    "surface-bright": "#f7f9ff",
+                    "on-tertiary-fixed-variant": "#2a4e36",
+                    "tertiary-fixed": "#c3edcb"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit-4": "16px",
+                    "unit-8": "32px",
+                    "gutter": "16px",
+                    "margin-mobile": "20px",
+                    "unit-2": "8px",
+                    "touch-target-min": "48px",
+                    "unit-6": "24px",
+                    "unit-1": "4px",
+                    "base": "4px"
+            },
+            "fontFamily": {
+                    "headline-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-sm": [
+                            "Public Sans"
+                    ],
+                    "body-md": [
+                            "Public Sans"
+                    ],
+                    "display": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "title-lg": [
+                            "Public Sans"
+                    ]
+            },
+            "fontSize": {
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "title-lg": [
+                            "20px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+        },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom Checkbox Rounding per guidance */
+        .checkbox-tactile {
+            border-radius: 6px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen font-body-md">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-40 bg-[#FDFDFB] border-b border-[#F0F0F0] shadow-[0_4px_12px_rgba(45,49,50,0.05)] flex justify-between items-center h-16 px-5 transition-all">
+<button class="w-10 h-10 rounded-full overflow-hidden border-2 border-outline-variant/30 hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary-container">
+<img alt="Current User" class="w-full h-full object-cover" data-alt="Portrait of a smiling young woman with warm lighting and soft background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATEYYPOupqSVYtNjEGeiYRNHhheAeIUmnYjG4Krpb10eW89Jd80G9b4hAWeVYz5FC9YIwaHHVHt4M1iY-SBo2DtePYRL_7hnRqkZPZ8gU7he8sakgM7_JTm44B3Y0bblV_ycO1n3YTqMT9vykNRknpZKbz4Q1NDdKLi-PEl1T6SNHC_jtCw8HrVtXZJ2sZZfNWiTski69CGtjadFhHOnu1Tj5Ldp3ofr_HRRhjGhBLUI5I132N2hFigR8AdHL53K4wjtTzayH31Dg"/>
+</button>
+<div class="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#5DA9E9] tracking-tight">Our Family</div>
+<button class="text-[#5DA9E9] hover:bg-stone-100 p-2 rounded-full active:scale-95 transition-all duration-200 focus:outline-none">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-32 px-margin-mobile max-w-3xl mx-auto flex flex-col gap-unit-6">
+<!-- Header -->
+<div class="flex flex-col gap-1">
+<h1 class="font-display text-display text-on-background">Shopping List</h1>
+<p class="font-body-md text-body-md text-outline">Grocery run for the week</p>
+</div>
+<!-- Quick Add Input -->
+<div class="relative w-full h-[56px] rounded-xl bg-surface-container-highest shadow-sm flex items-center px-4 focus-within:ring-2 focus-within:ring-primary-container transition-all">
+<span class="material-symbols-outlined text-outline mr-3">add_circle</span>
+<input aria-label="Quick add item" class="bg-transparent border-none w-full h-full text-on-surface font-body-md text-body-md focus:outline-none focus:ring-0 placeholder-outline" placeholder="Add item (e.g., Milk)" type="text"/>
+<button class="bg-primary-container text-on-primary font-label-sm text-label-sm px-4 py-2 rounded-xl ml-2 hover:opacity-90 active:scale-95 transition-transform">Add</button>
+</div>
+<!-- Lists Grid Container (Bento Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-unit-4">
+<!-- Category: Produce -->
+<section class="bg-surface-container-lowest rounded-[20px] p-5 shadow-[0_4px_12px_rgba(45,49,50,0.05)] border border-[#F0F0F0] flex flex-col gap-4 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-tertiary-container/10 rounded-bl-[100px] -z-10 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-center border-b border-[#F0F0F0] pb-3">
+<h2 class="font-title-lg text-title-lg text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-container">nutrition</span> Produce
+                    </h2>
+<span class="font-label-sm text-label-sm text-outline">2 items</span>
+</div>
+<ul class="flex flex-col gap-3 z-10">
+<li class="flex items-center justify-between group/item p-1 -mx-1 rounded-lg hover:bg-surface-container transition-colors">
+<label class="flex items-center gap-3 cursor-pointer w-full">
+<input class="peer sr-only" type="checkbox"/>
+<div class="w-[24px] h-[24px] checkbox-tactile border-2 border-outline-variant flex items-center justify-center peer-checked:bg-primary-container peer-checked:border-primary-container text-transparent peer-checked:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface peer-checked:line-through peer-checked:text-outline transition-all select-none">Honeycrisp Apples (x6)</span>
+</label>
+<div class="bg-primary-fixed/40 text-on-primary-fixed-variant rounded-full px-2 py-1 flex items-center gap-1.5 shrink-0 ml-2 border border-primary-fixed-dim/30">
+<img class="w-4 h-4 rounded-full object-cover" data-alt="Portrait of a smiling young woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKHsM_8sqgQdHdgC8IldZgfPY4WMk-fjsZoKEX_Vm4reYXNGhy9luinQ6kVxi4BP_n2snOVR9Ei1tGBaTqp1ZPLS2Z130ogWQ05emaIv1pOcvPurGGcJHeA9fQsZghg3gGdLfdhlYDrYMrYfGp0rkT7xbq27aZejNQ_-ygmTrrwa_0SLpol1R15bSC1SIuI-Hi4mWiHhnDZyJQaF5CX1ixmcQFp9nO6p6NuOR8mJjcjSwsD95Y-Szz5ngiWMAPIiPVRgvKpVnDr00"/>
+<span class="font-label-sm text-[10px] uppercase">Mom</span>
+</div>
+</li>
+<li class="flex items-center justify-between group/item p-1 -mx-1 rounded-lg hover:bg-surface-container transition-colors">
+<label class="flex items-center gap-3 cursor-pointer w-full">
+<input class="peer sr-only" type="checkbox"/>
+<div class="w-[24px] h-[24px] checkbox-tactile border-2 border-outline-variant flex items-center justify-center peer-checked:bg-primary-container peer-checked:border-primary-container text-transparent peer-checked:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface peer-checked:line-through peer-checked:text-outline transition-all select-none">Spinach</span>
+</label>
+<div class="bg-tertiary-fixed/40 text-on-tertiary-fixed-variant rounded-full px-2 py-1 flex items-center gap-1.5 shrink-0 ml-2 border border-tertiary-fixed-dim/30">
+<img class="w-4 h-4 rounded-full object-cover" data-alt="Portrait of a smiling man with a beard" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARJ6JgnTzhxJtrFm12NvESM8Todos1PeT5GH2c_0lbGpYqN8CFRGYWpwYAMb4gDAlF_XoIJ7GXCm7Mo6djUWD5-llC211MRq5FyMk9jY7GNafOtBneNIVt9LS1icdYBs7s39oghJVddRpe1UHMUhnayPrpk_Mo07FWlMKwGe22f6hlZ7l7UXKoVjunjKGNqj1M_P8SjbQCDs21A1wOn3Uow1TFJLie-sQ_qTebJzbuJVqsBV8308l_rM6-kuKf70lpBdg9MIog1DA"/>
+<span class="font-label-sm text-[10px] uppercase">Dad</span>
+</div>
+</li>
+</ul>
+</section>
+<!-- Category: Dairy (Mixed states) -->
+<section class="bg-surface-container-lowest rounded-[20px] p-5 shadow-[0_4px_12px_rgba(45,49,50,0.05)] border border-[#F0F0F0] flex flex-col gap-4 relative overflow-hidden group md:mt-6">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary-container/10 rounded-bl-[100px] -z-10 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-center border-b border-[#F0F0F0] pb-3">
+<h2 class="font-title-lg text-title-lg text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container">water_drop</span> Dairy &amp; Eggs
+                    </h2>
+<span class="font-label-sm text-label-sm text-outline">1 of 2</span>
+</div>
+<ul class="flex flex-col gap-3 z-10">
+<li class="flex items-center justify-between group/item p-1 -mx-1 rounded-lg hover:bg-surface-container transition-colors">
+<label class="flex items-center gap-3 cursor-pointer w-full">
+<input class="peer sr-only" type="checkbox"/>
+<div class="w-[24px] h-[24px] checkbox-tactile border-2 border-outline-variant flex items-center justify-center peer-checked:bg-primary-container peer-checked:border-primary-container text-transparent peer-checked:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface peer-checked:line-through peer-checked:text-outline transition-all select-none">Oat Milk (Barista Blend)</span>
+</label>
+<div class="bg-primary-fixed/40 text-on-primary-fixed-variant rounded-full px-2 py-1 flex items-center gap-1.5 shrink-0 ml-2 border border-primary-fixed-dim/30">
+<img class="w-4 h-4 rounded-full object-cover" data-alt="Portrait of a smiling young woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbLHRhwK_SPKDK1amghTaqd-5C1Bqc7ErC0JNv4cRAVWPChL775pC1fVfXcoxZGvvydLtSez14raL0oTB5VFi9o9kLWlbR4XQJJz7-5oFtEYFQTEI4gGLx_7O8VCH8IvweinUbQgji173t38juKTiluxT16EaDhEIapG7hTvZP_0UmusXulxL2PdOrFl40sMmdPmgl60S6YUUdgJucJ-DiTI48Qu4Kn6Nk3oGDYHMLNd-G5y9Dz7FE7SD5MRSWujyLBkoI8FafReQ"/>
+<span class="font-label-sm text-[10px] uppercase">Mom</span>
+</div>
+</li>
+<li class="flex items-center justify-between group/item p-1 -mx-1 rounded-lg hover:bg-surface-container transition-colors opacity-60">
+<label class="flex items-center gap-3 cursor-pointer w-full">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<div class="w-[24px] h-[24px] checkbox-tactile border-2 border-outline-variant flex items-center justify-center peer-checked:bg-primary-container peer-checked:border-primary-container text-transparent peer-checked:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface peer-checked:line-through peer-checked:text-outline transition-all select-none">Large Eggs (Dozen)</span>
+</label>
+<div class="bg-surface-variant text-on-surface-variant rounded-full px-2 py-1 flex items-center gap-1.5 shrink-0 ml-2">
+<span class="material-symbols-outlined text-[12px]">robot_2</span>
+<span class="font-label-sm text-[10px] uppercase">Auto</span>
+</div>
+</li>
+</ul>
+</section>
+<!-- Category: Household -->
+<section class="bg-surface-container-lowest rounded-[20px] p-5 shadow-[0_4px_12px_rgba(45,49,50,0.05)] border border-[#F0F0F0] flex flex-col gap-4 relative overflow-hidden group md:col-span-2">
+<div class="absolute top-0 right-0 w-32 h-32 bg-surface-variant/20 rounded-bl-[100px] -z-10 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-center border-b border-[#F0F0F0] pb-3">
+<h2 class="font-title-lg text-title-lg text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">home_repair_service</span> Household
+                    </h2>
+<span class="font-label-sm text-label-sm text-outline">1 item</span>
+</div>
+<ul class="flex flex-col gap-3 z-10">
+<li class="flex items-center justify-between group/item p-1 -mx-1 rounded-lg hover:bg-surface-container transition-colors">
+<label class="flex items-center gap-3 cursor-pointer w-full">
+<input class="peer sr-only" type="checkbox"/>
+<div class="w-[24px] h-[24px] checkbox-tactile border-2 border-outline-variant flex items-center justify-center peer-checked:bg-primary-container peer-checked:border-primary-container text-transparent peer-checked:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface peer-checked:line-through peer-checked:text-outline transition-all select-none">Paper Towels</span>
+</label>
+<div class="bg-secondary-fixed/40 text-on-secondary-fixed-variant rounded-full px-2 py-1 flex items-center gap-1.5 shrink-0 ml-2 border border-secondary-fixed-dim/30">
+<div class="w-4 h-4 rounded-full bg-secondary text-on-secondary flex items-center justify-center text-[8px] font-bold">L</div>
+<span class="font-label-sm text-[10px] uppercase">Leo</span>
+</div>
+</li>
+</ul>
+</section>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-[20px] border-t border-[#F0F0F0] shadow-[0_-4px_12px_rgba(45,49,50,0.05)] bg-white/90 backdrop-blur-md flex justify-around items-center px-4 pt-2 pb-6">
+<button class="flex flex-col items-center justify-center text-stone-400 px-3 py-1.5 hover:text-sky-600 active:scale-90 transition-transform duration-200 ease-out group">
+<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">home</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-wider">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-stone-400 px-3 py-1.5 hover:text-sky-600 active:scale-90 transition-transform duration-200 ease-out group">
+<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">calendar_month</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-wider">Calendar</span>
+</button>
+<button class="flex flex-col items-center justify-center text-stone-400 px-3 py-1.5 hover:text-sky-600 active:scale-90 transition-transform duration-200 ease-out group">
+<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">restaurant</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-wider">Meals</span>
+</button>
+<!-- Active Nav Item -->
+<button class="flex flex-col items-center justify-center bg-sky-50 text-[#5DA9E9] rounded-2xl px-3 py-1.5 active:scale-90 transition-transform duration-200 ease-out">
+<span class="material-symbols-outlined mb-1 fill">shopping_basket</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-wider font-bold">Lists</span>
+</button>
+<button class="flex flex-col items-center justify-center text-stone-400 px-3 py-1.5 hover:text-sky-600 active:scale-90 transition-transform duration-200 ease-out group">
+<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">group</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-wider">Family</span>
+</button>
+</nav>
+</body></html>
