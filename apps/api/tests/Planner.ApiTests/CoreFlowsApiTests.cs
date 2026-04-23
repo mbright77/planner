@@ -7,6 +7,7 @@ using Planner.Contracts.Calendar;
 using Planner.Contracts.Dashboard;
 using Planner.Contracts.Meals;
 using Planner.Contracts.Profiles;
+using Planner.Contracts.Invites;
 using Planner.Contracts.Shopping;
 
 namespace Planner.ApiTests;
@@ -179,6 +180,40 @@ public sealed class CoreFlowsApiTests(ApiTestFactory factory) : IClassFixture<Ap
         Assert.NotNull(updatedFinalWeek);
         Assert.Contains(updatedNextWeek.Events, x => x.StartAtUtc == updatedStart && x.Notes == "Coach moved the slot");
         Assert.Contains(updatedFinalWeek.Events, x => x.StartAtUtc == updatedStart.AddDays(7) && x.Notes == "Coach moved the slot");
+    }
+
+    [Fact]
+    public async Task Family_admin_can_create_and_accept_invite()
+    {
+        await factory.ResetDatabaseAsync();
+        using var client = factory.CreateClient();
+
+        var authResponse = await RegisterAsync(client);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse.AccessToken);
+
+        var createInviteResponse = await client.PostAsJsonAsync(
+            "/api/v1/family-invites",
+            new CreateFamilyInviteRequest("adult@example.com"));
+        Assert.Equal(HttpStatusCode.Created, createInviteResponse.StatusCode);
+
+        var invite = await createInviteResponse.Content.ReadFromJsonAsync<FamilyInviteResponse>();
+        Assert.NotNull(invite);
+        Assert.Equal("adult@example.com", invite.Email);
+
+        var inviteDetails = await client.GetFromJsonAsync<FamilyInviteDetailsResponse>($"/api/v1/invites/{invite.Token}");
+        Assert.NotNull(inviteDetails);
+        Assert.Equal("adult@example.com", inviteDetails.Email);
+        Assert.False(inviteDetails.IsExpired);
+        Assert.False(inviteDetails.IsAccepted);
+
+        var acceptResponse = await client.PostAsJsonAsync(
+            $"/api/v1/invites/{invite.Token}/accept",
+            new AcceptFamilyInviteRequest("adult@example.com", "Planner123!", "Taylor", "blue"));
+        Assert.Equal(HttpStatusCode.OK, acceptResponse.StatusCode);
+
+        var acceptedInvite = await client.GetFromJsonAsync<FamilyInviteDetailsResponse>($"/api/v1/invites/{invite.Token}");
+        Assert.NotNull(acceptedInvite);
+        Assert.True(acceptedInvite.IsAccepted);
     }
 
     private static async Task<AuthResponse> RegisterAsync(HttpClient client)

@@ -12,6 +12,8 @@ public sealed class PlannerDbContext(DbContextOptions<PlannerDbContext> options)
 
     public DbSet<FamilyMembership> FamilyMemberships => Set<FamilyMembership>();
 
+    public DbSet<FamilyInvite> FamilyInvites => Set<FamilyInvite>();
+
     public DbSet<Profile> Profiles => Set<Profile>();
 
     public DbSet<ShoppingItem> ShoppingItems => Set<ShoppingItem>();

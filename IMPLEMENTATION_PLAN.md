@@ -441,6 +441,7 @@ Current committed state:
 Current committed state:
 
 - Implemented groups include `/api/v1/auth`, `/api/v1/me`, `/api/v1/profiles`, `/api/v1/shopping`, `/api/v1/calendar`, and `/api/v1/meals`
+- Implemented groups include `/api/v1/auth`, `/api/v1/me`, `/api/v1/profiles`, `/api/v1/shopping`, `/api/v1/calendar`, `/api/v1/meals`, `/api/v1/family-invites`, and `/api/v1/invites`
 - The current API does not pass `familyId` in routes; handlers derive family scope from the authenticated membership
 - Dashboard endpoints are implemented
 - Consent, families, and shopping category endpoints are not implemented yet
@@ -607,7 +608,8 @@ planner.audit_events
 Current committed state:
 
 - Implemented core tables/entities cover families, family memberships, profiles, calendar event series, calendar events, shopping items, meal plans, and meal requests
-- Refresh tokens, invites, shopping lists, shopping categories, user consents, and audit events are not implemented yet
+- Family invites are implemented for admin-created adult onboarding links
+- Refresh tokens, shopping lists, shopping categories, user consents, and audit events are not implemented yet
 
 ### Key Tables
 
@@ -1165,7 +1167,7 @@ Still intentionally incomplete in Phase 2:
 - [x] Add IndexedDB caching and offline read support
 - [x] Add offline mutation queue for selected flows
 - [x] Add recurring event support with materialization jobs
-- [ ] Add invite flows for additional users
+- [x] Add invite flows for additional users
 - [ ] Add deletion and privacy workflows
 - [ ] Expand accessibility testing and polish
 - [ ] Evaluate whether lightweight polling is needed on collaborative screens
@@ -1177,6 +1179,8 @@ Completed in current implementation pass:
 - Shopping, calendar, and meal mutations now queue in IndexedDB and flush when the browser reconnects
 - Calendar now supports weekly recurring events backed by `calendar_event_series`, with an in-process materializer filling future occurrences
 - The calendar page exposes weekly repeat creation and future-series update behavior for recurring events
+- Family admins can now create email-based invite links and review invite status from the Family page
+- The `/invite/:token` route now supports invite acceptance into an existing family with account creation and immediate sign-in
 
 ### Phase 4: Optimization
 

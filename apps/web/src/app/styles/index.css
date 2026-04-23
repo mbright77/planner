@@ -556,6 +556,37 @@ select {
   background: var(--surface-subtle);
 }
 
+.invite-panel {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface-subtle);
+}
+
+.invite-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.invite-card {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+
+.invite-link {
+  margin: 0.35rem 0 0;
+  color: var(--primary-strong);
+  word-break: break-all;
+}
+
 .dashboard-page {
   display: grid;
   gap: 1.5rem;

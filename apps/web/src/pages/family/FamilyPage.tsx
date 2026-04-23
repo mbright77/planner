@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { useCreateFamilyInvite, useFamilyInvites } from '../../entities/invite/model/useFamilyInvites';
+import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 import {
   useCreateProfile,
   useProfiles,
@@ -9,12 +11,17 @@ import {
 const colorOptions = ['green', 'blue', 'pink', 'yellow'];
 
 export function FamilyPage() {
+  const bootstrapQuery = useBootstrap();
   const profilesQuery = useProfiles();
+  const familyInvitesQuery = useFamilyInvites();
   const createProfileMutation = useCreateProfile();
+  const createFamilyInviteMutation = useCreateFamilyInvite();
   const updateProfileMutation = useUpdateProfile();
 
   const [displayName, setDisplayName] = useState('');
   const [colorKey, setColorKey] = useState(colorOptions[0]);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const isAdmin = bootstrapQuery.data?.membership.role === 'Admin';
 
   async function handleCreate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,6 +48,17 @@ export function FamilyPage() {
         isActive: nextActive,
       },
     });
+  }
+
+  async function handleInvite(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!inviteEmail.trim()) {
+      return;
+    }
+
+    await createFamilyInviteMutation.mutateAsync({ email: inviteEmail.trim().toLowerCase() });
+    setInviteEmail('');
   }
 
   return (
@@ -77,6 +95,53 @@ export function FamilyPage() {
           {createProfileMutation.isPending ? 'Saving...' : 'Add profile'}
         </button>
       </form>
+
+      {isAdmin ? (
+        <section className="invite-panel">
+          <div className="profile-card-header">
+            <div>
+              <p className="eyebrow">Invites</p>
+              <h3 className="profile-card-title">Invite another adult</h3>
+            </div>
+          </div>
+
+          <form className="profile-form" onSubmit={handleInvite}>
+            <label className="field">
+              <span>Email</span>
+              <input
+                value={inviteEmail}
+                onChange={(event) => setInviteEmail(event.target.value)}
+                placeholder="name@example.com"
+                type="email"
+              />
+            </label>
+
+            <button className="secondary-button" type="submit" disabled={createFamilyInviteMutation.isPending}>
+              {createFamilyInviteMutation.isPending ? 'Creating...' : 'Create invite link'}
+            </button>
+          </form>
+
+          {familyInvitesQuery.isLoading ? <p className="page-copy">Loading invites...</p> : null}
+          {familyInvitesQuery.isError ? <p className="form-error">Unable to load invites.</p> : null}
+
+          <div className="invite-list">
+            {familyInvitesQuery.data?.map((invite) => {
+              const inviteUrl = `${window.location.origin}/invite/${invite.token}`;
+
+              return (
+                <article key={invite.id} className="invite-card">
+                  <div>
+                    <strong>{invite.email}</strong>
+                    <p className="shopping-meta">Expires {new Date(invite.expiresAtUtc).toLocaleString()}</p>
+                    <p className="invite-link">{inviteUrl}</p>
+                  </div>
+                  <span className="profile-color-chip">{invite.isAccepted ? 'Accepted' : 'Pending'}</span>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       {profilesQuery.isLoading ? <p className="page-copy">Loading profiles...</p> : null}
       {profilesQuery.isError ? <p className="form-error">Unable to load profiles.</p> : null}

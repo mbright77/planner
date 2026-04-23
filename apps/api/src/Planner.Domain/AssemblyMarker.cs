@@ -28,6 +28,8 @@ public sealed class Family
 
     public ICollection<FamilyMembership> Memberships { get; set; } = new List<FamilyMembership>();
 
+    public ICollection<FamilyInvite> Invites { get; set; } = new List<FamilyInvite>();
+
     public ICollection<ShoppingItem> ShoppingItems { get; set; } = new List<ShoppingItem>();
 
     public ICollection<CalendarEvent> CalendarEvents { get; set; } = new List<CalendarEvent>();
@@ -69,6 +71,27 @@ public sealed class FamilyMembership
     public FamilyRole Role { get; set; } = FamilyRole.Member;
 
     public DateTimeOffset CreatedAtUtc { get; set; }
+
+    public Family Family { get; set; } = null!;
+}
+
+public sealed class FamilyInvite
+{
+    public Guid Id { get; set; }
+
+    public Guid FamilyId { get; set; }
+
+    public string Email { get; set; } = string.Empty;
+
+    public string Token { get; set; } = string.Empty;
+
+    public DateTimeOffset ExpiresAtUtc { get; set; }
+
+    public DateTimeOffset CreatedAtUtc { get; set; }
+
+    public DateTimeOffset? AcceptedAtUtc { get; set; }
+
+    public string? AcceptedByUserId { get; set; }
 
     public Family Family { get; set; } = null!;
 }

@@ -105,6 +105,10 @@ export type RegisterRequest = components['schemas']['RegisterRequest'];
 export type LoginRequest = components['schemas']['LoginRequest'];
 export type BootstrapResponse = components['schemas']['BootstrapResponse'];
 export type DashboardOverviewResponse = components['schemas']['DashboardOverviewResponse'];
+export type FamilyInviteResponse = components['schemas']['FamilyInviteResponse'];
+export type FamilyInviteDetailsResponse = components['schemas']['FamilyInviteDetailsResponse'];
+export type CreateFamilyInviteRequest = components['schemas']['CreateFamilyInviteRequest'];
+export type AcceptFamilyInviteRequest = components['schemas']['AcceptFamilyInviteRequest'];
 export type ProfileResponse = components['schemas']['ProfileResponse'];
 export type CreateProfileRequest = components['schemas']['CreateProfileRequest'];
 export type UpdateProfileRequest = components['schemas']['UpdateProfileRequest'];
@@ -147,6 +151,32 @@ export function getDashboardOverview(client: ClientOptions, date?: string) {
 
 export function getProfiles(client: ClientOptions) {
   return request<ProfileResponse[], '/api/v1/profiles', 'get'>('/api/v1/profiles', 'get', client);
+}
+
+export function getFamilyInvites(client: ClientOptions) {
+  return request<FamilyInviteResponse[], '/api/v1/family-invites', 'get'>('/api/v1/family-invites', 'get', client);
+}
+
+export function createFamilyInvite(client: ClientOptions, body: CreateFamilyInviteRequest) {
+  return request<FamilyInviteResponse, '/api/v1/family-invites', 'post'>('/api/v1/family-invites', 'post', {
+    ...client,
+    body,
+  });
+}
+
+export function getFamilyInvite(client: ClientOptions, token: string) {
+  return request<FamilyInviteDetailsResponse, '/api/v1/invites/{token}', 'get'>('/api/v1/invites/{token}', 'get', {
+    ...client,
+    pathParams: { token },
+  });
+}
+
+export function acceptFamilyInvite(client: ClientOptions, token: string, body: AcceptFamilyInviteRequest) {
+  return request<AuthResponse, '/api/v1/invites/{token}/accept', 'post'>('/api/v1/invites/{token}/accept', 'post', {
+    ...client,
+    body,
+    pathParams: { token },
+  });
 }
 
 export function createProfile(client: ClientOptions, body: CreateProfileRequest) {
