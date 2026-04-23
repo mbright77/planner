@@ -20,6 +20,21 @@ The implementation must preserve the provided UI direction:
 - Soft-card, warm, high-clarity Kinship UI visual language
 - Large touch targets and fast interactions optimized for one-handed use
 
+## Current Implementation Snapshot
+
+This document mixes target-state architecture with committed work already on `main`.
+
+Current committed reality:
+
+- The monorepo, solution structure, frontend app shell, and API host are in place
+- Authentication is implemented with register/login plus JWT access tokens, but not refresh-token cookies
+- The frontend currently stores session data in `localStorage`, not in-memory auth state
+- The frontend uses plain CSS and local `useState` forms, not Tailwind or React Hook Form
+- Core first-pass slices are committed for profiles, shopping, calendar, meals, and meal requests
+- The home dashboard, offline support, generated API client, CI/CD, and real infra manifests are not implemented yet
+
+Use the sections below as product direction, but treat the notes marked "Current committed state" as the source of truth for what exists today.
+
 ---
 
 ## 1. Architecture
@@ -78,6 +93,12 @@ The implementation must preserve the provided UI direction:
 - Keep infrastructure manifests and CI definitions versioned alongside the application code
 - Do not introduce Nx or Turborepo for the MVP
 
+Current committed state:
+
+- `apps`, `packages`, `infra`, `planner.sln`, `package.json`, `pnpm-workspace.yaml`, `.editorconfig`, and `justfile` are present
+- `packages/design-tokens` and `packages/api-client` exist but are still placeholders
+- `infra/k8s` and `infra/github` exist, but currently only contain README placeholders
+
 ### Monorepo Structure
 
 ```text
@@ -118,6 +139,11 @@ The implementation must preserve the provided UI direction:
 - Dexie for IndexedDB
 - `vite-plugin-pwa` with Workbox
 
+Current committed state:
+
+- Implemented stack: React 19, TypeScript, Vite, React Router, TanStack Query
+- Not yet implemented in committed app code: Zustand, React Hook Form, Zod-driven forms, Tailwind, Radix UI, Vaul, Dexie, `vite-plugin-pwa`
+
 ### Why These Choices
 
 - The mockups are already highly compatible with Tailwind-style utility composition
@@ -133,6 +159,13 @@ The implementation must preserve the provided UI direction:
 - Form state: React Hook Form
 - Offline persistence: IndexedDB via Dexie
 - Auth state: in-memory access token with cookie-backed refresh flow
+
+Current committed state:
+
+- Server state uses TanStack Query
+- Form state currently uses local component `useState`
+- Auth state is persisted in `localStorage` under `planner.session`
+- No offline persistence layer is committed yet
 
 ### Routing Structure
 
@@ -156,6 +189,12 @@ The implementation must preserve the provided UI direction:
 - Examples:
   - `/calendar?sheet=create-event&date=2026-04-22`
   - `/shopping?sheet=add-item`
+
+Current committed state:
+
+- Shared app shell, protected routing, and bottom navigation are implemented
+- Search-param driven sheet routing is not implemented yet
+- Current committed routes are `/login`, `/invite/:token`, `/`, `/calendar`, `/meals`, `/shopping`, and `/family`
 
 ### Feature-Sliced Architecture
 
@@ -207,6 +246,12 @@ apps/web/src/
    └─ assets/
 ```
 
+Current committed state:
+
+- The repo follows the broad `app`, `processes`, `pages`, `entities`, and `shared` shape
+- `features/*` folders and shared UI primitive layers are not committed yet
+- Current pages own their form state directly and use query hooks from `entities/*/model`
+
 ### Component Architecture
 
 - `shared/ui`: generic primitives like `Button`, `Input`, `Card`, `Dialog`, `Sheet`, `Avatar`, `Chip`
@@ -220,6 +265,11 @@ apps/web/src/
 - Publish OpenAPI from ASP.NET Core
 - Generate a typed TypeScript client into `packages/api-client`
 - Wrap generated calls with auth handling and TanStack Query hooks
+
+Current committed state:
+
+- REST endpoints and development OpenAPI publishing are implemented
+- `packages/api-client` is still empty and the frontend currently uses handwritten fetch wrappers in `apps/web/src/shared/api`
 
 ### PWA Setup
 
@@ -258,12 +308,22 @@ apps/web/src/
 - Extract colors, typography, radius, and spacing into `packages/design-tokens`
 - Do not use Material UI or other heavyweight UI frameworks that would conflict with the mockup language
 
+Current committed state:
+
+- Styling lives in `apps/web/src/app/styles/index.css`
+- `packages/design-tokens` exists, but is not yet driving the frontend styles
+
 ### Forms
 
 - Use React Hook Form + Zod
 - Use inline validation for quick add interactions
 - Use full field-level validation in creation and edit sheets
 - Persist unsaved drafts locally where it improves mobile usability
+
+Current committed state:
+
+- Forms currently use simple local state and lightweight inline guards
+- Zod schemas, React Hook Form integration, and draft persistence are not implemented yet
 
 ### Modals and Bottom Sheets
 
@@ -292,6 +352,12 @@ apps/web/src/
 ### Backend Architecture Choice
 
 - Use Vertical Slice Architecture with explicit API, Application, Domain, and Infrastructure projects
+
+Current committed state:
+
+- The solution has separate API, Application, Domain, Infrastructure, and Contracts projects
+- Runtime feature logic currently lives mostly in minimal API endpoint files rather than Application-layer slice handlers
+- Domain entities currently live together in `Planner.Domain/AssemblyMarker.cs`
 
 ### Why Vertical Slice
 
@@ -337,12 +403,24 @@ apps/api/
    └─ Planner.ApiTests/
 ```
 
+Current committed state:
+
+- The project boundaries and test projects exist
+- `Planner.Application` is mostly placeholder structure today
+- The test projects exist, but current committed coverage is still minimal and mostly scaffold-level
+
 ### API Design Recommendation
 
 - Use RESTful APIs with ASP.NET Core minimal APIs
 - Group endpoints by feature
 - Version routes under `/api/v1`
 - Return `ProblemDetails` for errors
+
+Current committed state:
+
+- RESTful minimal APIs under `/api/v1` are implemented
+- Endpoints are grouped by feature in `Planner.Api/Endpoints`
+- Error responses are currently mixed: some use `ProblemDetails`, many use simple `{ message = ... }` payloads
 
 ### Endpoint Structure
 
@@ -358,6 +436,12 @@ apps/api/
 - `/api/v1/families/{familyId}/shopping/categories`
 - `/api/v1/consent`
 
+Current committed state:
+
+- Implemented groups include `/api/v1/auth`, `/api/v1/me`, `/api/v1/profiles`, `/api/v1/shopping`, `/api/v1/calendar`, and `/api/v1/meals`
+- The current API does not pass `familyId` in routes; handlers derive family scope from the authenticated membership
+- Consent, dashboard, families, and shopping category endpoints are not implemented yet
+
 ### Read Model Endpoints
 
 - `GET /families/{familyId}/dashboard/overview?date=...`
@@ -365,6 +449,12 @@ apps/api/
 - `GET /families/{familyId}/meals/week?start=...`
 - `GET /families/{familyId}/shopping/list`
 - `GET /families/{familyId}/profiles`
+
+Current committed state:
+
+- Weekly calendar and meals read models are implemented
+- Profiles and shopping currently return simple feature-scoped lists rather than the planned family-route read models
+- Dashboard overview read model is not implemented yet
 
 ### Authentication and Authorization
 
@@ -375,6 +465,12 @@ apps/api/
 - Use roles:
   - `FamilyAdmin`
   - `FamilyMember`
+
+Current committed state:
+
+- ASP.NET Core Identity, email/password auth, JWT access tokens, and membership roles are implemented
+- The current role enum is `Admin` and `Member`
+- Refresh tokens, refresh cookies, logout/session revocation flows, and multi-session management are not implemented yet
 
 ### Family and User Model
 
@@ -390,6 +486,11 @@ apps/api/
 - Backend: FluentValidation for all commands and queries
 - Database: constraints as final enforcement
 
+Current committed state:
+
+- Validation is currently inline in pages and endpoints
+- Zod and FluentValidation are not wired into committed flows yet
+
 ### Logging and Error Handling
 
 - Use structured JSON logging to console
@@ -398,6 +499,11 @@ apps/api/
 - Map errors to `ProblemDetails`
 - Return validation errors with field details
 - Log fatal and startup failures to console only
+
+Current committed state:
+
+- No correlation ID middleware or global exception middleware is committed yet
+- Error handling is mostly local to endpoints
 
 ### Background Jobs
 
@@ -414,6 +520,10 @@ Use in-process background tasks only where needed:
 - refresh token cleanup
 - GDPR account/family deletion jobs
 - optional cleanup of archived shopping items
+
+Current committed state:
+
+- No background job implementations are committed yet
 
 ### EF Core Migrations Policy
 
@@ -452,6 +562,11 @@ dotnet dotnet-ef database update --project apps/api/src/Planner.Infrastructure/P
 - Use `NodaTime` in .NET for timezone-safe logic
 - For MVP, use a single small PostgreSQL instance with reliable backups
 
+Current committed state:
+
+- PostgreSQL via EF Core is implemented and family timezone is stored on `Family`
+- The code currently uses built-in `DateTimeOffset` and `DateOnly`, not `NodaTime`
+
 ### Why PostgreSQL
 
 - Strong support for relational data and integrity
@@ -484,6 +599,11 @@ planner.shopping_items
 planner.user_consents
 planner.audit_events
 ```
+
+Current committed state:
+
+- Implemented core tables/entities cover families, family memberships, profiles, shopping items, calendar events, meal plans, and meal requests
+- Refresh tokens, invites, shopping lists, shopping categories, user consents, and audit events are not implemented yet
 
 ### Key Tables
 
@@ -599,6 +719,12 @@ planner.audit_events
 - Meal requests belong to one family and can resolve into a meal plan
 - Shopping items belong to one family list and one family
 
+Current committed state:
+
+- Family scoping is implemented consistently through `family_id`
+- Current calendar events support a single optional assigned profile, not multiple profile assignments
+- Shopping items are scoped directly to a family and do not yet use shopping lists or categories as separate tables
+
 ### Multi-User Data Isolation
 
 - Scope every domain query through verified family membership
@@ -611,6 +737,12 @@ planner.audit_events
 - Convert family-local week boundaries to UTC server-side
 - Materialize recurring event instances ahead of time instead of expanding every request dynamically
 - Return a weekly read model tailored for the UI
+
+Current committed state:
+
+- A weekly read model endpoint is implemented
+- Current queries use a simple start-time-in-week window in UTC
+- Family-timezone week conversion and recurring event materialization are not implemented yet
 
 ### Indexing Strategy
 
@@ -643,6 +775,10 @@ planner.audit_events
 - Backend deployed to a single-node K3s cluster in namespace `brightroom`
 - PostgreSQL can be a single small instance for MVP, hosted in the simplest operationally safe way available to the team
 - Run background work inside the API process
+
+Current committed state:
+
+- This remains target deployment intent; no committed deployment manifests or automation implement it yet
 
 ### K3s Setup Overview
 
@@ -693,6 +829,10 @@ GitHub Actions pipeline stages:
 8. Deploy API to Kubernetes
 9. Deploy frontend static assets
 
+Current committed state:
+
+- No GitHub Actions workflows are committed yet
+
 K3s deployment note:
 
 - Keep deployment scripts compatible with standard `kubectl apply` against the K3s cluster
@@ -742,6 +882,12 @@ Per project requirement:
 - Keep access tokens in memory only
 - Revoke refresh tokens on logout, password change, and suspicious session events
 
+Current committed state:
+
+- JWT access tokens are implemented
+- Refresh tokens and cookie-backed session handling are not implemented yet
+- The frontend currently persists the access token in `localStorage`
+
 ### Secure API Design
 
 - Enforce authorization on every family-scoped endpoint
@@ -765,16 +911,30 @@ Per project requirement:
 - Validate client payloads with Zod for immediate UX feedback
 - Reject or sanitize HTML input because rich text is unnecessary
 
+Current committed state:
+
+- Validation is currently lightweight and inline
+- No shared sanitization or formal validation pipeline is committed yet
+
 ### Protection Against XSS
 
 - Use React default escaping
 - Avoid `dangerouslySetInnerHTML`
 - Add a Content Security Policy
 
+Current committed state:
+
+- React default escaping is in effect and no `dangerouslySetInnerHTML` usage is committed in the core app
+- CSP headers are not implemented yet
+
 ### Protection Against CSRF
 
 - Because refresh tokens are cookie-based, protect refresh/logout-style endpoints with CSRF defenses
 - Use `SameSite`, CSRF tokens, and strict origin validation as appropriate
+
+Current committed state:
+
+- Not yet applicable in committed code because refresh-cookie flows are not implemented
 
 ### Protection Against Injection Attacks
 
@@ -789,6 +949,10 @@ Suggested server-side limits:
 - refresh: `30/min/user`
 - standard API traffic: `300/min/user`
 - stricter limits for mutation bursts if needed
+
+Current committed state:
+
+- Rate limiting is not implemented yet
 
 ### Secure Storage of Secrets
 
@@ -843,6 +1007,10 @@ Suggested server-side limits:
 - Component-level accessibility tests for shared primitives
 - Manual keyboard and screen reader testing before release
 
+Current committed state:
+
+- Accessibility guidance is useful product direction, but automated accessibility tooling and dedicated tests are not committed yet
+
 ---
 
 ## 8. GDPR and Cookie Consent
@@ -852,6 +1020,11 @@ Suggested server-side limits:
 MVP cookie categories:
 
 - Essential only
+
+Current committed state:
+
+- No consent banner, consent persistence, or legal pages are committed yet
+- The current app uses `localStorage` for session persistence, which differs from the planned cookie-only MVP description
 
 Examples of essential cookies:
 
@@ -893,6 +1066,10 @@ Examples of essential cookies:
 - Backend: `user_consents` table to track policy version acknowledgements where necessary
 - Legal content: static privacy, cookie, and terms pages
 
+Current committed state:
+
+- None of the consent implementation pieces are committed yet
+
 ---
 
 ## 9. Feature Breakdown and Delivery Plan
@@ -925,7 +1102,7 @@ Examples of essential cookies:
 - [x] Create the monorepo structure
 - [x] Initialize `apps/web`, `apps/api`, and shared packages
 - [ ] Extract Kinship UI tokens into a reusable token package
-- [ ] Set up React app shell, routing, and provider composition
+- [x] Set up React app shell, routing, and provider composition
 - [x] Set up ASP.NET Core solution and project boundaries
 - [x] Configure PostgreSQL and EF Core migrations
 - [x] Document the `dotnet ef` workflow for creating and applying migrations
@@ -940,20 +1117,42 @@ Completed in current implementation pass:
 - Root workspace files added: `package.json`, `pnpm-workspace.yaml`, `.editorconfig`, `justfile`, `planner.sln`
 - ASP.NET Core API, class libraries, and test projects created and wired into the solution
 - Vite React TypeScript app created under `apps/web`
+- React app shell, protected routing, provider composition, and bottom navigation added under `apps/web/src/app`
 - Initial persistence layer added with `PlannerDbContext`, first entities, and first generated EF Core migration
 - Local `dotnet-ef` tool manifest added and aligned to EF Core 9
+- JWT auth, login/register, family membership bootstrap, and the first protected frontend session flow are implemented
+
+Still intentionally incomplete in Phase 1:
+
+- Refresh-token cookie flow is not implemented yet; the frontend currently stores session data in `localStorage`
+- `packages/design-tokens` and `packages/api-client` exist, but are still placeholders
+- `infra/k8s` and `infra/github` currently contain placeholders rather than real manifests or workflows
 
 ### Phase 2: Core Features
 
-- [ ] Build profile management flows
-- [ ] Build calendar weekly read model and CRUD
-- [ ] Build meals planner weekly read model and CRUD
-- [ ] Build meal request flow
-- [ ] Build shopping list quick add and toggle flows
+- [x] Build profile management flows
+- [x] Build calendar weekly read model and CRUD
+- [x] Build meals planner weekly read model and CRUD
+- [x] Build meal request flow
+- [x] Build shopping list quick add and toggle flows
 - [ ] Build dashboard aggregation endpoint and page
 - [ ] Implement optimistic updates for core interactions
 - [ ] Generate typed API client from OpenAPI
 - [ ] Add baseline test coverage for all core flows
+
+Completed in current implementation pass:
+
+- Profile management is wired end to end with profile list, create, and update flows
+- Calendar weekly read model and create/update flows are implemented
+- Meals weekly planner and meal request flows are implemented
+- Shopping list read, quick add, and toggle flows are implemented
+
+Still intentionally incomplete in Phase 2:
+
+- Home dashboard remains placeholder UI and does not yet use an aggregation endpoint
+- Query hooks currently rely on invalidation and refetch, not optimistic updates
+- OpenAPI is exposed in development, but no generated TypeScript client is committed yet
+- Test projects exist, but core flow coverage is still mostly placeholder scaffolding
 
 ### Phase 3: Enhancements
 

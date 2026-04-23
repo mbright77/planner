@@ -30,6 +30,17 @@ Current implementation realities:
 
 When adding new work, follow the current implementation patterns unless the task explicitly asks for a broader architectural migration.
 
+## Implementation Plan Maintenance
+
+`IMPLEMENTATION_PLAN.md` is not just roadmap context; it must be kept in sync with committed work.
+
+Requirements:
+
+- If you complete, partially complete, or materially change planned work, update the relevant checklist items and status notes in `IMPLEMENTATION_PLAN.md` in the same task.
+- If current implementation differs from target-state architecture, reflect that clearly in the plan rather than leaving misleading unchecked boxes or outdated assumptions.
+- Do not mark a plan item complete unless the work is actually committed in the codebase or intentionally delivered in the current change.
+- When you add a new slice or infrastructure milestone, update the plan so another agent can understand what is already done versus still aspirational.
+
 ## Repo Layout
 
 Top level:
@@ -320,7 +331,8 @@ When implementing a feature:
 3. Prefer extending current patterns over introducing target-state architecture early.
 4. Keep changes small and end-to-end.
 5. Generate migrations only through EF commands.
-6. Run build/tests before finishing.
+6. Update `IMPLEMENTATION_PLAN.md` if the implementation changed delivered scope, checklist status, or current-state notes.
+7. Run build/tests before finishing.
 
 ## Good Defaults for New Features
 
