@@ -134,6 +134,12 @@ select {
   color: #89233d;
 }
 
+.status-banner-offline {
+  border-color: rgba(93, 169, 233, 0.45);
+  background: rgba(93, 169, 233, 0.1);
+  color: var(--primary-strong);
+}
+
 .card-grid {
   display: grid;
   gap: 1rem;

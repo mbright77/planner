@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import {
   createShoppingItem,
@@ -8,6 +8,7 @@ import {
   type ShoppingItemResponse,
 } from '../../../shared/api/shopping';
 import { useAuthSession } from '../../../processes/auth-session/AuthSessionContext';
+import { useOfflineQuery } from '../../../shared/lib/useOfflineQuery';
 
 function shoppingItemsKey(accessToken: string | undefined) {
   return ['shopping-items', accessToken] as const;
@@ -36,7 +37,7 @@ function applyShoppingItemUpdate(
 export function useShoppingItems() {
   const { session } = useAuthSession();
 
-  return useQuery({
+  return useOfflineQuery({
     queryKey: shoppingItemsKey(session?.accessToken),
     queryFn: () => fetchShoppingItems(session!.accessToken),
     enabled: Boolean(session?.accessToken),

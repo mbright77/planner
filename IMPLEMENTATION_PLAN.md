@@ -1157,13 +1157,18 @@ Still intentionally incomplete in Phase 2:
 
 ### Phase 3: Enhancements
 
-- [ ] Add IndexedDB caching and offline read support
+- [x] Add IndexedDB caching and offline read support
 - [ ] Add offline mutation queue for selected flows
 - [ ] Add recurring event support with materialization jobs
 - [ ] Add invite flows for additional users
 - [ ] Add deletion and privacy workflows
 - [ ] Expand accessibility testing and polish
 - [ ] Evaluate whether lightweight polling is needed on collaborative screens
+
+Completed in current implementation pass:
+
+- Protected read models now fall back to IndexedDB-backed cached data for bootstrap, dashboard, calendar, meals, meal requests, and shopping
+- The app shell shows a lightweight offline banner when the browser is offline
 
 ### Phase 4: Optimization
 

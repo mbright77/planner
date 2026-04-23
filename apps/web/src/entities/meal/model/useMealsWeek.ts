@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import {
   acceptMealRequest,
@@ -16,6 +16,7 @@ import {
   type WeeklyMealsResponse,
 } from '../../../shared/api/meals';
 import { useAuthSession } from '../../../processes/auth-session/AuthSessionContext';
+import { useOfflineQuery } from '../../../shared/lib/useOfflineQuery';
 
 function mealsWeekKey(accessToken: string | undefined, weekStart: string) {
   return ['meals-week', accessToken, weekStart] as const;
@@ -41,7 +42,7 @@ function sortMeals(meals: MealPlanResponse[]) {
 export function useMealsWeek(weekStart: string) {
   const { session } = useAuthSession();
 
-  return useQuery({
+  return useOfflineQuery({
     queryKey: mealsWeekKey(session?.accessToken, weekStart),
     queryFn: () => fetchMealsWeek(session!.accessToken, weekStart),
     enabled: Boolean(session?.accessToken),
@@ -112,7 +113,7 @@ export function useCreateMealPlan(weekStart: string) {
 export function useMealRequests(weekStart: string) {
   const { session } = useAuthSession();
 
-  return useQuery({
+  return useOfflineQuery({
     queryKey: mealRequestsKey(session?.accessToken, weekStart),
     queryFn: () => fetchMealRequests(session!.accessToken, weekStart),
     enabled: Boolean(session?.accessToken),

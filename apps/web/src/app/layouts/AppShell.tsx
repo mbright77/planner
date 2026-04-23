@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 
 import { useAuthSession } from '../../processes/auth-session/AuthSessionContext';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
+import { useNetworkStatus } from '../../shared/lib/useNetworkStatus';
 
 const navigation = [
   { to: '/', label: 'Home' },
@@ -14,6 +15,7 @@ const navigation = [
 export function AppShell() {
   const { clearSession } = useAuthSession();
   const bootstrapQuery = useBootstrap();
+  const { isOnline } = useNetworkStatus();
 
   const familyName = bootstrapQuery.data?.familyName ?? 'Kinship';
   const membershipRole = bootstrapQuery.data?.membership.role ?? 'Member';
@@ -32,6 +34,11 @@ export function AppShell() {
       </header>
 
       <main className="app-content">
+        {!isOnline ? (
+          <div className="status-banner status-banner-offline">
+            Offline mode: showing cached planner data when available.
+          </div>
+        ) : null}
         {bootstrapQuery.isLoading ? <div className="status-banner">Loading family data...</div> : null}
         {bootstrapQuery.isError ? (
           <div className="status-banner status-banner-error">

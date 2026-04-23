@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import {
   type CalendarEventResponse,
@@ -10,6 +10,7 @@ import {
   type WeeklyCalendarResponse,
 } from '../../../shared/api/calendar';
 import { useAuthSession } from '../../../processes/auth-session/AuthSessionContext';
+import { useOfflineQuery } from '../../../shared/lib/useOfflineQuery';
 
 function calendarWeekKey(accessToken: string | undefined, weekStart: string) {
   return ['calendar-week', accessToken, weekStart] as const;
@@ -32,7 +33,7 @@ function sortEvents(events: CalendarEventResponse[]) {
 export function useCalendarWeek(weekStart: string) {
   const { session } = useAuthSession();
 
-  return useQuery({
+  return useOfflineQuery({
     queryKey: calendarWeekKey(session?.accessToken, weekStart),
     queryFn: () => fetchCalendarWeek(session!.accessToken, weekStart),
     enabled: Boolean(session?.accessToken),
