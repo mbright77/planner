@@ -26,6 +26,48 @@ function formatDateTimeLocal(value: Date) {
   return iso.slice(0, 16);
 }
 
+function formatMonthLabel(value: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
+    month: 'long',
+  });
+}
+
+function formatWeekdayShort(value: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
+    weekday: 'short',
+  });
+}
+
+function buildWeekDays(weekStart: string) {
+  const startDate = new Date(`${weekStart}T00:00:00.000Z`);
+
+  return Array.from({ length: 7 }, (_, index) => {
+    const current = new Date(startDate);
+    current.setUTCDate(startDate.getUTCDate() + index);
+
+    return {
+      key: formatDateOnly(current),
+      label: formatWeekdayShort(formatDateOnly(current)),
+      dayNumber: current.toLocaleDateString(undefined, { day: 'numeric', timeZone: 'UTC' }),
+    };
+  });
+}
+
+function formatAgendaHeading(value: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+function formatEventTime(startAtUtc: string, endAtUtc: string) {
+  const start = new Date(startAtUtc);
+  const end = new Date(endAtUtc);
+
+  return `${start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} - ${end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+}
+
 export function CalendarPage() {
   const initialStart = getWeekStart(new Date());
   const [weekStart, setWeekStart] = useState(formatDateOnly(initialStart));
@@ -42,6 +84,7 @@ export function CalendarPage() {
   const calendarWeekQuery = useCalendarWeek(weekStart);
   const createCalendarEventMutation = useCreateCalendarEvent(weekStart);
   const updateCalendarEventMutation = useUpdateCalendarEvent(weekStart);
+  const weekDays = useMemo(() => buildWeekDays(weekStart), [weekStart]);
 
   const groupedEvents = useMemo(() => {
     const events = calendarWeekQuery.data?.events ?? [];
@@ -107,14 +150,39 @@ export function CalendarPage() {
   }
 
   return (
-    <section className="page">
+    <section className="page calendar-page">
       <p className="eyebrow">Calendar</p>
       <h2 className="page-title">Weekly planner</h2>
       <p className="page-copy">
         Build out the shared family week and add events against the active planning window.
       </p>
 
-      <form className="calendar-form" onSubmit={handleCreate}>
+      <section className="calendar-header-panel">
+        <div className="calendar-header-row">
+          <h3 className="calendar-month-title">{formatMonthLabel(weekStart)}</h3>
+          <span className="calendar-today-badge">Today</span>
+        </div>
+
+        <div className="calendar-week-strip" aria-label="Week days">
+          {weekDays.map((day) => {
+            const isActive = day.key === weekStart;
+
+            return (
+              <button
+                key={day.key}
+                className={isActive ? 'calendar-week-pill calendar-week-pill-active' : 'calendar-week-pill'}
+                type="button"
+                onClick={() => setWeekStart(day.key)}
+              >
+                <span className="calendar-week-pill-label">{day.label}</span>
+                <span className="calendar-week-pill-number">{day.dayNumber}</span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <form className="calendar-form calendar-compose-card" onSubmit={handleCreate}>
         <label className="field calendar-field-wide">
           <span>Week start</span>
           <input value={weekStart} onChange={(event) => setWeekStart(event.target.value)} type="date" />
@@ -183,8 +251,8 @@ export function CalendarPage() {
       <div className="calendar-groups">
         {groupedEvents.map(([day, events]) => (
           <article key={day} className="calendar-day-card">
-            <div className="shopping-group-header">
-              <h3 className="profile-card-title">{day}</h3>
+            <div className="shopping-group-header calendar-day-header">
+              <h3 className="profile-card-title">{formatAgendaHeading(day)}</h3>
               <span className="profile-color-chip">{events?.length ?? 0} events</span>
             </div>
 
@@ -196,11 +264,14 @@ export function CalendarPage() {
 
                 return (
                   <li key={calendarEvent.id} className="calendar-event-item">
-                    <div>
-                      <strong>{calendarEvent.title}</strong>
+                    <div className="calendar-event-avatar" aria-hidden="true">
+                      {assignedProfile ? assignedProfile.displayName.slice(0, 1).toUpperCase() : 'A'}
+                    </div>
+
+                    <div className="calendar-event-content">
+                      <strong className="calendar-event-title">{calendarEvent.title}</strong>
                       <p className="calendar-event-time">
-                        {new Date(calendarEvent.startAtUtc).toLocaleString()} -{' '}
-                        {new Date(calendarEvent.endAtUtc).toLocaleTimeString()}
+                        {formatEventTime(calendarEvent.startAtUtc, calendarEvent.endAtUtc)}
                       </p>
                       {calendarEvent.isRecurring ? (
                         <p className="calendar-event-recurrence">
