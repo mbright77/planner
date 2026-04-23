@@ -8,6 +8,7 @@ import {
   type PropsWithChildren,
 } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { ApiError } from '@planner/api-client';
 
 import { useAuthSession } from '../../processes/auth-session/AuthSessionContext';
 import {
@@ -48,6 +49,9 @@ type OfflineMutation = {
   accessToken: string;
   createdAt: string;
   invalidateKeys: QueueInvalidationKey[];
+  replayStatus?: 'pending' | 'failed';
+  lastErrorMessage?: string | null;
+  lastErrorAt?: string | null;
 } & (
   | {
       kind: 'shopping.create';
@@ -91,7 +95,10 @@ type QueueableMutation = Omit<OfflineMutation, 'id' | 'createdAt'>;
 
 type OfflineMutationContextValue = {
   pendingCount: number;
+  failedCount: number;
   isFlushing: boolean;
+  hasBlockingFailure: boolean;
+  latestFailureMessage: string | null;
 };
 
 type OfflineMutationResult<T> =
@@ -108,12 +115,29 @@ function isOfflineError(error: unknown) {
   return error instanceof TypeError && !window.navigator.onLine;
 }
 
+function getReplayErrorMessage(error: unknown) {
+  if (error instanceof ApiError) {
+    return error.status === 409
+      ? 'An offline change conflicted with newer planner data and needs review.'
+      : 'An offline change could not be applied and needs review.';
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return 'An offline change could not be applied and needs review.';
+}
+
 export async function enqueueOfflineMutation(mutation: QueueableMutation) {
   const id = crypto.randomUUID();
   const queuedMutation: OfflineMutation = {
     ...mutation,
     id,
     createdAt: new Date().toISOString(),
+    replayStatus: 'pending',
+    lastErrorMessage: null,
+    lastErrorAt: null,
   } as OfflineMutation;
 
   await writeOfflineQueueStore(id, queuedMutation);
@@ -128,6 +152,11 @@ async function listQueuedMutations(accessToken: string | undefined) {
     .map((entry) => entry.value)
     .filter((mutation) => mutation.accessToken === accessToken)
     .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+}
+
+async function updateQueuedMutation(mutation: OfflineMutation) {
+  await writeOfflineQueueStore(mutation.id, mutation);
+  emitQueueChanged();
 }
 
 async function removeQueuedMutation(id: string) {
@@ -199,12 +228,18 @@ export function OfflineMutationProvider({ children }: PropsWithChildren) {
   const { isOnline } = useNetworkStatus();
   const queryClient = useQueryClient();
   const [pendingCount, setPendingCount] = useState(0);
+  const [failedCount, setFailedCount] = useState(0);
   const [isFlushing, setIsFlushing] = useState(false);
+  const [latestFailureMessage, setLatestFailureMessage] = useState<string | null>(null);
   const accessToken = session?.accessToken;
 
   const refreshQueueState = useCallback(async () => {
     const queue = await listQueuedMutations(accessToken);
-    setPendingCount(queue.length);
+    const failedMutations = queue.filter((mutation) => mutation.replayStatus === 'failed');
+
+    setPendingCount(queue.filter((mutation) => mutation.replayStatus !== 'failed').length);
+    setFailedCount(failedMutations.length);
+    setLatestFailureMessage(failedMutations.at(-1)?.lastErrorMessage ?? null);
   }, [accessToken]);
 
   useEffect(() => {
@@ -241,6 +276,10 @@ export function OfflineMutationProvider({ children }: PropsWithChildren) {
             return;
           }
 
+          if (mutation.replayStatus === 'failed') {
+            continue;
+          }
+
           try {
             await executeQueuedMutation(mutation);
             await removeQueuedMutation(mutation.id);
@@ -253,8 +292,13 @@ export function OfflineMutationProvider({ children }: PropsWithChildren) {
               break;
             }
 
+            await updateQueuedMutation({
+              ...mutation,
+              replayStatus: 'failed',
+              lastErrorAt: new Date().toISOString(),
+              lastErrorMessage: getReplayErrorMessage(error),
+            });
             console.error('Unable to flush offline planner mutation.', error);
-            break;
           }
         }
       } finally {
@@ -273,8 +317,14 @@ export function OfflineMutationProvider({ children }: PropsWithChildren) {
   }, [accessToken, isFlushing, isOnline, pendingCount, queryClient, refreshQueueState]);
 
   const value = useMemo(
-    () => ({ pendingCount, isFlushing }),
-    [isFlushing, pendingCount],
+    () => ({
+      pendingCount,
+      failedCount,
+      isFlushing,
+      hasBlockingFailure: failedCount > 0,
+      latestFailureMessage,
+    }),
+    [failedCount, isFlushing, latestFailureMessage, pendingCount],
   );
 
   return <OfflineMutationContext.Provider value={value}>{children}</OfflineMutationContext.Provider>;

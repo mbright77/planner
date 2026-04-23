@@ -2,6 +2,16 @@ import type { components, paths } from './generated';
 
 type HttpMethod = 'get' | 'post' | 'put';
 
+export class ApiError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 type Operation<Path extends keyof paths, Method extends HttpMethod> = NonNullable<paths[Path][Method]>;
 
 type RequestBody<Path extends keyof paths, Method extends HttpMethod> =
@@ -90,7 +100,7 @@ async function request<TResult, Path extends keyof paths, Method extends HttpMet
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(errorText || 'Request failed');
+    throw new ApiError(response.status, errorText || 'Request failed');
   }
 
   if (response.status === 204) {

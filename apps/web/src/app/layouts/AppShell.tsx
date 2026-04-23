@@ -16,7 +16,7 @@ const navigation = [
 export function AppShell() {
   const { clearSession } = useAuthSession();
   const bootstrapQuery = useBootstrap();
-  const { pendingCount, isFlushing } = useOfflineMutationState();
+  const { failedCount, hasBlockingFailure, latestFailureMessage, pendingCount, isFlushing } = useOfflineMutationState();
   const { isOnline } = useNetworkStatus();
 
   const familyName = bootstrapQuery.data?.familyName ?? 'Kinship';
@@ -49,6 +49,11 @@ export function AppShell() {
             {isFlushing
               ? `Syncing ${pendingCount} offline change${pendingCount === 1 ? '' : 's'}...`
               : `${pendingCount} offline change${pendingCount === 1 ? '' : 's'} waiting to sync.`}
+          </div>
+        ) : null}
+        {hasBlockingFailure ? (
+          <div className="status-banner status-banner-error" role="alert">
+            {latestFailureMessage ?? `Offline sync needs attention for ${failedCount} change${failedCount === 1 ? '' : 's'}.`}
           </div>
         ) : null}
         {bootstrapQuery.isLoading ? <div className="status-banner" role="status" aria-live="polite">Loading family data...</div> : null}
