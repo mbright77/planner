@@ -21,6 +21,8 @@ public sealed class Family
     public ICollection<Profile> Profiles { get; set; } = new List<Profile>();
 
     public ICollection<FamilyMembership> Memberships { get; set; } = new List<FamilyMembership>();
+
+    public ICollection<ShoppingItem> ShoppingItems { get; set; } = new List<ShoppingItem>();
 }
 
 public sealed class Profile
@@ -51,4 +53,27 @@ public sealed class FamilyMembership
     public DateTimeOffset CreatedAtUtc { get; set; }
 
     public Family Family { get; set; } = null!;
+}
+
+public sealed class ShoppingItem
+{
+    public Guid Id { get; set; }
+
+    public Guid FamilyId { get; set; }
+
+    public string Label { get; set; } = string.Empty;
+
+    public string Category { get; set; } = string.Empty;
+
+    public bool IsCompleted { get; set; }
+
+    public DateTimeOffset CreatedAtUtc { get; set; }
+
+    public DateTimeOffset? CompletedAtUtc { get; set; }
+
+    public Guid? AddedByProfileId { get; set; }
+
+    public Family Family { get; set; } = null!;
+
+    public Profile? AddedByProfile { get; set; }
 }

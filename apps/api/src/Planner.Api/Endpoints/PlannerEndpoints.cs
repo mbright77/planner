@@ -11,6 +11,7 @@ public static class PlannerEndpoints
         app.MapAuthEndpoints();
         app.MapBootstrapEndpoints();
         app.MapProfileEndpoints();
+        app.MapShoppingEndpoints();
 
         if (app.ServiceProvider.GetRequiredService<IHostEnvironment>().IsDevelopment())
         {

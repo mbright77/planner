@@ -14,6 +14,8 @@ public sealed class PlannerDbContext(DbContextOptions<PlannerDbContext> options)
 
     public DbSet<Profile> Profiles => Set<Profile>();
 
+    public DbSet<ShoppingItem> ShoppingItems => Set<ShoppingItem>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

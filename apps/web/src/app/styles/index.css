@@ -210,6 +210,12 @@ select {
   margin-top: 1.5rem;
 }
 
+.shopping-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
 .field {
   display: grid;
   gap: 0.4rem;
@@ -271,6 +277,69 @@ select {
   margin-top: 1.5rem;
 }
 
+.shopping-groups {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.shopping-group-card {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface-subtle);
+}
+
+.shopping-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.shopping-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
+.shopping-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid rgba(217, 226, 239, 0.75);
+}
+
+.shopping-list-item:first-child {
+  border-top: 0;
+}
+
+.shopping-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.shopping-item-label {
+  font-weight: 600;
+}
+
+.shopping-item-label-complete {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.shopping-meta {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.shopping-field-wide {
+  grid-column: 1 / -1;
+}
+
 .profile-card {
   padding: 1rem;
   border: 1px solid var(--border);
@@ -328,6 +397,12 @@ select {
 }
 
 @media (min-width: 900px) {
+  .shopping-form,
+  .profile-form {
+    grid-template-columns: 2fr 1fr 1fr auto;
+    align-items: end;
+  }
+
   .bottom-nav {
     position: static;
     max-width: 72rem;

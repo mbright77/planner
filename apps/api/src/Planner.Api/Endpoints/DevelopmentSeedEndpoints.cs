@@ -78,6 +78,36 @@ public static class DevelopmentSeedEndpoints
                 IsActive = true,
             });
 
+        dbContext.ShoppingItems.AddRange(
+            new ShoppingItem
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = family.Id,
+                Label = "Milk",
+                Category = "Dairy",
+                CreatedAtUtc = now,
+                IsCompleted = false,
+            },
+            new ShoppingItem
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = family.Id,
+                Label = "Bananas",
+                Category = "Produce",
+                CreatedAtUtc = now,
+                IsCompleted = false,
+            },
+            new ShoppingItem
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = family.Id,
+                Label = "Paper Towels",
+                Category = "Household",
+                CreatedAtUtc = now,
+                IsCompleted = true,
+                CompletedAtUtc = now,
+            });
+
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return Results.Ok(new { email, password, seeded = true });
