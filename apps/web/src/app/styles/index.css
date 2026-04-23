@@ -457,12 +457,37 @@ select {
   margin-top: 1.5rem;
 }
 
-.shopping-group-card {
+.shopping-page {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+}
+
+.shopping-quick-add-card {
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: 1.25rem;
   background: var(--surface);
   box-shadow: var(--shadow);
+}
+
+.shopping-group-card {
+  position: relative;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.shopping-group-card::after {
+  content: '';
+  position: absolute;
+  top: -2rem;
+  right: -2rem;
+  width: 7rem;
+  height: 7rem;
+  border-radius: 999px;
+  background: rgba(93, 169, 233, 0.08);
 }
 
 .shopping-group-header {
@@ -472,10 +497,25 @@ select {
   gap: 1rem;
 }
 
+.shopping-group-header-decorated {
+  position: relative;
+  z-index: 1;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.shopping-group-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .shopping-list {
   list-style: none;
   padding: 0;
   margin: 1rem 0 0;
+  position: relative;
+  z-index: 1;
 }
 
 .shopping-list-item {
@@ -497,7 +537,14 @@ select {
   gap: 0.75rem;
 }
 
+.shopping-checkbox-row input {
+  width: 1.4rem;
+  height: 1.4rem;
+  accent-color: var(--primary-strong);
+}
+
 .shopping-item-label {
+  display: inline-block;
   font-weight: 600;
 }
 
@@ -509,6 +556,19 @@ select {
 .shopping-meta {
   color: var(--text-muted);
   font-size: 0.9rem;
+}
+
+.shopping-owner-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(93, 169, 233, 0.12);
+  color: var(--primary-strong);
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .shopping-field-wide {

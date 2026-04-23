@@ -49,20 +49,20 @@ export function ShoppingPage() {
   }
 
   return (
-    <section className="page">
+    <section className="page shopping-page">
       <p className="eyebrow">Shopping</p>
       <h2 className="page-title">Shared list</h2>
       <p className="page-copy">
         Quickly add items, group them by category, and mark them complete during the shop.
       </p>
 
-      <form className="shopping-form" onSubmit={handleSubmit}>
+      <form className="shopping-form shopping-quick-add-card" onSubmit={handleSubmit}>
         <label className="field shopping-field-wide">
-          <span>Item</span>
+          <span>Quick add</span>
           <input
             value={label}
             onChange={(event) => setLabel(event.target.value)}
-            placeholder="Add an item"
+            placeholder="Add item (e.g., Milk)"
             type="text"
           />
         </label>
@@ -101,8 +101,8 @@ export function ShoppingPage() {
       <div className="shopping-groups">
         {groupedItems.map(([group, items]) => (
           <article key={group} className="shopping-group-card">
-            <div className="shopping-group-header">
-              <h3 className="profile-card-title">{group}</h3>
+            <div className="shopping-group-header shopping-group-header-decorated">
+              <h3 className="profile-card-title shopping-group-title">{group}</h3>
               <span className="profile-color-chip">{items?.length ?? 0} items</span>
             </div>
 
@@ -128,7 +128,7 @@ export function ShoppingPage() {
                       </span>
                     </label>
 
-                    {addedBy ? <span className="shopping-meta">{addedBy.displayName}</span> : null}
+                    {addedBy ? <span className="shopping-owner-chip">{addedBy.displayName}</span> : null}
                   </li>
                 );
               })}
