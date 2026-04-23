@@ -59,7 +59,7 @@ namespace Planner.Infrastructure.Persistence.Migrations
                 table: "calendar_events",
                 columns: new[] { "SeriesId", "StartAtUtc" },
                 unique: true,
-                filter: "series_id IS NOT NULL");
+                filter: "\"SeriesId\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_calendar_event_series_AssignedProfileId",
