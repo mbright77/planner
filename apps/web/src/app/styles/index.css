@@ -587,6 +587,19 @@ select {
   word-break: break-all;
 }
 
+.privacy-card {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface-subtle);
+}
+
+.destructive-button {
+  border-color: #d35d6e;
+  color: #89233d;
+}
+
 .dashboard-page {
   display: grid;
   gap: 1.5rem;

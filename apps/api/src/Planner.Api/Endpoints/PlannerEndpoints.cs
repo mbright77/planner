@@ -12,6 +12,7 @@ public static class PlannerEndpoints
         app.MapBootstrapEndpoints();
         app.MapDashboardEndpoints();
         app.MapInviteEndpoints();
+        app.MapPrivacyEndpoints();
         app.MapProfileEndpoints();
         app.MapShoppingEndpoints();
         app.MapCalendarEndpoints();

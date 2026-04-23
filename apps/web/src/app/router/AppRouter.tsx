@@ -8,6 +8,7 @@ import { HomePage } from '../../pages/home/HomePage';
 import { InvitePage } from '../../pages/invite/InvitePage';
 import { LoginPage } from '../../pages/login/LoginPage';
 import { MealsPage } from '../../pages/meals/MealsPage';
+import { PrivacyPage } from '../../pages/privacy/PrivacyPage';
 import { ShoppingPage } from '../../pages/shopping/ShoppingPage';
 
 export function AppRouter() {
@@ -22,6 +23,7 @@ export function AppRouter() {
           <Route path="/meals" element={<MealsPage />} />
           <Route path="/shopping" element={<ShoppingPage />} />
           <Route path="/family" element={<FamilyPage />} />
+          <Route path="/settings/privacy" element={<PrivacyPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

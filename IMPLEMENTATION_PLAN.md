@@ -196,7 +196,7 @@ Current committed state:
 
 - Shared app shell, protected routing, and bottom navigation are implemented
 - Search-param driven sheet routing is not implemented yet
-- Current committed routes are `/login`, `/invite/:token`, `/`, `/calendar`, `/meals`, `/shopping`, and `/family`
+- Current committed routes are `/login`, `/invite/:token`, `/`, `/calendar`, `/meals`, `/shopping`, `/family`, and `/settings/privacy`
 
 ### Feature-Sliced Architecture
 
@@ -440,8 +440,7 @@ Current committed state:
 
 Current committed state:
 
-- Implemented groups include `/api/v1/auth`, `/api/v1/me`, `/api/v1/profiles`, `/api/v1/shopping`, `/api/v1/calendar`, and `/api/v1/meals`
-- Implemented groups include `/api/v1/auth`, `/api/v1/me`, `/api/v1/profiles`, `/api/v1/shopping`, `/api/v1/calendar`, `/api/v1/meals`, `/api/v1/family-invites`, and `/api/v1/invites`
+- Implemented groups include `/api/v1/auth`, `/api/v1/me`, `/api/v1/profiles`, `/api/v1/shopping`, `/api/v1/calendar`, `/api/v1/meals`, `/api/v1/family-invites`, `/api/v1/invites`, and `/api/v1/privacy`
 - The current API does not pass `familyId` in routes; handlers derive family scope from the authenticated membership
 - Dashboard endpoints are implemented
 - Consent, families, and shopping category endpoints are not implemented yet
@@ -1075,7 +1074,9 @@ Examples of essential cookies:
 
 Current committed state:
 
-- None of the consent implementation pieces are committed yet
+- No consent banner, consent persistence, or legal pages are committed yet
+- A protected privacy page now supports password-confirmed account deletion and admin-only family deletion
+- Destructive deletion currently runs inline in API handlers rather than through background jobs or audited GDPR workflows
 
 ---
 
@@ -1168,7 +1169,7 @@ Still intentionally incomplete in Phase 2:
 - [x] Add offline mutation queue for selected flows
 - [x] Add recurring event support with materialization jobs
 - [x] Add invite flows for additional users
-- [ ] Add deletion and privacy workflows
+- [x] Add deletion and privacy workflows
 - [ ] Expand accessibility testing and polish
 - [ ] Evaluate whether lightweight polling is needed on collaborative screens
 
@@ -1181,6 +1182,8 @@ Completed in current implementation pass:
 - The calendar page exposes weekly repeat creation and future-series update behavior for recurring events
 - Family admins can now create email-based invite links and review invite status from the Family page
 - The `/invite/:token` route now supports invite acceptance into an existing family with account creation and immediate sign-in
+- The protected `/settings/privacy` page now supports password-confirmed account deletion and admin-only family deletion flows
+- The API exposes `/api/v1/privacy/account/delete` and `/api/v1/privacy/family/delete`, with baseline API tests covering both destructive paths
 
 ### Phase 4: Optimization
 

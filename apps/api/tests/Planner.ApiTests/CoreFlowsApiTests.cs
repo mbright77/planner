@@ -6,6 +6,7 @@ using Planner.Contracts.Bootstrap;
 using Planner.Contracts.Calendar;
 using Planner.Contracts.Dashboard;
 using Planner.Contracts.Meals;
+using Planner.Contracts.Privacy;
 using Planner.Contracts.Profiles;
 using Planner.Contracts.Invites;
 using Planner.Contracts.Shopping;
@@ -214,6 +215,55 @@ public sealed class CoreFlowsApiTests(ApiTestFactory factory) : IClassFixture<Ap
         var acceptedInvite = await client.GetFromJsonAsync<FamilyInviteDetailsResponse>($"/api/v1/invites/{invite.Token}");
         Assert.NotNull(acceptedInvite);
         Assert.True(acceptedInvite.IsAccepted);
+    }
+
+    [Fact]
+    public async Task User_can_delete_account_when_family_still_has_another_member()
+    {
+        await factory.ResetDatabaseAsync();
+        using var client = factory.CreateClient();
+
+        var authResponse = await RegisterAsync(client);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse.AccessToken);
+
+        var createInviteResponse = await client.PostAsJsonAsync(
+            "/api/v1/family-invites",
+            new CreateFamilyInviteRequest("adult@example.com"));
+        Assert.Equal(HttpStatusCode.Created, createInviteResponse.StatusCode);
+
+        var invite = await createInviteResponse.Content.ReadFromJsonAsync<FamilyInviteResponse>();
+        Assert.NotNull(invite);
+
+        var acceptResponse = await client.PostAsJsonAsync(
+            $"/api/v1/invites/{invite.Token}/accept",
+            new AcceptFamilyInviteRequest("adult@example.com", "Planner123!", "Taylor", "blue"));
+        Assert.Equal(HttpStatusCode.OK, acceptResponse.StatusCode);
+
+        var deleteResponse = await client.PostAsJsonAsync(
+            "/api/v1/privacy/account/delete",
+            new DeleteAccountRequest("Planner123!"));
+        Assert.Equal(HttpStatusCode.OK, deleteResponse.StatusCode);
+
+        var bootstrapResponse = await client.GetAsync("/api/v1/me/bootstrap");
+        Assert.Equal(HttpStatusCode.NotFound, bootstrapResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task Admin_can_delete_family_after_password_confirmation()
+    {
+        await factory.ResetDatabaseAsync();
+        using var client = factory.CreateClient();
+
+        var authResponse = await RegisterAsync(client);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse.AccessToken);
+
+        var deleteResponse = await client.PostAsJsonAsync(
+            "/api/v1/privacy/family/delete",
+            new DeleteFamilyRequest("Planner123!"));
+        Assert.Equal(HttpStatusCode.OK, deleteResponse.StatusCode);
+
+        var bootstrapResponse = await client.GetAsync("/api/v1/me/bootstrap");
+        Assert.Equal(HttpStatusCode.NotFound, bootstrapResponse.StatusCode);
     }
 
     private static async Task<AuthResponse> RegisterAsync(HttpClient client)

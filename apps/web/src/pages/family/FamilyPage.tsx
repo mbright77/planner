@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { useCreateFamilyInvite, useFamilyInvites } from '../../entities/invite/model/useFamilyInvites';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
@@ -67,6 +68,9 @@ export function FamilyPage() {
       <h2 className="page-title">Profiles and colors</h2>
       <p className="page-copy">
         Manage the family members used across the planner and keep their color keys consistent.
+      </p>
+      <p className="page-copy">
+        <Link to="/settings/privacy">Review deletion and privacy options</Link>
       </p>
 
       <form className="profile-form" onSubmit={handleCreate}>

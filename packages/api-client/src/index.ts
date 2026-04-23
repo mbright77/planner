@@ -109,6 +109,8 @@ export type FamilyInviteResponse = components['schemas']['FamilyInviteResponse']
 export type FamilyInviteDetailsResponse = components['schemas']['FamilyInviteDetailsResponse'];
 export type CreateFamilyInviteRequest = components['schemas']['CreateFamilyInviteRequest'];
 export type AcceptFamilyInviteRequest = components['schemas']['AcceptFamilyInviteRequest'];
+export type DeleteAccountRequest = components['schemas']['DeleteAccountRequest'];
+export type DeleteFamilyRequest = components['schemas']['DeleteFamilyRequest'];
 export type ProfileResponse = components['schemas']['ProfileResponse'];
 export type CreateProfileRequest = components['schemas']['CreateProfileRequest'];
 export type UpdateProfileRequest = components['schemas']['UpdateProfileRequest'];
@@ -176,6 +178,20 @@ export function acceptFamilyInvite(client: ClientOptions, token: string, body: A
     ...client,
     body,
     pathParams: { token },
+  });
+}
+
+export function deleteAccount(client: ClientOptions, body: DeleteAccountRequest) {
+  return request<unknown, '/api/v1/privacy/account/delete', 'post'>('/api/v1/privacy/account/delete', 'post', {
+    ...client,
+    body,
+  });
+}
+
+export function deleteFamily(client: ClientOptions, body: DeleteFamilyRequest) {
+  return request<unknown, '/api/v1/privacy/family/delete', 'post'>('/api/v1/privacy/family/delete', 'post', {
+    ...client,
+    body,
   });
 }
 
