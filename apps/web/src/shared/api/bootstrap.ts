@@ -1,31 +1,18 @@
-import { http } from './http';
+import {
+  getBootstrap,
+  seedDevelopmentUser as seedDevelopmentUserRequest,
+  type BootstrapResponse,
+  type DevelopmentSeedResponse,
+} from '@planner/api-client';
 
-export type BootstrapResponse = {
-  familyId: string;
-  familyName: string;
-  timezone: string;
-  profiles: Array<{
-    id: string;
-    displayName: string;
-    colorKey: string;
-    isActive: boolean;
-  }>;
-  membership: {
-    userId: string;
-    email: string;
-    role: string;
-  };
-};
+import { env } from '../config/env';
+
+export type { BootstrapResponse };
 
 export async function fetchBootstrap(accessToken: string) {
-  return http<BootstrapResponse>('/api/v1/me/bootstrap', {
-    method: 'GET',
-    accessToken,
-  });
+  return getBootstrap({ baseUrl: env.apiBaseUrl, accessToken });
 }
 
-export async function seedDevelopmentUser() {
-  return http<{ email: string; password: string; seeded: boolean }>('/api/v1/dev/seed', {
-    method: 'POST',
-  });
+export async function seedDevelopmentUser(): Promise<DevelopmentSeedResponse> {
+  return seedDevelopmentUserRequest({ baseUrl: env.apiBaseUrl });
 }

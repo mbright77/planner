@@ -13,9 +13,12 @@ public static class ShoppingEndpoints
         var shopping = app.MapGroup("/api/v1/shopping")
             .RequireAuthorization();
 
-        shopping.MapGet(string.Empty, GetShoppingItemsAsync);
-        shopping.MapPost(string.Empty, CreateShoppingItemAsync);
-        shopping.MapPut("/{itemId:guid}", UpdateShoppingItemAsync);
+        shopping.MapGet(string.Empty, GetShoppingItemsAsync)
+            .Produces<IReadOnlyList<ShoppingItemResponse>>(StatusCodes.Status200OK);
+        shopping.MapPost(string.Empty, CreateShoppingItemAsync)
+            .Produces<ShoppingItemResponse>(StatusCodes.Status201Created);
+        shopping.MapPut("/{itemId:guid}", UpdateShoppingItemAsync)
+            .Produces<ShoppingItemResponse>(StatusCodes.Status200OK);
 
         return app;
     }

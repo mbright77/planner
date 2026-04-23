@@ -13,7 +13,8 @@ public static class DashboardEndpoints
         var dashboard = app.MapGroup("/api/v1/dashboard")
             .RequireAuthorization();
 
-        dashboard.MapGet("/overview", GetOverviewAsync);
+        dashboard.MapGet("/overview", GetOverviewAsync)
+            .Produces<DashboardOverviewResponse>(StatusCodes.Status200OK);
 
         return app;
     }

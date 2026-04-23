@@ -1,34 +1,19 @@
-import { http } from './http';
+import {
+  login as loginRequest,
+  register as registerRequest,
+  type AuthResponse,
+  type LoginRequest,
+  type RegisterRequest,
+} from '@planner/api-client';
 
-export type AuthResponse = {
-  accessToken: string;
-  expiresAtUtc: string;
-};
+import { env } from '../config/env';
 
-export type RegisterRequest = {
-  email: string;
-  password: string;
-  familyName: string;
-  displayName: string;
-  timezone: string;
-  colorKey: string;
-};
-
-export type LoginRequest = {
-  email: string;
-  password: string;
-};
+export type { AuthResponse, LoginRequest, RegisterRequest };
 
 export async function register(request: RegisterRequest) {
-  return http<AuthResponse>('/api/v1/auth/register', {
-    method: 'POST',
-    body: JSON.stringify(request),
-  });
+  return registerRequest({ baseUrl: env.apiBaseUrl }, request);
 }
 
 export async function login(request: LoginRequest) {
-  return http<AuthResponse>('/api/v1/auth/login', {
-    method: 'POST',
-    body: JSON.stringify(request),
-  });
+  return loginRequest({ baseUrl: env.apiBaseUrl }, request);
 }

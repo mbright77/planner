@@ -1,36 +1,22 @@
-import { http } from './http';
+import {
+  createProfile as createProfileRequest,
+  getProfiles,
+  updateProfile as updateProfileRequest,
+  type CreateProfileRequest,
+  type ProfileResponse,
+  type UpdateProfileRequest,
+} from '@planner/api-client';
 
-export type ProfileResponse = {
-  id: string;
-  displayName: string;
-  colorKey: string;
-  isActive: boolean;
-};
+import { env } from '../config/env';
 
-export type CreateProfileRequest = {
-  displayName: string;
-  colorKey: string;
-};
-
-export type UpdateProfileRequest = {
-  displayName: string;
-  colorKey: string;
-  isActive: boolean;
-};
+export type { CreateProfileRequest, ProfileResponse, UpdateProfileRequest };
 
 export async function fetchProfiles(accessToken: string) {
-  return http<ProfileResponse[]>('/api/v1/profiles', {
-    method: 'GET',
-    accessToken,
-  });
+  return getProfiles({ baseUrl: env.apiBaseUrl, accessToken });
 }
 
 export async function createProfile(accessToken: string, request: CreateProfileRequest) {
-  return http<ProfileResponse>('/api/v1/profiles', {
-    method: 'POST',
-    accessToken,
-    body: JSON.stringify(request),
-  });
+  return createProfileRequest({ baseUrl: env.apiBaseUrl, accessToken }, request);
 }
 
 export async function updateProfile(
@@ -38,9 +24,5 @@ export async function updateProfile(
   profileId: string,
   request: UpdateProfileRequest,
 ) {
-  return http<ProfileResponse>(`/api/v1/profiles/${profileId}`, {
-    method: 'PUT',
-    accessToken,
-    body: JSON.stringify(request),
-  });
+  return updateProfileRequest({ baseUrl: env.apiBaseUrl, accessToken }, profileId, request);
 }

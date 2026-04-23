@@ -13,13 +13,20 @@ public static class MealEndpoints
         var meals = app.MapGroup("/api/v1/meals")
             .RequireAuthorization();
 
-        meals.MapGet("/week", GetWeekAsync);
-        meals.MapPost(string.Empty, CreateMealAsync);
-        meals.MapPut("/{mealId:guid}", UpdateMealAsync);
-        meals.MapGet("/requests", GetRequestsAsync);
-        meals.MapPost("/requests", CreateRequestAsync);
-        meals.MapPut("/requests/{requestId:guid}/assign", AssignRequestAsync);
-        meals.MapPost("/requests/{requestId:guid}/accept", AcceptRequestAsync);
+        meals.MapGet("/week", GetWeekAsync)
+            .Produces<WeeklyMealsResponse>(StatusCodes.Status200OK);
+        meals.MapPost(string.Empty, CreateMealAsync)
+            .Produces<MealPlanResponse>(StatusCodes.Status201Created);
+        meals.MapPut("/{mealId:guid}", UpdateMealAsync)
+            .Produces<MealPlanResponse>(StatusCodes.Status200OK);
+        meals.MapGet("/requests", GetRequestsAsync)
+            .Produces<IReadOnlyList<MealRequestResponse>>(StatusCodes.Status200OK);
+        meals.MapPost("/requests", CreateRequestAsync)
+            .Produces<MealRequestResponse>(StatusCodes.Status201Created);
+        meals.MapPut("/requests/{requestId:guid}/assign", AssignRequestAsync)
+            .Produces<MealRequestResponse>(StatusCodes.Status200OK);
+        meals.MapPost("/requests/{requestId:guid}/accept", AcceptRequestAsync)
+            .Produces<MealRequestResponse>(StatusCodes.Status200OK);
 
         return app;
     }

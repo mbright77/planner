@@ -14,7 +14,8 @@ public static class BootstrapEndpoints
         var me = app.MapGroup("/api/v1/me")
             .RequireAuthorization();
 
-        me.MapGet("/bootstrap", GetBootstrapAsync);
+        me.MapGet("/bootstrap", GetBootstrapAsync)
+            .Produces<BootstrapResponse>(StatusCodes.Status200OK);
 
         return app;
     }

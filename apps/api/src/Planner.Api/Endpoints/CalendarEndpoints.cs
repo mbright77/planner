@@ -13,9 +13,12 @@ public static class CalendarEndpoints
         var calendar = app.MapGroup("/api/v1/calendar")
             .RequireAuthorization();
 
-        calendar.MapGet("/week", GetWeekAsync);
-        calendar.MapPost(string.Empty, CreateEventAsync);
-        calendar.MapPut("/{eventId:guid}", UpdateEventAsync);
+        calendar.MapGet("/week", GetWeekAsync)
+            .Produces<WeeklyCalendarResponse>(StatusCodes.Status200OK);
+        calendar.MapPost(string.Empty, CreateEventAsync)
+            .Produces<CalendarEventResponse>(StatusCodes.Status201Created);
+        calendar.MapPut("/{eventId:guid}", UpdateEventAsync)
+            .Produces<CalendarEventResponse>(StatusCodes.Status200OK);
 
         return app;
     }

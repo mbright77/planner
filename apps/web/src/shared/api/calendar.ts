@@ -1,43 +1,28 @@
-import { http } from './http';
+import {
+  createCalendarEvent as createCalendarEventRequest,
+  getCalendarWeek,
+  updateCalendarEvent as updateCalendarEventRequest,
+  type CalendarEventResponse,
+  type CreateCalendarEventRequest,
+  type UpdateCalendarEventRequest,
+  type WeeklyCalendarResponse,
+} from '@planner/api-client';
 
-export type CalendarEventResponse = {
-  id: string;
-  title: string;
-  notes: string | null;
-  startAtUtc: string;
-  endAtUtc: string;
-  assignedProfileId: string | null;
+import { env } from '../config/env';
+
+export type {
+  CalendarEventResponse,
+  CreateCalendarEventRequest,
+  UpdateCalendarEventRequest,
+  WeeklyCalendarResponse,
 };
-
-export type WeeklyCalendarResponse = {
-  weekStart: string;
-  weekEnd: string;
-  events: CalendarEventResponse[];
-};
-
-export type CreateCalendarEventRequest = {
-  title: string;
-  notes: string | null;
-  startAtUtc: string;
-  endAtUtc: string;
-  assignedProfileId: string | null;
-};
-
-export type UpdateCalendarEventRequest = CreateCalendarEventRequest;
 
 export async function fetchCalendarWeek(accessToken: string, weekStart: string) {
-  return http<WeeklyCalendarResponse>(`/api/v1/calendar/week?start=${weekStart}`, {
-    method: 'GET',
-    accessToken,
-  });
+  return getCalendarWeek({ baseUrl: env.apiBaseUrl, accessToken }, weekStart);
 }
 
 export async function createCalendarEvent(accessToken: string, request: CreateCalendarEventRequest) {
-  return http<CalendarEventResponse>('/api/v1/calendar', {
-    method: 'POST',
-    accessToken,
-    body: JSON.stringify(request),
-  });
+  return createCalendarEventRequest({ baseUrl: env.apiBaseUrl, accessToken }, request);
 }
 
 export async function updateCalendarEvent(
@@ -45,9 +30,5 @@ export async function updateCalendarEvent(
   eventId: string,
   request: UpdateCalendarEventRequest,
 ) {
-  return http<CalendarEventResponse>(`/api/v1/calendar/${eventId}`, {
-    method: 'PUT',
-    accessToken,
-    body: JSON.stringify(request),
-  });
+  return updateCalendarEventRequest({ baseUrl: env.apiBaseUrl, accessToken }, eventId, request);
 }

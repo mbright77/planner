@@ -1136,8 +1136,8 @@ Still intentionally incomplete in Phase 1:
 - [x] Build meal request flow
 - [x] Build shopping list quick add and toggle flows
 - [x] Build dashboard aggregation endpoint and page
-- [ ] Implement optimistic updates for core interactions
-- [ ] Generate typed API client from OpenAPI
+- [x] Implement optimistic updates for core interactions
+- [x] Generate typed API client from OpenAPI
 - [x] Add baseline test coverage for all core flows
 
 Completed in current implementation pass:
@@ -1148,11 +1148,11 @@ Completed in current implementation pass:
 - Shopping list read, quick add, and toggle flows are implemented
 - Home dashboard overview endpoint and page are implemented with weekly snapshot, today's plan, dinner tonight, shopping summary, and upcoming event cards
 - Baseline API tests now cover register/bootstrap, dashboard aggregation, and meal request acceptance flow against an in-memory test host
+- Core query hooks now apply optimistic cache updates for profile, shopping, calendar, meal, and meal request mutations
+- A generated TypeScript API client now lives in `packages/api-client` and the web app wrappers consume it
 
 Still intentionally incomplete in Phase 2:
 
-- Query hooks currently rely on invalidation and refetch, not optimistic updates
-- OpenAPI is exposed in development, but no generated TypeScript client is committed yet
 - Test coverage is now baseline rather than placeholder-only, but it is still narrow and should expand with each feature slice
 
 ### Phase 3: Enhancements

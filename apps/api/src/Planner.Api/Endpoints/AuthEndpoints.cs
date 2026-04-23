@@ -14,8 +14,10 @@ public static class AuthEndpoints
     {
         var auth = app.MapGroup("/api/v1/auth");
 
-        auth.MapPost("/register", RegisterAsync);
-        auth.MapPost("/login", LoginAsync);
+        auth.MapPost("/register", RegisterAsync)
+            .Produces<AuthResponse>(StatusCodes.Status200OK);
+        auth.MapPost("/login", LoginAsync)
+            .Produces<AuthResponse>(StatusCodes.Status200OK);
 
         return app;
     }

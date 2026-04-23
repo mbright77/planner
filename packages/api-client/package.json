@@ -7,9 +7,14 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "generate": "node ./scripts/generate.mjs",
     "lint": "eslint src --ext .ts",
     "format": "prettier --check .",
     "test": "node -e \"process.exit(0)\"",
     "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.10.1",
+    "typescript": "~6.0.2"
   }
 }

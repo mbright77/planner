@@ -26,7 +26,7 @@ Current implementation realities:
 - Frontend forms currently use local `useState`, not React Hook Form + Zod.
 - Auth session is currently stored in `localStorage` under `planner.session`, not in-memory access token plus refresh-cookie flow.
 - Backend uses feature-grouped minimal API endpoint files directly; `Planner.Application` is mostly a placeholder right now.
-- Contracts are handwritten in `apps/api/src/Planner.Contracts`; there is no generated TypeScript API client yet.
+- Contracts are still handwritten in `apps/api/src/Planner.Contracts`, but a generated TypeScript API client now exists in `packages/api-client` and is consumed by the web wrappers.
 
 When adding new work, follow the current implementation patterns unless the task explicitly asks for a broader architectural migration.
 
@@ -317,7 +317,7 @@ Be aware of these before making changes:
 - `Planner.Application` exists but does not yet contain real vertical-slice handlers.
 - `Planner.Domain/AssemblyMarker.cs` is carrying all entities, which is not ideal but is current convention.
 - Error payloads are not standardized yet.
-- The login page and home dashboard are still placeholders relative to the implementation plan.
+- The login page is still a placeholder relative to the implementation plan.
 - The roadmap mentions generated API clients, offline queueing, refresh cookies, and Tailwind, but those are not current implementation patterns.
 
 Do not “fix” these as incidental cleanup unless the task is explicitly about them.

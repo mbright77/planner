@@ -14,9 +14,12 @@ public static class ProfileEndpoints
         var profiles = app.MapGroup("/api/v1/profiles")
             .RequireAuthorization();
 
-        profiles.MapGet(string.Empty, GetProfilesAsync);
-        profiles.MapPost(string.Empty, CreateProfileAsync);
-        profiles.MapPut("/{profileId:guid}", UpdateProfileAsync);
+        profiles.MapGet(string.Empty, GetProfilesAsync)
+            .Produces<IReadOnlyList<ProfileResponse>>(StatusCodes.Status200OK);
+        profiles.MapPost(string.Empty, CreateProfileAsync)
+            .Produces<ProfileResponse>(StatusCodes.Status201Created);
+        profiles.MapPut("/{profileId:guid}", UpdateProfileAsync)
+            .Produces<ProfileResponse>(StatusCodes.Status200OK);
 
         return app;
     }
