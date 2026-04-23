@@ -1191,6 +1191,7 @@ Completed in current implementation pass:
 - Offline replay failures now stay in the local queue with explicit failed status and trigger an app-shell alert so conflicting offline changes are visible instead of silently stalling in the console
 - Query-plan review on an isolated local Postgres instance showed the shopping list endpoint still sorting after the family filter, so the shopping index now includes `Label` to match the live `(family, is_completed, category, label)` ordering
 - The API now applies fixed-window rate limiting with a stricter auth bucket and basic security response headers including CSP, frame denial, referrer policy, and content-type sniffing protection
+- `infra/scripts` and `docs/runbooks` now include explicit migration, deploy, and rollback procedures, including a rollout helper that automatically undoes failed API deployments and a migration wrapper that requires an explicit connection string
 
 ### Phase 4: Optimization
 
@@ -1198,7 +1199,7 @@ Completed in current implementation pass:
 - [x] Improve offline conflict handling
 - [x] Tune database indexes using real query plans
 - [x] Tighten rate limits and security headers
-- [ ] Strengthen deploy rollback and migration safety
+- [x] Strengthen deploy rollback and migration safety
 - [ ] Finalize production release checklist
 
 ---
