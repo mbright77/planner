@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Threading.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Planner.Application;
 using Planner.Infrastructure;
@@ -9,10 +10,51 @@ namespace Planner.Api.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddApi(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddApi(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         services.AddOpenApi();
         services.AddAuthorization();
+        if (!environment.IsEnvironment("Testing"))
+        {
+            services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+                options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+                {
+                    var path = httpContext.Request.Path.Value ?? string.Empty;
+
+                    if (path.StartsWith("/api/v1/auth", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var authPartition = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+                        return RateLimitPartition.GetFixedWindowLimiter(
+                            $"auth:{authPartition}",
+                            _ => new FixedWindowRateLimiterOptions
+                            {
+                                PermitLimit = 5,
+                                Window = TimeSpan.FromMinutes(1),
+                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                                QueueLimit = 0,
+                            });
+                    }
+
+                    var apiPartition = httpContext.User.Identity?.IsAuthenticated == true
+                        ? httpContext.User.Identity.Name ?? httpContext.User.FindFirst("sub")?.Value ?? "authenticated"
+                        : httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                        $"api:{apiPartition}",
+                        _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 300,
+                            Window = TimeSpan.FromMinutes(1),
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            QueueLimit = 0,
+                        });
+                });
+            });
+        }
 
         services.AddOptions<JwtOptions>()
             .BindConfiguration(JwtOptions.SectionName)

@@ -1190,13 +1190,14 @@ Completed in current implementation pass:
 - The web app now ships a basic manifest and theme-color metadata, and `pnpm --filter @planner/web lighthouse:mobile` builds, previews, and audits the mobile experience locally with Lighthouse
 - Offline replay failures now stay in the local queue with explicit failed status and trigger an app-shell alert so conflicting offline changes are visible instead of silently stalling in the console
 - Query-plan review on an isolated local Postgres instance showed the shopping list endpoint still sorting after the family filter, so the shopping index now includes `Label` to match the live `(family, is_completed, category, label)` ordering
+- The API now applies fixed-window rate limiting with a stricter auth bucket and basic security response headers including CSP, frame denial, referrer policy, and content-type sniffing protection
 
 ### Phase 4: Optimization
 
 - [x] Add lightweight Lighthouse checks for mobile performance and PWA quality
 - [x] Improve offline conflict handling
 - [x] Tune database indexes using real query plans
-- [ ] Tighten rate limits and security headers
+- [x] Tighten rate limits and security headers
 - [ ] Strengthen deploy rollback and migration safety
 - [ ] Finalize production release checklist
 

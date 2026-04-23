@@ -266,6 +266,24 @@ public sealed class CoreFlowsApiTests(ApiTestFactory factory) : IClassFixture<Ap
         Assert.Equal(HttpStatusCode.NotFound, bootstrapResponse.StatusCode);
     }
 
+    [Fact]
+    public async Task Login_endpoint_returns_security_headers()
+    {
+        await factory.ResetDatabaseAsync();
+        using var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/v1/auth/login",
+            new LoginRequest("missing@planner.test", "wrong-password"));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(response.Headers.Contains("X-Content-Type-Options"));
+        Assert.True(response.Headers.Contains("X-Frame-Options"));
+        Assert.True(response.Headers.Contains("Referrer-Policy"));
+        Assert.True(response.Headers.Contains("Permissions-Policy"));
+        Assert.True(response.Headers.Contains("Content-Security-Policy"));
+    }
+
     private static async Task<AuthResponse> RegisterAsync(HttpClient client)
     {
         var email = $"test-{Guid.NewGuid():N}@planner.test";
