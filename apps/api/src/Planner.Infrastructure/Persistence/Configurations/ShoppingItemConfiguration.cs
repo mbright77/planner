@@ -26,7 +26,7 @@ public sealed class ShoppingItemConfiguration : IEntityTypeConfiguration<Shoppin
         builder.Property(x => x.IsCompleted)
             .IsRequired();
 
-        builder.HasIndex(x => new { x.FamilyId, x.IsCompleted, x.Category });
+        builder.HasIndex(x => new { x.FamilyId, x.IsCompleted, x.Category, x.Label });
 
         builder.HasOne(x => x.Family)
             .WithMany(x => x.ShoppingItems)
