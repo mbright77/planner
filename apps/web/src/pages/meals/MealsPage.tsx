@@ -40,6 +40,14 @@ function buildWeekDays(weekStart: string) {
   });
 }
 
+function formatWeekRange(weekStart: string) {
+  const start = new Date(`${weekStart}T00:00:00.000Z`);
+  const end = new Date(start);
+  end.setUTCDate(start.getUTCDate() + 6);
+
+  return `${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })} - ${end.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })}`;
+}
+
 export function MealsPage() {
   const initialWeekStart = formatDateOnly(getWeekStart(new Date()));
 
@@ -147,14 +155,22 @@ export function MealsPage() {
   }
 
   return (
-    <section className="page">
+    <section className="page meals-page">
       <p className="eyebrow">Meals</p>
       <h2 className="page-title">Weekly meals</h2>
       <p className="page-copy">
         Plan one dinner per day so the family can see what&apos;s covered and who is owning it.
       </p>
 
-      <form className="meals-form" onSubmit={handleSubmit}>
+      <section className="meals-header-panel">
+        <div>
+          <h3 className="meals-range-title">{formatWeekRange(weekStart)}</h3>
+          <p className="shopping-meta">One dinner plan per day, visible to the whole family.</p>
+        </div>
+        <div className="meals-plan-badge">Plan week</div>
+      </section>
+
+      <form className="meals-form meals-compose-card" onSubmit={handleSubmit}>
         <label className="field meals-field-wide">
           <span>Week start</span>
           <input value={weekStart} onChange={(event) => setWeekStart(event.target.value)} type="date" />
@@ -199,9 +215,14 @@ export function MealsPage() {
         {weekDays.map((day) => {
           const meal = mealsByDate.get(day.key);
           const owner = bootstrapQuery.data?.profiles.find((profile) => profile.id === meal?.ownerProfileId);
+          const className = meal
+            ? day.key === weekDays[4]?.key
+              ? 'meal-card meal-card-featured'
+              : 'meal-card'
+            : 'meal-card meal-card-empty';
 
           return (
-            <article key={day.key} className={meal ? 'meal-card' : 'meal-card meal-card-empty'}>
+            <article key={day.key} className={className}>
               <div className="meal-card-header">
                 <div>
                   <p className="eyebrow">{day.label}</p>
@@ -210,12 +231,12 @@ export function MealsPage() {
                 {owner ? <span className="profile-color-chip">{owner.displayName}</span> : null}
               </div>
 
-              {meal ? (
-                <>
-                  <div className="meal-card-body">
-                    <strong>{meal.title}</strong>
-                    {meal.notes ? <p className="meal-card-notes">{meal.notes}</p> : null}
-                  </div>
+                {meal ? (
+                  <>
+                    <div className="meal-card-body">
+                      <strong className="meal-card-title">{meal.title}</strong>
+                      {meal.notes ? <p className="meal-card-notes">{meal.notes}</p> : null}
+                    </div>
 
                   <button
                     className="secondary-button meal-card-button"
@@ -238,7 +259,7 @@ export function MealsPage() {
       </div>
 
       <section className="meal-requests-section">
-        <div className="shopping-group-header">
+        <div className="shopping-group-header meal-requests-header">
           <div>
             <p className="eyebrow">Requests</p>
             <h3 className="profile-card-title">Meal requests</h3>
@@ -294,9 +315,13 @@ export function MealsPage() {
 
             return (
               <article key={request.id} className="meal-request-card">
+                <div className="meal-request-avatar" aria-hidden="true">
+                  {requester ? requester.displayName.slice(0, 1).toUpperCase() : 'R'}
+                </div>
+
                 <div className="meal-request-copy">
                   <div className="meal-request-tags">
-                    <strong>{request.title}</strong>
+                    <strong className="meal-request-title">{request.title}</strong>
                     {requester ? <span className="profile-color-chip">{requester.displayName}</span> : null}
                     {request.requestedForDate ? <span className="shopping-meta">For {request.requestedForDate}</span> : null}
                   </div>
