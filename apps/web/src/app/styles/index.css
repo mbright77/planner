@@ -27,6 +27,7 @@ html,
 body,
 #root {
   min-height: 100%;
+  overflow-x: clip;
 }
 
 body {
@@ -72,9 +73,12 @@ select {
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr auto;
+  min-width: 0;
 }
 
 .topbar {
+  width: 100%;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -153,11 +157,15 @@ select {
 
 .app-content {
   width: min(100%, 72rem);
+  max-width: 100%;
+  min-width: 0;
   margin: 0 auto;
   padding: 1.5rem 1.25rem 7rem;
 }
 
 .page {
+  width: 100%;
+  min-width: 0;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 1.5rem;
@@ -166,6 +174,7 @@ select {
 }
 
 .standalone-page {
+  width: 100%;
   max-width: 40rem;
   margin: 3rem auto;
 }
@@ -480,6 +489,7 @@ select {
 .meal-card-header {
   display: flex;
   align-items: start;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 1rem;
 }
@@ -528,6 +538,7 @@ select {
 .meal-request-card {
   display: flex;
   align-items: start;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem;
@@ -539,6 +550,7 @@ select {
 .meal-request-copy {
   display: grid;
   gap: 0.4rem;
+  min-width: 0;
 }
 
 .meal-request-tags {
@@ -551,6 +563,7 @@ select {
 .meal-request-actions {
   display: grid;
   gap: 0.5rem;
+  width: 100%;
 }
 
 .meal-request-button {
@@ -912,6 +925,7 @@ select {
   left: 0;
   right: 0;
   bottom: 0;
+  width: 100%;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.5rem;
