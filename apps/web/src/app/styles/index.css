@@ -1,6 +1,6 @@
 :root {
   color-scheme: light;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Public Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-synthesis: none;
   line-height: 1.5;
   font-weight: 400;
@@ -8,15 +8,16 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --background: #f7f9ff;
+  --background: #f9f9f7;
   --surface: #ffffff;
-  --surface-subtle: #eef3fb;
+  --surface-subtle: #f1f3f9;
   --text: #181c20;
   --text-muted: #5f6872;
-  --border: #d9e2ef;
+  --border: #edf1f5;
   --primary: #5da9e9;
   --primary-strong: #00639a;
-  --shadow: 0 12px 32px rgba(24, 28, 32, 0.08);
+  --shadow: 0 4px 12px rgba(45, 49, 50, 0.05);
+  --shadow-floating: 0 8px 24px rgba(45, 49, 50, 0.1);
 }
 
 * {
@@ -34,6 +35,7 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--text);
+  font-family: 'Public Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 :focus-visible {
@@ -84,12 +86,13 @@ select {
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(253, 253, 251, 0.92);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(14px);
   position: sticky;
   top: 0;
   z-index: 10;
+  box-shadow: var(--shadow);
 }
 
 .topbar-brand {
@@ -114,8 +117,10 @@ select {
 .topbar-title,
 .page-title {
   margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Public Sans', system-ui, sans-serif;
   font-size: clamp(1.55rem, 4vw, 2.1rem);
   line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
 .topbar-meta {
@@ -168,7 +173,7 @@ select {
   min-width: 0;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 1.5rem;
+  border-radius: 1.25rem;
   box-shadow: var(--shadow);
   padding: 1.5rem;
 }
@@ -212,7 +217,7 @@ select {
 }
 
 .auth-panel {
-  background: linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
 }
 
 .auth-hero {
@@ -253,7 +258,7 @@ select {
   min-width: 5rem;
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
-  background: rgba(93, 169, 233, 0.18);
+  background: rgba(93, 169, 233, 0.12);
   color: var(--primary-strong);
   font-size: 0.85rem;
   font-weight: 700;
@@ -328,15 +333,15 @@ select {
   min-height: 3rem;
   padding: 0.75rem 0.9rem;
   border: 1px solid var(--border);
-  border-radius: 0.9rem;
-  background: var(--surface);
+  border-radius: 0.75rem;
+  background: #f2f2f0;
 }
 
 .field textarea {
   padding: 0.75rem 0.9rem;
   border: 1px solid var(--border);
-  border-radius: 0.9rem;
-  background: var(--surface);
+  border-radius: 0.75rem;
+  background: #f2f2f0;
   resize: vertical;
 }
 
@@ -344,16 +349,16 @@ select {
   min-height: 3rem;
   padding: 0.75rem 0.9rem;
   border: 1px solid var(--border);
-  border-radius: 0.9rem;
-  background: var(--surface);
+  border-radius: 0.75rem;
+  background: #f2f2f0;
 }
 
 .field select {
   min-height: 3rem;
   padding: 0.75rem 0.9rem;
   border: 1px solid var(--border);
-  border-radius: 0.9rem;
-  background: var(--surface);
+  border-radius: 0.75rem;
+  background: #f2f2f0;
 }
 
 .checkbox-field {
@@ -363,7 +368,7 @@ select {
   gap: 1rem;
   padding: 0.85rem 1rem;
   border: 1px solid var(--border);
-  border-radius: 0.9rem;
+  border-radius: 0.75rem;
   background: var(--surface-subtle);
 }
 
@@ -406,20 +411,22 @@ select {
 .primary-button,
 .secondary-button {
   min-height: 3rem;
-  border-radius: 0.9rem;
+  padding: 0 1rem;
+  border-radius: 0.75rem;
   border: 1px solid transparent;
   font-weight: 700;
 }
 
 .primary-button {
-  background: var(--primary-strong);
+  background: var(--primary);
   color: white;
+  box-shadow: var(--shadow);
 }
 
 .secondary-button {
-  background: transparent;
-  border-color: var(--border);
-  color: var(--text);
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(93, 169, 233, 0.45);
+  color: var(--primary-strong);
 }
 
 .form-error {
@@ -453,8 +460,9 @@ select {
 .shopping-group-card {
   padding: 1rem;
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: var(--surface-subtle);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .shopping-group-header {
@@ -531,7 +539,8 @@ select {
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: 1.25rem;
-  background: linear-gradient(180deg, #ffffff 0%, #eef6ff 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+  box-shadow: var(--shadow);
 }
 
 .meal-card-empty {
@@ -573,7 +582,8 @@ select {
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: 1.25rem;
-  background: var(--surface-subtle);
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .meal-requests-form {
@@ -632,8 +642,9 @@ select {
 .calendar-day-card {
   padding: 1rem;
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: var(--surface-subtle);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .calendar-event-list {
@@ -681,16 +692,18 @@ select {
 .profile-card {
   padding: 1rem;
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: var(--surface-subtle);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .invite-panel {
   margin-top: 1.5rem;
   padding: 1rem;
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: var(--surface-subtle);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .invite-list {
@@ -720,8 +733,9 @@ select {
   margin-top: 1.5rem;
   padding: 1rem;
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: var(--surface-subtle);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .destructive-button {
@@ -732,7 +746,7 @@ select {
 .dashboard-page {
   display: grid;
   gap: 1.5rem;
-  background: linear-gradient(180deg, #ffffff 0%, #f5f8ff 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
 }
 
 .dashboard-hero {
@@ -749,7 +763,7 @@ select {
   padding: 0.75rem;
   border: 1px solid var(--border);
   border-radius: 1.25rem;
-  background: rgba(238, 243, 251, 0.7);
+  background: rgba(241, 243, 249, 0.9);
 }
 
 .dashboard-week-day {
@@ -905,6 +919,7 @@ select {
 
 .dashboard-meal-title {
   margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Public Sans', system-ui, sans-serif;
   font-size: 1.5rem;
   line-height: 1.1;
 }
@@ -936,6 +951,7 @@ select {
 
 .dashboard-mini-count {
   margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Public Sans', system-ui, sans-serif;
   font-size: 1.05rem;
   font-weight: 700;
 }
@@ -963,6 +979,7 @@ select {
 
 .profile-card-title {
   margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Public Sans', system-ui, sans-serif;
   font-size: 1.15rem;
 }
 
@@ -983,9 +1000,10 @@ select {
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.5rem;
   padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.92);
   border-top: 1px solid var(--border);
   backdrop-filter: blur(14px);
+  box-shadow: 0 -4px 12px rgba(45, 49, 50, 0.05);
 }
 
 .bottom-nav-link {
