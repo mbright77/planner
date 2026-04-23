@@ -13,6 +13,18 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddApi(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         services.AddOpenApi();
+        services.AddCors(options =>
+        {
+            options.AddPolicy("WebDevClient", policy =>
+            {
+                policy.WithOrigins(
+                        "http://localhost:5173",
+                        "http://127.0.0.1:5173")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
+
         services.AddAuthorization();
         if (!environment.IsEnvironment("Testing"))
         {

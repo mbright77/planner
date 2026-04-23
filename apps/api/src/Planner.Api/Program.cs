@@ -22,6 +22,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("WebDevClient");
 app.UseMiddleware<SecurityHeadersMiddleware>();
 if (!app.Environment.IsEnvironment("Testing"))
 {
