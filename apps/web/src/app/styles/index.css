@@ -418,7 +418,7 @@ select {
 }
 
 .primary-button {
-  background: var(--primary);
+  background: var(--primary-strong);
   color: white;
   box-shadow: var(--shadow);
 }
