@@ -368,8 +368,24 @@ select {
 }
 
 .checkbox-field input {
-  width: 1.15rem;
-  height: 1.15rem;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 3rem;
+  height: 3rem;
+  margin: 0;
+  flex: none;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.checkbox-field input:checked {
+  background:
+    linear-gradient(45deg, transparent 46%, white 46% 54%, transparent 54%),
+    linear-gradient(-45deg, transparent 38%, white 38% 46%, transparent 46%),
+    var(--primary-strong);
+  border-color: var(--primary-strong);
 }
 
 .auth-actions {
@@ -409,6 +425,17 @@ select {
 .form-error {
   margin: 0;
   color: #89233d;
+}
+
+.inline-action-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  padding: 0.6rem 0.95rem;
+  border-radius: 999px;
+  background: rgba(93, 169, 233, 0.14);
+  color: var(--primary-strong);
+  font-weight: 700;
 }
 
 .profile-grid {

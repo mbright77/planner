@@ -104,7 +104,7 @@ export function PrivacyPage() {
       ) : null}
 
       <p className="page-copy">
-        <Link to="/family">Back to family settings</Link>
+        <Link className="inline-action-link" to="/family">Back to family settings</Link>
       </p>
     </section>
   );

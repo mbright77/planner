@@ -70,7 +70,7 @@ export function FamilyPage() {
         Manage the family members used across the planner and keep their color keys consistent.
       </p>
       <p className="page-copy">
-        <Link to="/settings/privacy">Review deletion and privacy options</Link>
+        <Link className="inline-action-link" to="/settings/privacy">Review deletion and privacy options</Link>
       </p>
 
       <form className="profile-form" onSubmit={handleCreate}>
