@@ -165,9 +165,12 @@ public static class MealEndpoints
             .Where(x => x.FamilyId == membership.FamilyId)
             .Where(x => x.Status == MealRequestStatus.Pending)
             .Where(x => !x.RequestedForDate.HasValue || (x.RequestedForDate >= weekStart && x.RequestedForDate <= weekEnd))
-            .OrderByDescending(x => x.CreatedAtUtc)
             .Select(x => ToResponse(x))
             .ToListAsync(cancellationToken);
+
+        requests = requests
+            .OrderByDescending(x => x.CreatedAtUtc)
+            .ToList();
 
         return Results.Ok(requests);
     }

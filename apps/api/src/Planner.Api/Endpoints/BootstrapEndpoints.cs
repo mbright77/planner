@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Planner.Api.Extensions;
 using Planner.Contracts.Bootstrap;
@@ -46,7 +47,9 @@ public static class BootstrapEndpoints
                 .ToArray(),
             new MembershipSummary(
                 membership.UserId,
-                httpContext.User.FindFirst("email")?.Value ?? string.Empty,
+                httpContext.User.FindFirstValue(ClaimTypes.Email)
+                    ?? httpContext.User.FindFirst("email")?.Value
+                    ?? string.Empty,
                 membership.Role.ToString()));
 
         return Results.Ok(response);

@@ -42,8 +42,6 @@ public static class DashboardEndpoints
         var weekEvents = await dbContext.CalendarEvents
             .AsNoTracking()
             .Where(x => x.FamilyId == membership.FamilyId)
-            .Where(x => x.StartAtUtc >= weekStartUtc && x.StartAtUtc < weekEndExclusiveUtc)
-            .OrderBy(x => x.StartAtUtc)
             .Select(x => new
             {
                 x.Id,
@@ -54,6 +52,11 @@ public static class DashboardEndpoints
                 x.AssignedProfileId,
             })
             .ToListAsync(cancellationToken);
+
+        weekEvents = weekEvents
+            .Where(x => x.StartAtUtc >= weekStartUtc && x.StartAtUtc < weekEndExclusiveUtc)
+            .OrderBy(x => x.StartAtUtc)
+            .ToList();
 
         var weekMeals = await dbContext.MealPlans
             .AsNoTracking()
@@ -73,10 +76,18 @@ public static class DashboardEndpoints
         var shoppingPreview = await dbContext.ShoppingItems
             .AsNoTracking()
             .Where(x => x.FamilyId == membership.FamilyId && !x.IsCompleted)
-            .OrderBy(x => x.CreatedAtUtc)
-            .Select(x => x.Label)
-            .Take(3)
+            .Select(x => new
+            {
+                x.Label,
+                x.CreatedAtUtc,
+            })
             .ToListAsync(cancellationToken);
+
+        var shoppingPreviewLabels = shoppingPreview
+            .OrderBy(x => x.CreatedAtUtc)
+            .Take(3)
+            .Select(x => x.Label)
+            .ToArray();
 
         var shoppingCount = await dbContext.ShoppingItems
             .AsNoTracking()
@@ -106,8 +117,6 @@ public static class DashboardEndpoints
         var upcomingEventData = await dbContext.CalendarEvents
             .AsNoTracking()
             .Where(x => x.FamilyId == membership.FamilyId)
-            .Where(x => x.StartAtUtc >= now)
-            .OrderBy(x => x.StartAtUtc)
             .Select(x => new
             {
                 x.Id,
@@ -116,16 +125,21 @@ public static class DashboardEndpoints
                 x.EndAtUtc,
                 x.AssignedProfileId,
             })
-            .FirstOrDefaultAsync(cancellationToken);
+            .ToListAsync(cancellationToken);
 
-        var upcomingEvent = upcomingEventData is null
+        var nextUpcomingEvent = upcomingEventData
+            .Where(x => x.StartAtUtc >= now)
+            .OrderBy(x => x.StartAtUtc)
+            .FirstOrDefault();
+
+        var upcomingEvent = nextUpcomingEvent is null
             ? null
             : new DashboardUpcomingEventSummary(
-                upcomingEventData.Id,
-                upcomingEventData.Title,
-                upcomingEventData.StartAtUtc,
-                upcomingEventData.EndAtUtc,
-                upcomingEventData.AssignedProfileId);
+                nextUpcomingEvent.Id,
+                nextUpcomingEvent.Title,
+                nextUpcomingEvent.StartAtUtc,
+                nextUpcomingEvent.EndAtUtc,
+                nextUpcomingEvent.AssignedProfileId);
 
         var mealsByDate = weekMeals.ToDictionary(x => x.MealDate, x => x.Id);
         var eventCountsByDate = weekEvents
@@ -151,7 +165,7 @@ public static class DashboardEndpoints
             week,
             todayEvents,
             tonightMeal,
-            new DashboardShoppingSummary(shoppingCount, shoppingPreview),
+            new DashboardShoppingSummary(shoppingCount, shoppingPreviewLabels),
             upcomingEvent);
 
         return Results.Ok(response);
