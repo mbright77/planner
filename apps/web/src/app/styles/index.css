@@ -222,6 +222,12 @@ select {
   margin-top: 1.5rem;
 }
 
+.meals-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
 .field {
   display: grid;
   gap: 0.4rem;
@@ -358,6 +364,114 @@ select {
   grid-column: 1 / -1;
 }
 
+.meals-field-wide {
+  grid-column: 1 / -1;
+}
+
+.meal-requests-field-wide {
+  grid-column: 1 / -1;
+}
+
+.meals-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.meal-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: linear-gradient(180deg, #ffffff 0%, #eef6ff 100%);
+}
+
+.meal-card-empty {
+  background: var(--surface-subtle);
+  border-style: dashed;
+}
+
+.meal-card-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.meal-card-body {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.meal-card-notes {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.meal-card-empty-state {
+  min-height: 5rem;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.meal-card-button {
+  min-height: 2.75rem;
+}
+
+.meal-requests-section {
+  margin-top: 1.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: var(--surface-subtle);
+}
+
+.meal-requests-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.meal-request-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.meal-request-card {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+
+.meal-request-copy {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.meal-request-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.meal-request-actions {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.meal-request-button {
+  min-width: 6.5rem;
+}
+
 .calendar-groups {
   display: grid;
   gap: 1rem;
@@ -467,9 +581,19 @@ select {
 @media (min-width: 900px) {
   .shopping-form,
   .profile-form,
-  .calendar-form {
+  .calendar-form,
+  .meals-form {
     grid-template-columns: 2fr 1fr 1fr auto;
     align-items: end;
+  }
+
+  .meal-requests-form {
+    grid-template-columns: 2fr 1fr 1fr auto;
+    align-items: end;
+  }
+
+  .meals-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .bottom-nav {
@@ -482,5 +606,11 @@ select {
 
   .app-content {
     padding-bottom: 1.5rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .meals-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

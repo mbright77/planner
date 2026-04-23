@@ -43,6 +43,12 @@ public static class DevelopmentSeedEndpoints
         }
 
         var now = DateTimeOffset.UtcNow;
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var daysFromMonday = today.DayOfWeek == DayOfWeek.Sunday
+            ? 6
+            : (int)today.DayOfWeek - (int)DayOfWeek.Monday;
+        var weekStart = today.AddDays(-daysFromMonday);
+
         var family = new Family
         {
             Id = Guid.NewGuid(),
@@ -135,6 +141,62 @@ public static class DevelopmentSeedEndpoints
                 EndAtUtc = now.Date.AddHours(17).AddMinutes(30),
                 CreatedAtUtc = now,
                 AssignedProfileId = momProfileId,
+            });
+
+        dbContext.MealPlans.AddRange(
+            new MealPlan
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = family.Id,
+                MealDate = weekStart,
+                Title = "Taco night",
+                Notes = "Beans, salsa, and chopped lettuce",
+                CreatedAtUtc = now,
+                OwnerProfileId = momProfileId,
+            },
+            new MealPlan
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = family.Id,
+                MealDate = weekStart.AddDays(2),
+                Title = "Spaghetti",
+                Notes = "Garlic bread if there is time",
+                CreatedAtUtc = now,
+                OwnerProfileId = dadProfileId,
+            },
+            new MealPlan
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = family.Id,
+                MealDate = weekStart.AddDays(4),
+                Title = "Homemade pizza",
+                Notes = "Everyone picks toppings",
+                CreatedAtUtc = now,
+            });
+
+        dbContext.MealRequests.AddRange(
+            new MealRequest
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = family.Id,
+                RequesterProfileId = dadProfileId,
+                RequestedForDate = weekStart.AddDays(1),
+                Title = "Pizza",
+                Notes = "Can we do pepperoni this time?",
+                AssigneeProfileId = momProfileId,
+                Status = MealRequestStatus.Pending,
+                CreatedAtUtc = now,
+            },
+            new MealRequest
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = family.Id,
+                RequesterProfileId = momProfileId,
+                RequestedForDate = weekStart.AddDays(3),
+                Title = "Big salad",
+                Notes = "With the good feta cheese",
+                Status = MealRequestStatus.Pending,
+                CreatedAtUtc = now,
             });
 
         await dbContext.SaveChangesAsync(cancellationToken);

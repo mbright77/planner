@@ -8,6 +8,12 @@ public enum FamilyRole
     Member = 2,
 }
 
+public enum MealRequestStatus
+{
+    Pending = 1,
+    Accepted = 2,
+}
+
 public sealed class Family
 {
     public Guid Id { get; set; }
@@ -25,6 +31,10 @@ public sealed class Family
     public ICollection<ShoppingItem> ShoppingItems { get; set; } = new List<ShoppingItem>();
 
     public ICollection<CalendarEvent> CalendarEvents { get; set; } = new List<CalendarEvent>();
+
+    public ICollection<MealPlan> MealPlans { get; set; } = new List<MealPlan>();
+
+    public ICollection<MealRequest> MealRequests { get; set; } = new List<MealRequest>();
 }
 
 public sealed class Profile
@@ -42,6 +52,8 @@ public sealed class Profile
     public Family Family { get; set; } = null!;
 
     public ICollection<CalendarEvent> CalendarEvents { get; set; } = new List<CalendarEvent>();
+
+    public ICollection<MealPlan> MealPlans { get; set; } = new List<MealPlan>();
 }
 
 public sealed class FamilyMembership
@@ -103,4 +115,52 @@ public sealed class CalendarEvent
     public Family Family { get; set; } = null!;
 
     public Profile? AssignedProfile { get; set; }
+}
+
+public sealed class MealPlan
+{
+    public Guid Id { get; set; }
+
+    public Guid FamilyId { get; set; }
+
+    public DateOnly MealDate { get; set; }
+
+    public string Title { get; set; } = string.Empty;
+
+    public string? Notes { get; set; }
+
+    public DateTimeOffset CreatedAtUtc { get; set; }
+
+    public Guid? OwnerProfileId { get; set; }
+
+    public Family Family { get; set; } = null!;
+
+    public Profile? OwnerProfile { get; set; }
+}
+
+public sealed class MealRequest
+{
+    public Guid Id { get; set; }
+
+    public Guid FamilyId { get; set; }
+
+    public Guid? RequesterProfileId { get; set; }
+
+    public DateOnly? RequestedForDate { get; set; }
+
+    public string Title { get; set; } = string.Empty;
+
+    public string? Notes { get; set; }
+
+    public MealRequestStatus Status { get; set; } = MealRequestStatus.Pending;
+
+    public Guid? AssigneeProfileId { get; set; }
+
+    public DateTimeOffset CreatedAtUtc { get; set; }
+
+    public Family Family { get; set; } = null!;
+
+    public Profile? RequesterProfile { get; set; }
+
+    public Profile? AssigneeProfile { get; set; }
 }

@@ -18,6 +18,10 @@ public sealed class PlannerDbContext(DbContextOptions<PlannerDbContext> options)
 
     public DbSet<CalendarEvent> CalendarEvents => Set<CalendarEvent>();
 
+    public DbSet<MealPlan> MealPlans => Set<MealPlan>();
+
+    public DbSet<MealRequest> MealRequests => Set<MealRequest>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

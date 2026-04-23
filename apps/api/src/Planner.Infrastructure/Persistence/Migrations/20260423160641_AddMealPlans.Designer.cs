@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Planner.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Planner.Infrastructure.Persistence;
 namespace Planner.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(PlannerDbContext))]
-    partial class PlannerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260423160641_AddMealPlans")]
+    partial class AddMealPlans
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -285,50 +288,6 @@ namespace Planner.Infrastructure.Persistence.Migrations
                     b.ToTable("meal_plans", "planner");
                 });
 
-            modelBuilder.Entity("Planner.Domain.MealRequest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("AssigneeProfileId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("FamilyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<DateOnly?>("RequestedForDate")
-                        .HasColumnType("date");
-
-                    b.Property<Guid?>("RequesterProfileId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AssigneeProfileId");
-
-                    b.HasIndex("RequesterProfileId");
-
-                    b.HasIndex("FamilyId", "Status", "CreatedAtUtc");
-
-                    b.ToTable("meal_requests", "planner");
-                });
-
             modelBuilder.Entity("Planner.Domain.Profile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -560,31 +519,6 @@ namespace Planner.Infrastructure.Persistence.Migrations
                     b.Navigation("OwnerProfile");
                 });
 
-            modelBuilder.Entity("Planner.Domain.MealRequest", b =>
-                {
-                    b.HasOne("Planner.Domain.Profile", "AssigneeProfile")
-                        .WithMany()
-                        .HasForeignKey("AssigneeProfileId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Planner.Domain.Family", "Family")
-                        .WithMany("MealRequests")
-                        .HasForeignKey("FamilyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Planner.Domain.Profile", "RequesterProfile")
-                        .WithMany()
-                        .HasForeignKey("RequesterProfileId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("AssigneeProfile");
-
-                    b.Navigation("Family");
-
-                    b.Navigation("RequesterProfile");
-                });
-
             modelBuilder.Entity("Planner.Domain.Profile", b =>
                 {
                     b.HasOne("Planner.Domain.Family", "Family")
@@ -619,8 +553,6 @@ namespace Planner.Infrastructure.Persistence.Migrations
                     b.Navigation("CalendarEvents");
 
                     b.Navigation("MealPlans");
-
-                    b.Navigation("MealRequests");
 
                     b.Navigation("Memberships");
 
