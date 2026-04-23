@@ -78,6 +78,7 @@ select {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
   padding: 1rem 1.25rem;
   background: rgba(255, 255, 255, 0.9);
   border-bottom: 1px solid var(--border);
@@ -87,16 +88,39 @@ select {
   z-index: 10;
 }
 
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.topbar-avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(93, 169, 233, 0.18);
+  color: var(--primary-strong);
+  font-weight: 800;
+}
+
 .topbar-title,
 .page-title {
   margin: 0;
-  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-size: clamp(1.55rem, 4vw, 2.1rem);
   line-height: 1.1;
 }
 
 .topbar-meta {
   margin: 0.35rem 0 0;
   color: var(--text-muted);
+}
+
+.topbar-eyebrow {
+  margin-bottom: 0.1rem;
 }
 
 .eyebrow {
@@ -111,11 +135,20 @@ select {
 .icon-button {
   width: 3rem;
   height: 3rem;
+  flex: none;
+  display: grid;
+  place-items: center;
   border: 0;
   border-radius: 999px;
   background: var(--surface-subtle);
   color: var(--primary-strong);
   cursor: pointer;
+}
+
+.icon-button svg,
+.bottom-nav-icon svg {
+  width: 1.35rem;
+  height: 1.35rem;
 }
 
 .app-content {
@@ -890,18 +923,32 @@ select {
 
 .bottom-nav-link {
   display: inline-flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 0.2rem;
   min-height: 3rem;
-  border-radius: 999px;
+  padding: 0.45rem 0.25rem;
+  border-radius: 1rem;
   color: var(--text-muted);
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .bottom-nav-link-active {
   background: rgba(93, 169, 233, 0.14);
   color: var(--primary-strong);
+}
+
+.bottom-nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bottom-nav-label {
+  line-height: 1;
 }
 
 @media (min-width: 900px) {
