@@ -16,6 +16,8 @@ public sealed class PlannerDbContext(DbContextOptions<PlannerDbContext> options)
 
     public DbSet<ShoppingItem> ShoppingItems => Set<ShoppingItem>();
 
+    public DbSet<CalendarEvent> CalendarEvents => Set<CalendarEvent>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

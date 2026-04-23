@@ -60,10 +60,13 @@ public static class DevelopmentSeedEndpoints
             Role = FamilyRole.Admin,
             CreatedAtUtc = now,
         });
+        var momProfileId = Guid.NewGuid();
+        var dadProfileId = Guid.NewGuid();
+
         dbContext.Profiles.AddRange(
             new Profile
             {
-                Id = Guid.NewGuid(),
+                Id = momProfileId,
                 FamilyId = family.Id,
                 DisplayName = "Mom",
                 ColorKey = "green",
@@ -71,7 +74,7 @@ public static class DevelopmentSeedEndpoints
             },
             new Profile
             {
-                Id = Guid.NewGuid(),
+                Id = dadProfileId,
                 FamilyId = family.Id,
                 DisplayName = "Dad",
                 ColorKey = "blue",
@@ -87,6 +90,7 @@ public static class DevelopmentSeedEndpoints
                 Category = "Dairy",
                 CreatedAtUtc = now,
                 IsCompleted = false,
+                AddedByProfileId = momProfileId,
             },
             new ShoppingItem
             {
@@ -96,6 +100,7 @@ public static class DevelopmentSeedEndpoints
                 Category = "Produce",
                 CreatedAtUtc = now,
                 IsCompleted = false,
+                AddedByProfileId = dadProfileId,
             },
             new ShoppingItem
             {
@@ -106,6 +111,30 @@ public static class DevelopmentSeedEndpoints
                 CreatedAtUtc = now,
                 IsCompleted = true,
                 CompletedAtUtc = now,
+            });
+
+        dbContext.CalendarEvents.AddRange(
+            new CalendarEvent
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = family.Id,
+                Title = "School drop-off",
+                Notes = "Bring lunchbox",
+                StartAtUtc = now.Date.AddHours(8),
+                EndAtUtc = now.Date.AddHours(8).AddMinutes(30),
+                CreatedAtUtc = now,
+                AssignedProfileId = dadProfileId,
+            },
+            new CalendarEvent
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = family.Id,
+                Title = "Soccer practice",
+                Notes = "Cleats and water bottle",
+                StartAtUtc = now.Date.AddHours(16),
+                EndAtUtc = now.Date.AddHours(17).AddMinutes(30),
+                CreatedAtUtc = now,
+                AssignedProfileId = momProfileId,
             });
 
         await dbContext.SaveChangesAsync(cancellationToken);

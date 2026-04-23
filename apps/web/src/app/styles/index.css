@@ -216,6 +216,12 @@ select {
   margin-top: 1.5rem;
 }
 
+.calendar-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
 .field {
   display: grid;
   gap: 0.4rem;
@@ -232,6 +238,14 @@ select {
   border: 1px solid var(--border);
   border-radius: 0.9rem;
   background: var(--surface);
+}
+
+.field textarea {
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  background: var(--surface);
+  resize: vertical;
 }
 
 .field select {
@@ -340,6 +354,60 @@ select {
   grid-column: 1 / -1;
 }
 
+.calendar-field-wide {
+  grid-column: 1 / -1;
+}
+
+.calendar-groups {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.calendar-day-card {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface-subtle);
+}
+
+.calendar-event-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
+.calendar-event-item {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid rgba(217, 226, 239, 0.75);
+}
+
+.calendar-event-item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.calendar-event-time,
+.calendar-event-notes {
+  margin: 0.3rem 0 0;
+  color: var(--text-muted);
+}
+
+.calendar-event-actions {
+  display: grid;
+  justify-items: end;
+  gap: 0.5rem;
+}
+
+.calendar-small-button {
+  min-height: 2.5rem;
+  padding: 0 0.85rem;
+}
+
 .profile-card {
   padding: 1rem;
   border: 1px solid var(--border);
@@ -398,7 +466,8 @@ select {
 
 @media (min-width: 900px) {
   .shopping-form,
-  .profile-form {
+  .profile-form,
+  .calendar-form {
     grid-template-columns: 2fr 1fr 1fr auto;
     align-items: end;
   }

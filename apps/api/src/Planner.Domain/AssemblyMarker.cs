@@ -23,6 +23,8 @@ public sealed class Family
     public ICollection<FamilyMembership> Memberships { get; set; } = new List<FamilyMembership>();
 
     public ICollection<ShoppingItem> ShoppingItems { get; set; } = new List<ShoppingItem>();
+
+    public ICollection<CalendarEvent> CalendarEvents { get; set; } = new List<CalendarEvent>();
 }
 
 public sealed class Profile
@@ -38,6 +40,8 @@ public sealed class Profile
     public bool IsActive { get; set; } = true;
 
     public Family Family { get; set; } = null!;
+
+    public ICollection<CalendarEvent> CalendarEvents { get; set; } = new List<CalendarEvent>();
 }
 
 public sealed class FamilyMembership
@@ -76,4 +80,27 @@ public sealed class ShoppingItem
     public Family Family { get; set; } = null!;
 
     public Profile? AddedByProfile { get; set; }
+}
+
+public sealed class CalendarEvent
+{
+    public Guid Id { get; set; }
+
+    public Guid FamilyId { get; set; }
+
+    public string Title { get; set; } = string.Empty;
+
+    public string? Notes { get; set; }
+
+    public DateTimeOffset StartAtUtc { get; set; }
+
+    public DateTimeOffset EndAtUtc { get; set; }
+
+    public DateTimeOffset CreatedAtUtc { get; set; }
+
+    public Guid? AssignedProfileId { get; set; }
+
+    public Family Family { get; set; } = null!;
+
+    public Profile? AssignedProfile { get; set; }
 }
