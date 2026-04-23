@@ -1,0 +1,17 @@
+{
+  "name": "Family Planner",
+  "short_name": "Planner",
+  "description": "Collaborative family planner for weekly schedules, meals, and shopping.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f9ff",
+  "theme_color": "#5da9e9",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

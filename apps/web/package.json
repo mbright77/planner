@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "lighthouse:mobile": "node ./lighthouse-mobile.mjs",
     "preview": "vite preview",
     "format": "prettier --check .",
     "test": "vitest run",

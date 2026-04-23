@@ -1187,10 +1187,11 @@ Completed in current implementation pass:
 - The shared app shell now includes a skip link, visible keyboard focus styling, polite live regions for sync and offline status, and alert semantics for bootstrap failures
 - The web app now has a lightweight Vitest + React Testing Library setup with initial accessibility-focused coverage for the app shell
 - Shopping list and meal request queries now poll every 30 seconds while online, while calendar and meals remain manual/revalidation driven to avoid unnecessary background traffic
+- The web app now ships a basic manifest and theme-color metadata, and `pnpm --filter @planner/web lighthouse:mobile` builds, previews, and audits the mobile experience locally with Lighthouse
 
 ### Phase 4: Optimization
 
-- [ ] Add lightweight Lighthouse checks for mobile performance and PWA quality
+- [x] Add lightweight Lighthouse checks for mobile performance and PWA quality
 - [ ] Improve offline conflict handling
 - [ ] Tune database indexes using real query plans
 - [ ] Tighten rate limits and security headers
