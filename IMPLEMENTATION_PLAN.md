@@ -1135,7 +1135,7 @@ Still intentionally incomplete in Phase 1:
 - [x] Build meals planner weekly read model and CRUD
 - [x] Build meal request flow
 - [x] Build shopping list quick add and toggle flows
-- [ ] Build dashboard aggregation endpoint and page
+- [x] Build dashboard aggregation endpoint and page
 - [ ] Implement optimistic updates for core interactions
 - [ ] Generate typed API client from OpenAPI
 - [ ] Add baseline test coverage for all core flows
@@ -1146,10 +1146,10 @@ Completed in current implementation pass:
 - Calendar weekly read model and create/update flows are implemented
 - Meals weekly planner and meal request flows are implemented
 - Shopping list read, quick add, and toggle flows are implemented
+- Home dashboard overview endpoint and page are implemented with weekly snapshot, today's plan, dinner tonight, shopping summary, and upcoming event cards
 
 Still intentionally incomplete in Phase 2:
 
-- Home dashboard remains placeholder UI and does not yet use an aggregation endpoint
 - Query hooks currently rely on invalidation and refetch, not optimistic updates
 - OpenAPI is exposed in development, but no generated TypeScript client is committed yet
 - Test projects exist, but core flow coverage is still mostly placeholder scaffolding

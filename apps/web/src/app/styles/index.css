@@ -529,6 +529,231 @@ select {
   background: var(--surface-subtle);
 }
 
+.dashboard-page {
+  display: grid;
+  gap: 1.5rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f5f8ff 100%);
+}
+
+.dashboard-hero {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dashboard-week-strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: rgba(238, 243, 251, 0.7);
+}
+
+.dashboard-week-day {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+  min-height: 5.5rem;
+  padding: 0.75rem 0.4rem;
+  border-radius: 1rem;
+  background: var(--surface);
+  border: 1px solid rgba(217, 226, 239, 0.75);
+}
+
+.dashboard-week-day-active {
+  background: var(--primary);
+  color: white;
+  border-color: transparent;
+}
+
+.dashboard-week-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.dashboard-week-number {
+  font-size: 1.05rem;
+}
+
+.dashboard-week-dots {
+  display: flex;
+  gap: 0.25rem;
+  min-height: 0.5rem;
+  align-items: center;
+}
+
+.dashboard-week-dot {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+.dashboard-layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.dashboard-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.dashboard-timeline {
+  list-style: none;
+  padding: 0 0 0 1.1rem;
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+  position: relative;
+}
+
+.dashboard-timeline::before {
+  content: '';
+  position: absolute;
+  left: 0.35rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 1px;
+  background: var(--border);
+}
+
+.dashboard-timeline-item {
+  position: relative;
+}
+
+.dashboard-timeline-item-past {
+  opacity: 0.62;
+}
+
+.dashboard-timeline-marker {
+  position: absolute;
+  left: -1.1rem;
+  top: 1.1rem;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 3px solid var(--primary);
+  z-index: 1;
+}
+
+.dashboard-timeline-item-active .dashboard-timeline-marker {
+  background: var(--primary);
+}
+
+.dashboard-timeline-card {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.dashboard-timeline-item-active .dashboard-timeline-card {
+  border-left: 4px solid var(--primary);
+  background: linear-gradient(180deg, #ffffff 0%, #f1f7ff 100%);
+}
+
+.dashboard-timeline-card-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dashboard-timeline-time,
+.dashboard-timeline-notes,
+.dashboard-meal-notes {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+}
+
+.dashboard-side-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.dashboard-meal-card,
+.dashboard-mini-card,
+.dashboard-empty-card {
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.dashboard-meal-card {
+  padding: 1.15rem;
+  background: linear-gradient(180deg, #ffffff 0%, #eef6ff 100%);
+}
+
+.dashboard-meal-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dashboard-meal-title {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+.dashboard-meal-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(93, 169, 233, 0.14);
+  color: var(--primary-strong);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.dashboard-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.dashboard-mini-card {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem;
+  min-height: 11rem;
+}
+
+.dashboard-mini-count {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.dashboard-empty-card {
+  display: grid;
+  place-items: center;
+  min-height: 8rem;
+  padding: 1rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.dashboard-empty-card-compact {
+  min-height: 6rem;
+  margin-top: 0.75rem;
+}
+
 .profile-card-header {
   display: flex;
   align-items: start;
@@ -606,6 +831,11 @@ select {
 
   .app-content {
     padding-bottom: 1.5rem;
+  }
+
+  .dashboard-layout {
+    grid-template-columns: minmax(0, 1.6fr) minmax(18rem, 1fr);
+    align-items: start;
   }
 }
 

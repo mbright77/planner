@@ -10,6 +10,7 @@ public static class PlannerEndpoints
 
         app.MapAuthEndpoints();
         app.MapBootstrapEndpoints();
+        app.MapDashboardEndpoints();
         app.MapProfileEndpoints();
         app.MapShoppingEndpoints();
         app.MapCalendarEndpoints();
