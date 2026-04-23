@@ -23,6 +23,10 @@ function formatDayNumber(value: string) {
   });
 }
 
+function formatShortWeekday(value: string) {
+  return formatWeekday(value).slice(0, 1);
+}
+
 function formatTimeRange(startAtUtc: string, endAtUtc: string) {
   const start = new Date(startAtUtc);
   const end = new Date(endAtUtc);
@@ -47,6 +51,7 @@ function getGreeting() {
 export function HomePage() {
   const bootstrapQuery = useBootstrap();
   const dashboardQuery = useDashboardOverview();
+  const familyName = bootstrapQuery.data?.familyName ?? 'Your family';
 
   const profilesById = useMemo(() => {
     return new Map((bootstrapQuery.data?.profiles ?? []).map((profile) => [profile.id, profile]));
@@ -57,13 +62,14 @@ export function HomePage() {
   return (
     <section className="page dashboard-page">
       <div className="dashboard-hero">
-        <div>
+        <div className="dashboard-hero-copy">
           <p className="eyebrow">Dashboard</p>
           <h2 className="page-title">{getGreeting()}, team</h2>
           <p className="page-copy">
             {dashboardQuery.data ? formatLongDate(dashboardQuery.data.date) : 'Loading your family overview...'}
           </p>
         </div>
+        <div className="dashboard-family-badge">{familyName}</div>
       </div>
 
       {dashboardQuery.isLoading ? <p className="page-copy">Loading dashboard...</p> : null}
@@ -81,7 +87,7 @@ export function HomePage() {
                   key={day.date}
                   className={isToday ? 'dashboard-week-day dashboard-week-day-active' : 'dashboard-week-day'}
                 >
-                  <span className="dashboard-week-label">{formatWeekday(day.date)}</span>
+                  <span className="dashboard-week-label">{formatShortWeekday(day.date)}</span>
                   <strong className="dashboard-week-number">{formatDayNumber(day.date)}</strong>
                   <div className="dashboard-week-dots" aria-hidden="true">
                     {Array.from({ length: dotCount }, (_, index) => (
@@ -97,6 +103,7 @@ export function HomePage() {
             <section>
               <div className="dashboard-section-header">
                 <h3 className="profile-card-title">Today&apos;s plan</h3>
+                <span className="dashboard-section-link">Live view</span>
               </div>
 
               {dashboardQuery.data.todayEvents.length > 0 ? (
@@ -118,14 +125,16 @@ export function HomePage() {
                         <div className="dashboard-timeline-card">
                           <div className="dashboard-timeline-card-header">
                             <div>
-                              <strong>{event.title}</strong>
+                              <strong className="dashboard-timeline-title">{event.title}</strong>
                               <p className="dashboard-timeline-time">{formatTimeRange(event.startAtUtc, event.endAtUtc)}</p>
                             </div>
                             {assignedProfile ? (
                               <span className="profile-color-chip">{assignedProfile.displayName}</span>
                             ) : null}
                           </div>
-                          {event.notes ? <p className="dashboard-timeline-notes">{event.notes}</p> : null}
+                          {event.notes ? (
+                            <p className="dashboard-timeline-notes dashboard-timeline-note-card">{event.notes}</p>
+                          ) : null}
                         </div>
                       </li>
                     );
@@ -147,11 +156,11 @@ export function HomePage() {
                       <div>
                         <h3 className="dashboard-meal-title">{dashboardQuery.data.tonightMeal.title}</h3>
                         {dashboardQuery.data.tonightMeal.ownerProfileId ? (
-                          <p className="shopping-meta">
+                          <p className="shopping-meta dashboard-meal-owner">
                             {profilesById.get(dashboardQuery.data.tonightMeal.ownerProfileId)?.displayName ?? 'Assigned family member'}
                           </p>
                         ) : (
-                          <p className="shopping-meta">No owner assigned yet</p>
+                          <p className="shopping-meta dashboard-meal-owner">No owner assigned yet</p>
                         )}
                       </div>
                       <span className="dashboard-meal-badge">Meal</span>
@@ -159,6 +168,7 @@ export function HomePage() {
                     {dashboardQuery.data.tonightMeal.notes ? (
                       <p className="dashboard-meal-notes">{dashboardQuery.data.tonightMeal.notes}</p>
                     ) : null}
+                    <div className="dashboard-meal-action">Change meal</div>
                   </>
                 ) : (
                   <div className="dashboard-empty-card dashboard-empty-card-compact">
@@ -168,8 +178,8 @@ export function HomePage() {
               </section>
 
               <div className="dashboard-mini-grid">
-                <section className="dashboard-mini-card">
-                  <p className="eyebrow">Shopping</p>
+                <section className="dashboard-mini-card dashboard-mini-card-shopping">
+                  <div className="dashboard-mini-icon" aria-hidden="true">List</div>
                   <h3 className="profile-card-title">Groceries</h3>
                   <p className="dashboard-mini-count">{dashboardQuery.data.shopping.openItemsCount} open</p>
                   <p className="shopping-meta">
@@ -179,8 +189,8 @@ export function HomePage() {
                   </p>
                 </section>
 
-                <section className="dashboard-mini-card">
-                  <p className="eyebrow">Upcoming</p>
+                <section className="dashboard-mini-card dashboard-mini-card-upcoming">
+                  <div className="dashboard-mini-icon" aria-hidden="true">Next</div>
                   <h3 className="profile-card-title">
                     {dashboardQuery.data.upcomingEvent?.title ?? 'All caught up'}
                   </h3>
