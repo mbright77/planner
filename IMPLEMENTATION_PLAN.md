@@ -1171,7 +1171,7 @@ Still intentionally incomplete in Phase 2:
 - [x] Add invite flows for additional users
 - [x] Add deletion and privacy workflows
 - [x] Expand accessibility testing and polish
-- [ ] Evaluate whether lightweight polling is needed on collaborative screens
+- [x] Evaluate whether lightweight polling is needed on collaborative screens
 
 Completed in current implementation pass:
 
@@ -1186,6 +1186,7 @@ Completed in current implementation pass:
 - The API exposes `/api/v1/privacy/account/delete` and `/api/v1/privacy/family/delete`, with baseline API tests covering both destructive paths
 - The shared app shell now includes a skip link, visible keyboard focus styling, polite live regions for sync and offline status, and alert semantics for bootstrap failures
 - The web app now has a lightweight Vitest + React Testing Library setup with initial accessibility-focused coverage for the app shell
+- Shopping list and meal request queries now poll every 30 seconds while online, while calendar and meals remain manual/revalidation driven to avoid unnecessary background traffic
 
 ### Phase 4: Optimization
 

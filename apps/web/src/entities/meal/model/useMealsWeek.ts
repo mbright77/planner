@@ -19,6 +19,7 @@ import { useAuthSession } from '../../../processes/auth-session/AuthSessionConte
 import { runOrQueueOfflineMutation } from '../../../shared/lib/offlineMutationQueue';
 import { syncOfflineQueryData } from '../../../shared/lib/offlineQuerySync';
 import { useOfflineQuery } from '../../../shared/lib/useOfflineQuery';
+import { useNetworkStatus } from '../../../shared/lib/useNetworkStatus';
 
 function mealsWeekKey(accessToken: string | undefined, weekStart: string) {
   return ['meals-week', accessToken, weekStart] as const;
@@ -132,11 +133,13 @@ export function useCreateMealPlan(weekStart: string) {
 
 export function useMealRequests(weekStart: string) {
   const { session } = useAuthSession();
+  const { isOnline } = useNetworkStatus();
 
   return useOfflineQuery({
     queryKey: mealRequestsKey(session?.accessToken, weekStart),
     queryFn: () => fetchMealRequests(session!.accessToken, weekStart),
     enabled: Boolean(session?.accessToken),
+    refetchInterval: isOnline ? 30_000 : false,
   });
 }
 

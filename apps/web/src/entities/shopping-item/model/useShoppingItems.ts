@@ -11,6 +11,7 @@ import { useAuthSession } from '../../../processes/auth-session/AuthSessionConte
 import { runOrQueueOfflineMutation } from '../../../shared/lib/offlineMutationQueue';
 import { syncOfflineQueryData } from '../../../shared/lib/offlineQuerySync';
 import { useOfflineQuery } from '../../../shared/lib/useOfflineQuery';
+import { useNetworkStatus } from '../../../shared/lib/useNetworkStatus';
 
 function shoppingItemsKey(accessToken: string | undefined) {
   return ['shopping-items', accessToken] as const;
@@ -38,11 +39,13 @@ function applyShoppingItemUpdate(
 
 export function useShoppingItems() {
   const { session } = useAuthSession();
+  const { isOnline } = useNetworkStatus();
 
   return useOfflineQuery({
     queryKey: shoppingItemsKey(session?.accessToken),
     queryFn: () => fetchShoppingItems(session!.accessToken),
     enabled: Boolean(session?.accessToken),
+    refetchInterval: isOnline ? 30_000 : false,
   });
 }
 
