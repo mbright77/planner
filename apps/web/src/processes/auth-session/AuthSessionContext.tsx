@@ -2,7 +2,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type PropsWithChildren,
@@ -14,6 +13,7 @@ const storageKey = 'planner.session';
 
 type AuthSessionContextValue = {
   session: Session | null;
+  isHydrated: boolean;
   setSession: (session: Session | null) => void;
   clearSession: () => void;
 };
@@ -21,6 +21,10 @@ type AuthSessionContextValue = {
 const AuthSessionContext = createContext<AuthSessionContextValue | null>(null);
 
 function readSession(): Session | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
   const value = window.localStorage.getItem(storageKey);
   if (!value) {
     return null;
@@ -35,11 +39,7 @@ function readSession(): Session | null {
 }
 
 export function AuthSessionProvider({ children }: PropsWithChildren) {
-  const [session, setSessionState] = useState<Session | null>(null);
-
-  useEffect(() => {
-    setSessionState(readSession());
-  }, []);
+  const [session, setSessionState] = useState<Session | null>(() => readSession());
 
   const setSession = useCallback((nextSession: Session | null) => {
     setSessionState(nextSession);
@@ -57,7 +57,7 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
   }, [setSession]);
 
   const value = useMemo(
-    () => ({ session, setSession, clearSession }),
+    () => ({ session, isHydrated: true, setSession, clearSession }),
     [clearSession, session, setSession],
   );
 
