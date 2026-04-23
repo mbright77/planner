@@ -1170,7 +1170,7 @@ Still intentionally incomplete in Phase 2:
 - [x] Add recurring event support with materialization jobs
 - [x] Add invite flows for additional users
 - [x] Add deletion and privacy workflows
-- [ ] Expand accessibility testing and polish
+- [x] Expand accessibility testing and polish
 - [ ] Evaluate whether lightweight polling is needed on collaborative screens
 
 Completed in current implementation pass:
@@ -1184,6 +1184,8 @@ Completed in current implementation pass:
 - The `/invite/:token` route now supports invite acceptance into an existing family with account creation and immediate sign-in
 - The protected `/settings/privacy` page now supports password-confirmed account deletion and admin-only family deletion flows
 - The API exposes `/api/v1/privacy/account/delete` and `/api/v1/privacy/family/delete`, with baseline API tests covering both destructive paths
+- The shared app shell now includes a skip link, visible keyboard focus styling, polite live regions for sync and offline status, and alert semantics for bootstrap failures
+- The web app now has a lightweight Vitest + React Testing Library setup with initial accessibility-focused coverage for the app shell
 
 ### Phase 4: Optimization
 

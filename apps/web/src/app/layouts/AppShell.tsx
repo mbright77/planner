@@ -24,6 +24,9 @@ export function AppShell() {
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">
+        Skip to content
+      </a>
       <header className="topbar">
         <div>
           <p className="eyebrow">Family planner</p>
@@ -35,22 +38,22 @@ export function AppShell() {
         </button>
       </header>
 
-      <main className="app-content">
+      <main id="main-content" className="app-content" tabIndex={-1}>
         {!isOnline ? (
-          <div className="status-banner status-banner-offline">
+          <div className="status-banner status-banner-offline" role="status" aria-live="polite">
             Offline mode: showing cached planner data when available.
           </div>
         ) : null}
         {isOnline && pendingCount > 0 ? (
-          <div className="status-banner status-banner-offline">
+          <div className="status-banner status-banner-offline" role="status" aria-live="polite">
             {isFlushing
               ? `Syncing ${pendingCount} offline change${pendingCount === 1 ? '' : 's'}...`
               : `${pendingCount} offline change${pendingCount === 1 ? '' : 's'} waiting to sync.`}
           </div>
         ) : null}
-        {bootstrapQuery.isLoading ? <div className="status-banner">Loading family data...</div> : null}
+        {bootstrapQuery.isLoading ? <div className="status-banner" role="status" aria-live="polite">Loading family data...</div> : null}
         {bootstrapQuery.isError ? (
-          <div className="status-banner status-banner-error">
+          <div className="status-banner status-banner-error" role="alert">
             Unable to load bootstrap data. Try signing in again.
           </div>
         ) : null}
