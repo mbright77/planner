@@ -35,7 +35,11 @@ public static class DependencyInjection
 
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ICalendarSeriesMaterializer, CalendarSeriesMaterializer>();
-        services.AddHostedService<CalendarSeriesMaterializationWorker>();
+
+        if (!environment.IsDevelopment())
+        {
+            services.AddHostedService<CalendarSeriesMaterializationWorker>();
+        }
 
         return services;
     }
