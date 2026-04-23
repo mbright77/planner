@@ -34,6 +34,8 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<PlannerDbContext>();
 
         services.AddScoped<IJwtTokenService, JwtTokenService>();
+        services.AddScoped<ICalendarSeriesMaterializer, CalendarSeriesMaterializer>();
+        services.AddHostedService<CalendarSeriesMaterializationWorker>();
 
         return services;
     }

@@ -6,7 +6,9 @@ public sealed record CalendarEventResponse(
     string? Notes,
     DateTimeOffset StartAtUtc,
     DateTimeOffset EndAtUtc,
-    Guid? AssignedProfileId);
+    Guid? AssignedProfileId,
+    bool IsRecurring,
+    DateOnly? RepeatUntil);
 
 public sealed record WeeklyCalendarResponse(
     DateOnly WeekStart,
@@ -18,11 +20,15 @@ public sealed record CreateCalendarEventRequest(
     string? Notes,
     DateTimeOffset StartAtUtc,
     DateTimeOffset EndAtUtc,
-    Guid? AssignedProfileId);
+    Guid? AssignedProfileId,
+    bool RepeatsWeekly,
+    DateOnly? RepeatUntil);
 
 public sealed record UpdateCalendarEventRequest(
     string Title,
     string? Notes,
     DateTimeOffset StartAtUtc,
     DateTimeOffset EndAtUtc,
-    Guid? AssignedProfileId);
+    Guid? AssignedProfileId,
+    bool ApplyToSeries,
+    DateOnly? RepeatUntil);

@@ -268,6 +268,22 @@ select {
   background: var(--surface);
 }
 
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  background: var(--surface-subtle);
+}
+
+.checkbox-field input {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
 .auth-actions {
   display: grid;
   gap: 0.75rem;
@@ -512,9 +528,14 @@ select {
 }
 
 .calendar-event-time,
-.calendar-event-notes {
+.calendar-event-notes,
+.calendar-event-recurrence {
   margin: 0.3rem 0 0;
   color: var(--text-muted);
+}
+
+.calendar-apply-series-toggle {
+  margin-top: 1rem;
 }
 
 .calendar-event-actions {

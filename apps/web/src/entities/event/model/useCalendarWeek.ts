@@ -72,6 +72,8 @@ export function useCreateCalendarEvent(weekStart: string) {
           startAtUtc: request.startAtUtc,
           endAtUtc: request.endAtUtc,
           assignedProfileId: request.assignedProfileId,
+          isRecurring: request.repeatsWeekly,
+          repeatUntil: request.repeatUntil,
         };
 
         queryClient.setQueryData<WeeklyCalendarResponse | undefined>(queryKey, (week) =>
@@ -156,6 +158,8 @@ export function useUpdateCalendarEvent(weekStart: string) {
                 startAtUtc: request.startAtUtc,
                 endAtUtc: request.endAtUtc,
                 assignedProfileId: request.assignedProfileId,
+                isRecurring: request.applyToSeries,
+                repeatUntil: request.repeatUntil ?? null,
               },
             ])
           : remainingEvents;

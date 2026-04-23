@@ -30,9 +30,18 @@ public sealed class CalendarEventConfiguration : IEntityTypeConfiguration<Calend
 
         builder.HasIndex(x => new { x.FamilyId, x.StartAtUtc });
 
+        builder.HasIndex(x => new { x.SeriesId, x.StartAtUtc })
+            .IsUnique()
+            .HasFilter("\"SeriesId\" IS NOT NULL");
+
         builder.HasOne(x => x.Family)
             .WithMany(x => x.CalendarEvents)
             .HasForeignKey(x => x.FamilyId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(x => x.Series)
+            .WithMany(x => x.Events)
+            .HasForeignKey(x => x.SeriesId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.AssignedProfile)

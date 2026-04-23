@@ -18,6 +18,8 @@ public sealed class PlannerDbContext(DbContextOptions<PlannerDbContext> options)
 
     public DbSet<CalendarEvent> CalendarEvents => Set<CalendarEvent>();
 
+    public DbSet<CalendarEventSeries> CalendarEventSeries => Set<CalendarEventSeries>();
+
     public DbSet<MealPlan> MealPlans => Set<MealPlan>();
 
     public DbSet<MealRequest> MealRequests => Set<MealRequest>();

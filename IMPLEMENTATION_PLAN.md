@@ -31,7 +31,8 @@ Current committed reality:
 - The frontend currently stores session data in `localStorage`, not in-memory auth state
 - The frontend uses plain CSS and local `useState` forms, not Tailwind or React Hook Form
 - Core first-pass slices are committed for profiles, shopping, calendar, meals, and meal requests
-- The home dashboard, offline support, generated API client, CI/CD, and real infra manifests are not implemented yet
+- The home dashboard, generated API client, IndexedDB-backed offline support, and weekly recurring calendar events are implemented
+- CI/CD and real infra manifests are not implemented yet
 
 Use the sections below as product direction, but treat the notes marked "Current committed state" as the source of truth for what exists today.
 
@@ -96,7 +97,8 @@ Use the sections below as product direction, but treat the notes marked "Current
 Current committed state:
 
 - `apps`, `packages`, `infra`, `planner.sln`, `package.json`, `pnpm-workspace.yaml`, `.editorconfig`, and `justfile` are present
-- `packages/design-tokens` and `packages/api-client` exist but are still placeholders
+- `packages/design-tokens` exists but is still a placeholder
+- `packages/api-client` contains the generated TypeScript API client consumed by the web wrappers
 - `infra/k8s` and `infra/github` exist, but currently only contain README placeholders
 
 ### Monorepo Structure
@@ -165,7 +167,7 @@ Current committed state:
 - Server state uses TanStack Query
 - Form state currently uses local component `useState`
 - Auth state is persisted in `localStorage` under `planner.session`
-- No offline persistence layer is committed yet
+- Protected reads are cached in IndexedDB and selected mutations queue locally for replay on reconnect
 
 ### Routing Structure
 
@@ -269,7 +271,7 @@ Current committed state:
 Current committed state:
 
 - REST endpoints and development OpenAPI publishing are implemented
-- `packages/api-client` is still empty and the frontend currently uses handwritten fetch wrappers in `apps/web/src/shared/api`
+- `packages/api-client` contains a generated OpenAPI client and the frontend wrappers in `apps/web/src/shared/api` consume it
 
 ### PWA Setup
 
@@ -440,7 +442,8 @@ Current committed state:
 
 - Implemented groups include `/api/v1/auth`, `/api/v1/me`, `/api/v1/profiles`, `/api/v1/shopping`, `/api/v1/calendar`, and `/api/v1/meals`
 - The current API does not pass `familyId` in routes; handlers derive family scope from the authenticated membership
-- Consent, dashboard, families, and shopping category endpoints are not implemented yet
+- Dashboard endpoints are implemented
+- Consent, families, and shopping category endpoints are not implemented yet
 
 ### Read Model Endpoints
 
@@ -454,7 +457,7 @@ Current committed state:
 
 - Weekly calendar and meals read models are implemented
 - Profiles and shopping currently return simple feature-scoped lists rather than the planned family-route read models
-- Dashboard overview read model is not implemented yet
+- Dashboard overview read model is implemented
 
 ### Authentication and Authorization
 
@@ -523,7 +526,8 @@ Use in-process background tasks only where needed:
 
 Current committed state:
 
-- No background job implementations are committed yet
+- An in-process background worker materializes future recurring calendar event instances
+- Refresh token cleanup, GDPR deletion jobs, and shopping archival cleanup are not implemented yet
 
 ### EF Core Migrations Policy
 
@@ -602,7 +606,7 @@ planner.audit_events
 
 Current committed state:
 
-- Implemented core tables/entities cover families, family memberships, profiles, shopping items, calendar events, meal plans, and meal requests
+- Implemented core tables/entities cover families, family memberships, profiles, calendar event series, calendar events, shopping items, meal plans, and meal requests
 - Refresh tokens, invites, shopping lists, shopping categories, user consents, and audit events are not implemented yet
 
 ### Key Tables
@@ -742,7 +746,8 @@ Current committed state:
 
 - A weekly read model endpoint is implemented
 - Current queries use a simple start-time-in-week window in UTC
-- Family-timezone week conversion and recurring event materialization are not implemented yet
+- Weekly recurring event materialization is implemented through `calendar_event_series` plus materialized `calendar_events`
+- Family-timezone week conversion is not implemented yet
 
 ### Indexing Strategy
 
@@ -1159,7 +1164,7 @@ Still intentionally incomplete in Phase 2:
 
 - [x] Add IndexedDB caching and offline read support
 - [x] Add offline mutation queue for selected flows
-- [ ] Add recurring event support with materialization jobs
+- [x] Add recurring event support with materialization jobs
 - [ ] Add invite flows for additional users
 - [ ] Add deletion and privacy workflows
 - [ ] Expand accessibility testing and polish
@@ -1170,6 +1175,8 @@ Completed in current implementation pass:
 - Protected read models now fall back to IndexedDB-backed cached data for bootstrap, dashboard, calendar, meals, meal requests, and shopping
 - The app shell shows a lightweight offline banner when the browser is offline
 - Shopping, calendar, and meal mutations now queue in IndexedDB and flush when the browser reconnects
+- Calendar now supports weekly recurring events backed by `calendar_event_series`, with an in-process materializer filling future occurrences
+- The calendar page exposes weekly repeat creation and future-series update behavior for recurring events
 
 ### Phase 4: Optimization
 

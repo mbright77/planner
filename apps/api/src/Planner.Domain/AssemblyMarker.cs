@@ -32,6 +32,8 @@ public sealed class Family
 
     public ICollection<CalendarEvent> CalendarEvents { get; set; } = new List<CalendarEvent>();
 
+    public ICollection<CalendarEventSeries> CalendarEventSeries { get; set; } = new List<CalendarEventSeries>();
+
     public ICollection<MealPlan> MealPlans { get; set; } = new List<MealPlan>();
 
     public ICollection<MealRequest> MealRequests { get; set; } = new List<MealRequest>();
@@ -112,9 +114,42 @@ public sealed class CalendarEvent
 
     public Guid? AssignedProfileId { get; set; }
 
+    public Guid? SeriesId { get; set; }
+
     public Family Family { get; set; } = null!;
 
     public Profile? AssignedProfile { get; set; }
+
+    public CalendarEventSeries? Series { get; set; }
+}
+
+public sealed class CalendarEventSeries
+{
+    public Guid Id { get; set; }
+
+    public Guid FamilyId { get; set; }
+
+    public string Title { get; set; } = string.Empty;
+
+    public string? Notes { get; set; }
+
+    public DateTimeOffset StartsAtUtc { get; set; }
+
+    public DateTimeOffset EndsAtUtc { get; set; }
+
+    public DateOnly RepeatUntil { get; set; }
+
+    public DateOnly MaterializedThrough { get; set; }
+
+    public DateTimeOffset CreatedAtUtc { get; set; }
+
+    public Guid? AssignedProfileId { get; set; }
+
+    public Family Family { get; set; } = null!;
+
+    public Profile? AssignedProfile { get; set; }
+
+    public ICollection<CalendarEvent> Events { get; set; } = new List<CalendarEvent>();
 }
 
 public sealed class MealPlan

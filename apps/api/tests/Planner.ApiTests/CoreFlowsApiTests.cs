@@ -62,7 +62,7 @@ public sealed class CoreFlowsApiTests(ApiTestFactory factory) : IClassFixture<Ap
 
         var calendarResponse = await client.PostAsJsonAsync(
             "/api/v1/calendar",
-            new CreateCalendarEventRequest("Soccer Practice", "Bring water", startAtUtc, endAtUtc, profile.Id));
+            new CreateCalendarEventRequest("Soccer Practice", "Bring water", startAtUtc, endAtUtc, profile.Id, false, null));
         Assert.Equal(HttpStatusCode.Created, calendarResponse.StatusCode);
 
         var mealResponse = await client.PostAsJsonAsync(
@@ -123,6 +123,62 @@ public sealed class CoreFlowsApiTests(ApiTestFactory factory) : IClassFixture<Ap
         Assert.Contains(mealsWeek.Meals, x => x.MealDate == mealDate && x.Title == "Pizza");
         Assert.NotNull(openRequests);
         Assert.DoesNotContain(openRequests, x => x.Id == mealRequest.Id);
+    }
+
+    [Fact]
+    public async Task Recurring_calendar_event_materializes_future_occurrences_and_updates_series()
+    {
+        await factory.ResetDatabaseAsync();
+        using var client = factory.CreateClient();
+
+        var authResponse = await RegisterAsync(client);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse.AccessToken);
+
+        var bootstrap = await client.GetFromJsonAsync<BootstrapResponse>("/api/v1/me/bootstrap");
+        Assert.NotNull(bootstrap);
+
+        var weekStart = GetWeekStart(DateOnly.FromDateTime(DateTime.UtcNow).AddDays(7));
+        var firstStart = new DateTimeOffset(weekStart.ToDateTime(new TimeOnly(15, 0), DateTimeKind.Utc));
+        var firstEnd = firstStart.AddHours(1);
+        var repeatUntil = weekStart.AddDays(14);
+
+        var createResponse = await client.PostAsJsonAsync(
+            "/api/v1/calendar",
+            new CreateCalendarEventRequest("Swim Lessons", "Bring goggles", firstStart, firstEnd, bootstrap.Profiles[0].Id, true, repeatUntil));
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+        var createdEvent = await createResponse.Content.ReadFromJsonAsync<CalendarEventResponse>();
+        Assert.NotNull(createdEvent);
+        Assert.True(createdEvent.IsRecurring);
+        Assert.Equal(repeatUntil, createdEvent.RepeatUntil);
+
+        var currentWeek = await client.GetFromJsonAsync<WeeklyCalendarResponse>($"/api/v1/calendar/week?start={weekStart:yyyy-MM-dd}");
+        var nextWeek = await client.GetFromJsonAsync<WeeklyCalendarResponse>($"/api/v1/calendar/week?start={weekStart.AddDays(7):yyyy-MM-dd}");
+        var finalWeek = await client.GetFromJsonAsync<WeeklyCalendarResponse>($"/api/v1/calendar/week?start={weekStart.AddDays(14):yyyy-MM-dd}");
+
+        Assert.NotNull(currentWeek);
+        Assert.NotNull(nextWeek);
+        Assert.NotNull(finalWeek);
+        Assert.Contains(currentWeek.Events, x => x.Title == "Swim Lessons" && x.IsRecurring);
+        Assert.Contains(nextWeek.Events, x => x.Title == "Swim Lessons" && x.IsRecurring);
+        Assert.Contains(finalWeek.Events, x => x.Title == "Swim Lessons" && x.IsRecurring);
+
+        var secondOccurrence = Assert.Single(nextWeek.Events, x => x.Title == "Swim Lessons");
+        var updatedStart = new DateTimeOffset(weekStart.AddDays(7).ToDateTime(new TimeOnly(16, 0), DateTimeKind.Utc));
+        var updatedEnd = updatedStart.AddHours(1);
+
+        var updateResponse = await client.PutAsJsonAsync(
+            $"/api/v1/calendar/{secondOccurrence.Id}",
+            new UpdateCalendarEventRequest("Swim Lessons", "Coach moved the slot", updatedStart, updatedEnd, bootstrap.Profiles[0].Id, true, repeatUntil));
+        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+
+        var updatedNextWeek = await client.GetFromJsonAsync<WeeklyCalendarResponse>($"/api/v1/calendar/week?start={weekStart.AddDays(7):yyyy-MM-dd}");
+        var updatedFinalWeek = await client.GetFromJsonAsync<WeeklyCalendarResponse>($"/api/v1/calendar/week?start={weekStart.AddDays(14):yyyy-MM-dd}");
+
+        Assert.NotNull(updatedNextWeek);
+        Assert.NotNull(updatedFinalWeek);
+        Assert.Contains(updatedNextWeek.Events, x => x.StartAtUtc == updatedStart && x.Notes == "Coach moved the slot");
+        Assert.Contains(updatedFinalWeek.Events, x => x.StartAtUtc == updatedStart.AddDays(7) && x.Notes == "Coach moved the slot");
     }
 
     private static async Task<AuthResponse> RegisterAsync(HttpClient client)

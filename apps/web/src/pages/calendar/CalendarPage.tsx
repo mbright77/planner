@@ -32,6 +32,9 @@ export function CalendarPage() {
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
   const [assignedProfileId, setAssignedProfileId] = useState('');
+  const [repeatsWeekly, setRepeatsWeekly] = useState(false);
+  const [repeatUntil, setRepeatUntil] = useState(formatDateOnly(new Date(initialStart.getTime() + 20 * 24 * 60 * 60 * 1000)));
+  const [applyToSeries, setApplyToSeries] = useState(true);
   const [startAtLocal, setStartAtLocal] = useState(formatDateTimeLocal(new Date()));
   const [endAtLocal, setEndAtLocal] = useState(formatDateTimeLocal(new Date(Date.now() + 60 * 60 * 1000)));
 
@@ -66,11 +69,14 @@ export function CalendarPage() {
       startAtUtc: new Date(startAtLocal).toISOString(),
       endAtUtc: new Date(endAtLocal).toISOString(),
       assignedProfileId: assignedProfileId || null,
+      repeatsWeekly,
+      repeatUntil: repeatsWeekly ? repeatUntil : null,
     });
 
     setTitle('');
     setNotes('');
     setAssignedProfileId('');
+    setRepeatsWeekly(false);
   }
 
   async function handleBumpHour(
@@ -78,6 +84,8 @@ export function CalendarPage() {
     currentTitle: string,
     currentNotes: string | null,
     currentAssignedProfileId: string | null,
+    currentRepeatUntil: string | null,
+    currentIsRecurring: boolean,
     startAtUtc: string,
     endAtUtc: string,
   ) {
@@ -86,14 +94,16 @@ export function CalendarPage() {
 
     await updateCalendarEventMutation.mutateAsync({
       eventId,
-      request: {
-        title: currentTitle,
-        notes: currentNotes,
-        startAtUtc: nextStart,
-        endAtUtc: nextEnd,
-        assignedProfileId: currentAssignedProfileId,
-      },
-    });
+        request: {
+          title: currentTitle,
+          notes: currentNotes,
+          startAtUtc: nextStart,
+          endAtUtc: nextEnd,
+          assignedProfileId: currentAssignedProfileId,
+          applyToSeries: currentIsRecurring ? applyToSeries : false,
+          repeatUntil: currentIsRecurring ? currentRepeatUntil : null,
+        },
+      });
   }
 
   return (
@@ -137,6 +147,22 @@ export function CalendarPage() {
           </select>
         </label>
 
+        <label className="field checkbox-field">
+          <span>Repeat weekly</span>
+          <input
+            checked={repeatsWeekly}
+            onChange={(event) => setRepeatsWeekly(event.target.checked)}
+            type="checkbox"
+          />
+        </label>
+
+        {repeatsWeekly ? (
+          <label className="field">
+            <span>Repeat until</span>
+            <input value={repeatUntil} onChange={(event) => setRepeatUntil(event.target.value)} type="date" />
+          </label>
+        ) : null}
+
         <label className="field calendar-field-wide">
           <span>Notes</span>
           <textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
@@ -149,6 +175,10 @@ export function CalendarPage() {
 
       {calendarWeekQuery.isLoading ? <p className="page-copy">Loading weekly calendar...</p> : null}
       {calendarWeekQuery.isError ? <p className="form-error">Unable to load weekly events.</p> : null}
+      <label className="field checkbox-field calendar-apply-series-toggle">
+        <span>Update all future repeats when bumping recurring events</span>
+        <input checked={applyToSeries} onChange={(event) => setApplyToSeries(event.target.checked)} type="checkbox" />
+      </label>
 
       <div className="calendar-groups">
         {groupedEvents.map(([day, events]) => (
@@ -172,6 +202,11 @@ export function CalendarPage() {
                         {new Date(calendarEvent.startAtUtc).toLocaleString()} -{' '}
                         {new Date(calendarEvent.endAtUtc).toLocaleTimeString()}
                       </p>
+                      {calendarEvent.isRecurring ? (
+                        <p className="calendar-event-recurrence">
+                          Repeats weekly through {calendarEvent.repeatUntil}
+                        </p>
+                      ) : null}
                       {calendarEvent.notes ? <p className="calendar-event-notes">{calendarEvent.notes}</p> : null}
                     </div>
 
@@ -186,6 +221,8 @@ export function CalendarPage() {
                             calendarEvent.title,
                             calendarEvent.notes,
                             calendarEvent.assignedProfileId,
+                            calendarEvent.repeatUntil,
+                            calendarEvent.isRecurring,
                             calendarEvent.startAtUtc,
                             calendarEvent.endAtUtc,
                           )

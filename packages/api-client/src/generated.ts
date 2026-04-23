@@ -888,6 +888,9 @@ export interface components {
             endAtUtc: string;
             /** Format: uuid */
             assignedProfileId: string | null;
+            isRecurring: boolean;
+            /** Format: date */
+            repeatUntil: string | null;
         };
         CreateCalendarEventRequest: {
             title: string;
@@ -898,6 +901,9 @@ export interface components {
             endAtUtc: string;
             /** Format: uuid */
             assignedProfileId: string | null;
+            repeatsWeekly: boolean;
+            /** Format: date */
+            repeatUntil: string | null;
         };
         CreateMealPlanRequest: {
             /** Format: date */
@@ -1060,6 +1066,9 @@ export interface components {
             endAtUtc: string;
             /** Format: uuid */
             assignedProfileId: string | null;
+            applyToSeries: boolean;
+            /** Format: date */
+            repeatUntil: string | null;
         };
         UpdateMealPlanRequest: {
             /** Format: date */
