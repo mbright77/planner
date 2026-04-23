@@ -10,6 +10,7 @@ public static class PlannerEndpoints
 
         app.MapAuthEndpoints();
         app.MapBootstrapEndpoints();
+        app.MapProfileEndpoints();
 
         if (app.ServiceProvider.GetRequiredService<IHostEnvironment>().IsDevelopment())
         {
