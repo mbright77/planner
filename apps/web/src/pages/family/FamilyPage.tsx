@@ -73,7 +73,7 @@ export function FamilyPage() {
         <Link className="inline-action-link" to="/settings/privacy">Review deletion and privacy options</Link>
       </p>
 
-      <form className="profile-form" onSubmit={handleCreate}>
+      <form className="profile-form family-create-card" onSubmit={handleCreate}>
         <label className="field">
           <span>Display name</span>
           <input
@@ -102,7 +102,7 @@ export function FamilyPage() {
 
       {isAdmin ? (
         <section className="invite-panel">
-          <div className="profile-card-header">
+          <div className="profile-card-header family-section-header">
             <div>
               <p className="eyebrow">Invites</p>
               <h3 className="profile-card-title">Invite another adult</h3>
@@ -152,17 +152,33 @@ export function FamilyPage() {
 
       <div className="profile-grid">
         {profilesQuery.data?.map((profile) => (
-          <article key={profile.id} className="profile-card">
+          <article key={profile.id} className={`profile-card profile-card-${profile.colorKey}`}>
+            <div className="profile-card-color-bar" aria-hidden="true" />
             <div className="profile-card-header">
-              <div>
-                <p className="eyebrow">Profile</p>
-                <h3 className="profile-card-title">{profile.displayName}</h3>
+              <div className="profile-card-identity">
+                <div className="profile-avatar" aria-hidden="true">{profile.displayName.slice(0, 1).toUpperCase()}</div>
+                <div>
+                  <p className="eyebrow">Profile</p>
+                  <h3 className="profile-card-title">{profile.displayName}</h3>
+                  <span className="profile-role-chip">{profile.isActive ? 'Active member' : 'Inactive member'}</span>
+                </div>
               </div>
               <span className="profile-color-chip">{profile.colorKey}</span>
             </div>
 
-            <label className="toggle-row">
-              <span>{profile.isActive ? 'Active' : 'Inactive'}</span>
+            <div className="profile-card-stats">
+              <div className="profile-stat-card">
+                <span className="profile-stat-label">Status</span>
+                <span className="profile-stat-value">{profile.isActive ? 'Active' : 'Inactive'}</span>
+              </div>
+              <div className="profile-stat-card">
+                <span className="profile-stat-label">Color identity</span>
+                <span className="profile-stat-value">{profile.colorKey}</span>
+              </div>
+            </div>
+
+            <label className="toggle-row profile-toggle-row">
+              <span>{profile.isActive ? 'Included in planning' : 'Hidden from planning'}</span>
               <input
                 type="checkbox"
                 checked={profile.isActive}

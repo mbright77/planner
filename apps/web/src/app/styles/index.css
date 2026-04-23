@@ -451,6 +451,14 @@ select {
   margin-top: 1.5rem;
 }
 
+.family-create-card {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
 .shopping-groups {
   display: grid;
   gap: 1rem;
@@ -956,11 +964,99 @@ select {
 }
 
 .profile-card {
+  position: relative;
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: 1.25rem;
   background: var(--surface);
   box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.profile-card-color-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 0.45rem;
+}
+
+.profile-card-green .profile-card-color-bar {
+  background: #84ac8e;
+}
+
+.profile-card-blue .profile-card-color-bar {
+  background: #5da9e9;
+}
+
+.profile-card-pink .profile-card-color-bar {
+  background: #fd898a;
+}
+
+.profile-card-yellow .profile-card-color-bar {
+  background: #f4d35e;
+}
+
+.profile-card-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-avatar {
+  width: 3.5rem;
+  height: 3.5rem;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(93, 169, 233, 0.16);
+  color: var(--primary-strong);
+  font-family: 'Plus Jakarta Sans', 'Public Sans', system-ui, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.profile-role-chip {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(93, 169, 233, 0.12);
+  color: var(--primary-strong);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.profile-card-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.profile-stat-card {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  border-radius: 0.9rem;
+  background: var(--surface-subtle);
+}
+
+.profile-stat-label {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.profile-stat-value {
+  font-family: 'Plus Jakarta Sans', 'Public Sans', system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: capitalize;
 }
 
 .invite-panel {
@@ -970,6 +1066,10 @@ select {
   border-radius: 1.25rem;
   background: var(--surface);
   box-shadow: var(--shadow);
+}
+
+.family-section-header {
+  margin-bottom: 0.25rem;
 }
 
 .invite-list {
@@ -1345,6 +1445,11 @@ select {
   justify-content: space-between;
   align-items: center;
   margin-top: 1rem;
+}
+
+.profile-toggle-row {
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
 }
 
 .bottom-nav {
