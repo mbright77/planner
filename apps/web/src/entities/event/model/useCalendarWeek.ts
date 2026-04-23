@@ -10,6 +10,8 @@ import {
   type WeeklyCalendarResponse,
 } from '../../../shared/api/calendar';
 import { useAuthSession } from '../../../processes/auth-session/AuthSessionContext';
+import { runOrQueueOfflineMutation } from '../../../shared/lib/offlineMutationQueue';
+import { syncOfflineQueryData } from '../../../shared/lib/offlineQuerySync';
 import { useOfflineQuery } from '../../../shared/lib/useOfflineQuery';
 
 function calendarWeekKey(accessToken: string | undefined, weekStart: string) {
@@ -46,7 +48,16 @@ export function useCreateCalendarEvent(weekStart: string) {
   const queryKey = calendarWeekKey(session?.accessToken, weekStart);
 
   return useMutation({
-    mutationFn: (request: CreateCalendarEventRequest) => createCalendarEvent(session!.accessToken, request),
+    mutationFn: (request: CreateCalendarEventRequest) =>
+      runOrQueueOfflineMutation(
+        {
+          kind: 'calendar.create',
+          accessToken: session!.accessToken,
+          payload: request,
+          invalidateKeys: [queryKey, ['dashboard-overview']],
+        },
+        () => createCalendarEvent(session!.accessToken, request),
+      ),
     onMutate: async (request) => {
       await queryClient.cancelQueries({ queryKey });
 
@@ -71,26 +82,33 @@ export function useCreateCalendarEvent(weekStart: string) {
               }
             : week,
         );
+        await syncOfflineQueryData<WeeklyCalendarResponse>(queryClient, queryKey);
       }
 
       return { previousWeek, optimisticId };
     },
-    onError: (_error, _request, context) => {
+    onError: async (_error, _request, context) => {
       queryClient.setQueryData(queryKey, context?.previousWeek);
+      await syncOfflineQueryData<WeeklyCalendarResponse>(queryClient, queryKey);
     },
-    onSuccess: (event, _request, context) => {
+    onSuccess: async (result, _request, context) => {
+      if (result.status === 'queued') {
+        return;
+      }
+
       queryClient.setQueryData<WeeklyCalendarResponse | undefined>(queryKey, (week) =>
         week
           ? {
-              ...week,
-              events: sortEvents(
-                week.events.map((currentEvent) =>
-                  currentEvent.id === context?.optimisticId ? event : currentEvent,
+            ...week,
+            events: sortEvents(
+              week.events.map((currentEvent) =>
+                  currentEvent.id === context?.optimisticId ? result.data : currentEvent,
                 ),
               ),
             }
           : week,
       );
+      await syncOfflineQueryData<WeeklyCalendarResponse>(queryClient, queryKey);
     },
     onSettled: async () => {
       await Promise.all([
@@ -108,7 +126,15 @@ export function useUpdateCalendarEvent(weekStart: string) {
 
   return useMutation({
     mutationFn: ({ eventId, request }: { eventId: string; request: UpdateCalendarEventRequest }) =>
-      updateCalendarEvent(session!.accessToken, eventId, request),
+      runOrQueueOfflineMutation(
+        {
+          kind: 'calendar.update',
+          accessToken: session!.accessToken,
+          payload: { eventId, request },
+          invalidateKeys: [queryKey, ['dashboard-overview']],
+        },
+        () => updateCalendarEvent(session!.accessToken, eventId, request),
+      ),
     onMutate: async ({ eventId, request }) => {
       await queryClient.cancelQueries({ queryKey });
 
@@ -139,27 +165,34 @@ export function useUpdateCalendarEvent(weekStart: string) {
           events: nextEvents,
         };
       });
+      await syncOfflineQueryData<WeeklyCalendarResponse>(queryClient, queryKey);
 
       return { previousWeek };
     },
-    onError: (_error, _variables, context) => {
+    onError: async (_error, _variables, context) => {
       queryClient.setQueryData(queryKey, context?.previousWeek);
+      await syncOfflineQueryData<WeeklyCalendarResponse>(queryClient, queryKey);
     },
-    onSuccess: (event) => {
+    onSuccess: async (result) => {
+      if (result.status === 'queued') {
+        return;
+      }
+
       queryClient.setQueryData<WeeklyCalendarResponse | undefined>(queryKey, (week) => {
         if (!week) {
           return week;
         }
 
-        const remainingEvents = week.events.filter((currentEvent) => currentEvent.id !== event.id);
+        const remainingEvents = week.events.filter((currentEvent) => currentEvent.id !== result.data.id);
 
         return {
           ...week,
-          events: isEventInWeek(event.startAtUtc, weekStart)
-            ? sortEvents([...remainingEvents, event])
+          events: isEventInWeek(result.data.startAtUtc, weekStart)
+            ? sortEvents([...remainingEvents, result.data])
             : remainingEvents,
         };
       });
+      await syncOfflineQueryData<WeeklyCalendarResponse>(queryClient, queryKey);
     },
     onSettled: async () => {
       await Promise.all([

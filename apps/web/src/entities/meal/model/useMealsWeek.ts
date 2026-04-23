@@ -16,6 +16,8 @@ import {
   type WeeklyMealsResponse,
 } from '../../../shared/api/meals';
 import { useAuthSession } from '../../../processes/auth-session/AuthSessionContext';
+import { runOrQueueOfflineMutation } from '../../../shared/lib/offlineMutationQueue';
+import { syncOfflineQueryData } from '../../../shared/lib/offlineQuerySync';
 import { useOfflineQuery } from '../../../shared/lib/useOfflineQuery';
 
 function mealsWeekKey(accessToken: string | undefined, weekStart: string) {
@@ -55,7 +57,16 @@ export function useCreateMealPlan(weekStart: string) {
   const mealsQueryKey = mealsWeekKey(session?.accessToken, weekStart);
 
   return useMutation({
-    mutationFn: (request: CreateMealPlanRequest) => createMealPlan(session!.accessToken, request),
+    mutationFn: (request: CreateMealPlanRequest) =>
+      runOrQueueOfflineMutation(
+        {
+          kind: 'meal.create',
+          accessToken: session!.accessToken,
+          payload: request,
+          invalidateKeys: [mealsQueryKey, ['dashboard-overview']],
+        },
+        () => createMealPlan(session!.accessToken, request),
+      ),
     onMutate: async (request) => {
       await queryClient.cancelQueries({ queryKey: mealsQueryKey });
 
@@ -82,24 +93,33 @@ export function useCreateMealPlan(weekStart: string) {
               }
             : week,
         );
+        await syncOfflineQueryData<WeeklyMealsResponse>(queryClient, mealsQueryKey);
       }
 
       return { previousMeals, optimisticId };
     },
-    onError: (_error, _request, context) => {
+    onError: async (_error, _request, context) => {
       queryClient.setQueryData(mealsQueryKey, context?.previousMeals);
+      await syncOfflineQueryData<WeeklyMealsResponse>(queryClient, mealsQueryKey);
     },
-    onSuccess: (meal, _request, context) => {
+    onSuccess: async (result, _request, context) => {
+      if (result.status === 'queued') {
+        return;
+      }
+
       queryClient.setQueryData<WeeklyMealsResponse | undefined>(mealsQueryKey, (week) =>
         week
           ? {
-              ...week,
-              meals: sortMeals(
-                week.meals.map((currentMeal) => (currentMeal.id === context?.optimisticId ? meal : currentMeal)),
+            ...week,
+            meals: sortMeals(
+                week.meals.map((currentMeal) =>
+                  currentMeal.id === context?.optimisticId ? result.data : currentMeal,
+                ),
               ),
             }
           : week,
       );
+      await syncOfflineQueryData<WeeklyMealsResponse>(queryClient, mealsQueryKey);
     },
     onSettled: async () => {
       await Promise.all([
@@ -138,7 +158,16 @@ export function useCreateMealRequest(weekStart: string) {
   const requestsQueryKey = mealRequestsKey(session?.accessToken, weekStart);
 
   return useMutation({
-    mutationFn: (request: CreateMealRequestRequest) => createMealRequest(session!.accessToken, request),
+    mutationFn: (request: CreateMealRequestRequest) =>
+      runOrQueueOfflineMutation(
+        {
+          kind: 'meal-request.create',
+          accessToken: session!.accessToken,
+          payload: request,
+          invalidateKeys: [requestsQueryKey, mealsWeekKey(session?.accessToken, weekStart), ['dashboard-overview']],
+        },
+        () => createMealRequest(session!.accessToken, request),
+      ),
     onMutate: async (request) => {
       await queryClient.cancelQueries({ queryKey: requestsQueryKey });
 
@@ -156,16 +185,25 @@ export function useCreateMealRequest(weekStart: string) {
       };
 
       queryClient.setQueryData<MealRequestResponse[]>(requestsQueryKey, (requests = []) => [optimisticRequest, ...requests]);
+      await syncOfflineQueryData<MealRequestResponse[]>(queryClient, requestsQueryKey);
 
       return { previousRequests, optimisticId };
     },
-    onError: (_error, _request, context) => {
+    onError: async (_error, _request, context) => {
       queryClient.setQueryData(requestsQueryKey, context?.previousRequests);
+      await syncOfflineQueryData<MealRequestResponse[]>(queryClient, requestsQueryKey);
     },
-    onSuccess: (mealRequest, _request, context) => {
+    onSuccess: async (result, _request, context) => {
+      if (result.status === 'queued') {
+        return;
+      }
+
       queryClient.setQueryData<MealRequestResponse[]>(requestsQueryKey, (requests = []) =>
-        requests.map((currentRequest) => (currentRequest.id === context?.optimisticId ? mealRequest : currentRequest)),
+        requests.map((currentRequest) =>
+          currentRequest.id === context?.optimisticId ? result.data : currentRequest,
+        ),
       );
+      await syncOfflineQueryData<MealRequestResponse[]>(queryClient, requestsQueryKey);
     },
     onSettled: async () => {
       await invalidateMealQueries(queryClient, session?.accessToken, weekStart);
@@ -180,7 +218,15 @@ export function useAssignMealRequest(weekStart: string) {
 
   return useMutation({
     mutationFn: ({ requestId, assigneeProfileId }: { requestId: string; assigneeProfileId: string | null }) =>
-      assignMealRequest(session!.accessToken, requestId, assigneeProfileId),
+      runOrQueueOfflineMutation(
+        {
+          kind: 'meal-request.assign',
+          accessToken: session!.accessToken,
+          payload: { requestId, assigneeProfileId },
+          invalidateKeys: [requestsQueryKey, mealsWeekKey(session?.accessToken, weekStart), ['dashboard-overview']],
+        },
+        () => assignMealRequest(session!.accessToken, requestId, assigneeProfileId),
+      ),
     onMutate: async ({ requestId, assigneeProfileId }) => {
       await queryClient.cancelQueries({ queryKey: requestsQueryKey });
 
@@ -191,16 +237,25 @@ export function useAssignMealRequest(weekStart: string) {
           request.id === requestId ? { ...request, assigneeProfileId } : request,
         ),
       );
+      await syncOfflineQueryData<MealRequestResponse[]>(queryClient, requestsQueryKey);
 
       return { previousRequests };
     },
-    onError: (_error, _variables, context) => {
+    onError: async (_error, _variables, context) => {
       queryClient.setQueryData(requestsQueryKey, context?.previousRequests);
+      await syncOfflineQueryData<MealRequestResponse[]>(queryClient, requestsQueryKey);
     },
-    onSuccess: (mealRequest) => {
+    onSuccess: async (result) => {
+      if (result.status === 'queued') {
+        return;
+      }
+
       queryClient.setQueryData<MealRequestResponse[]>(requestsQueryKey, (requests = []) =>
-        requests.map((currentRequest) => (currentRequest.id === mealRequest.id ? mealRequest : currentRequest)),
+        requests.map((currentRequest) =>
+          currentRequest.id === result.data.id ? result.data : currentRequest,
+        ),
       );
+      await syncOfflineQueryData<MealRequestResponse[]>(queryClient, requestsQueryKey);
     },
     onSettled: async () => {
       await invalidateMealQueries(queryClient, session?.accessToken, weekStart);
@@ -215,7 +270,16 @@ export function useAcceptMealRequest(weekStart: string) {
   const mealsQueryKey = mealsWeekKey(session?.accessToken, weekStart);
 
   return useMutation({
-    mutationFn: (requestId: string) => acceptMealRequest(session!.accessToken, requestId),
+    mutationFn: (requestId: string) =>
+      runOrQueueOfflineMutation(
+        {
+          kind: 'meal-request.accept',
+          accessToken: session!.accessToken,
+          payload: { requestId },
+          invalidateKeys: [requestsQueryKey, mealsQueryKey, ['dashboard-overview']],
+        },
+        () => acceptMealRequest(session!.accessToken, requestId),
+      ),
     onMutate: async (requestId) => {
       await Promise.all([
         queryClient.cancelQueries({ queryKey: requestsQueryKey }),
@@ -252,11 +316,20 @@ export function useAcceptMealRequest(weekStart: string) {
         );
       }
 
+      await Promise.all([
+        syncOfflineQueryData<MealRequestResponse[]>(queryClient, requestsQueryKey),
+        syncOfflineQueryData<WeeklyMealsResponse>(queryClient, mealsQueryKey),
+      ]);
+
       return { previousRequests, previousMeals };
     },
-    onError: (_error, _requestId, context) => {
+    onError: async (_error, _requestId, context) => {
       queryClient.setQueryData(requestsQueryKey, context?.previousRequests);
       queryClient.setQueryData(mealsQueryKey, context?.previousMeals);
+      await Promise.all([
+        syncOfflineQueryData<MealRequestResponse[]>(queryClient, requestsQueryKey),
+        syncOfflineQueryData<WeeklyMealsResponse>(queryClient, mealsQueryKey),
+      ]);
     },
     onSettled: async () => {
       await invalidateMealQueries(queryClient, session?.accessToken, weekStart);
@@ -271,7 +344,15 @@ export function useUpdateMealPlan(weekStart: string) {
 
   return useMutation({
     mutationFn: ({ mealId, request }: { mealId: string; request: UpdateMealPlanRequest }) =>
-      updateMealPlan(session!.accessToken, mealId, request),
+      runOrQueueOfflineMutation(
+        {
+          kind: 'meal.update',
+          accessToken: session!.accessToken,
+          payload: { mealId, request },
+          invalidateKeys: [mealsQueryKey, mealRequestsKey(session?.accessToken, weekStart), ['dashboard-overview']],
+        },
+        () => updateMealPlan(session!.accessToken, mealId, request),
+      ),
     onMutate: async ({ mealId, request }) => {
       await queryClient.cancelQueries({ queryKey: mealsQueryKey });
 
@@ -301,27 +382,37 @@ export function useUpdateMealPlan(weekStart: string) {
           meals: nextMeals,
         };
       });
+      await syncOfflineQueryData<WeeklyMealsResponse>(queryClient, mealsQueryKey);
 
       return { previousMeals };
     },
-    onError: (_error, _variables, context) => {
+    onError: async (_error, _variables, context) => {
       queryClient.setQueryData(mealsQueryKey, context?.previousMeals);
+      await syncOfflineQueryData<WeeklyMealsResponse>(queryClient, mealsQueryKey);
     },
-    onSuccess: (meal) => {
+    onSuccess: async (result) => {
+      if (result.status === 'queued') {
+        return;
+      }
+
       queryClient.setQueryData<WeeklyMealsResponse | undefined>(mealsQueryKey, (week) => {
         if (!week) {
           return week;
         }
 
-        const remainingMeals = week.meals.filter((currentMeal) => currentMeal.id !== meal.id);
+        const remainingMeals = week.meals.filter((currentMeal) => currentMeal.id !== result.data.id);
 
         return {
           ...week,
-          meals: isDateInWeek(meal.mealDate, weekStart)
-            ? sortMeals([...remainingMeals.filter((currentMeal) => currentMeal.mealDate !== meal.mealDate), meal])
+          meals: isDateInWeek(result.data.mealDate, weekStart)
+            ? sortMeals([
+                ...remainingMeals.filter((currentMeal) => currentMeal.mealDate !== result.data.mealDate),
+                result.data,
+              ])
             : remainingMeals,
         };
       });
+      await syncOfflineQueryData<WeeklyMealsResponse>(queryClient, mealsQueryKey);
     },
     onSettled: async () => {
       await invalidateMealQueries(queryClient, session?.accessToken, weekStart);

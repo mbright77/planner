@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 
 import { AuthSessionProvider } from '../../processes/auth-session/AuthSessionContext';
+import { OfflineMutationProvider } from '../../shared/lib/offlineMutationQueue';
 
 const queryClient = new QueryClient();
 
@@ -10,7 +11,9 @@ export function AppProviders({ children }: PropsWithChildren) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthSessionProvider>
-        <BrowserRouter>{children}</BrowserRouter>
+        <OfflineMutationProvider>
+          <BrowserRouter>{children}</BrowserRouter>
+        </OfflineMutationProvider>
       </AuthSessionProvider>
     </QueryClientProvider>
   );

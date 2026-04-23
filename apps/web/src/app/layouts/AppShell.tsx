@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 
 import { useAuthSession } from '../../processes/auth-session/AuthSessionContext';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
+import { useOfflineMutationState } from '../../shared/lib/offlineMutationQueue';
 import { useNetworkStatus } from '../../shared/lib/useNetworkStatus';
 
 const navigation = [
@@ -15,6 +16,7 @@ const navigation = [
 export function AppShell() {
   const { clearSession } = useAuthSession();
   const bootstrapQuery = useBootstrap();
+  const { pendingCount, isFlushing } = useOfflineMutationState();
   const { isOnline } = useNetworkStatus();
 
   const familyName = bootstrapQuery.data?.familyName ?? 'Kinship';
@@ -37,6 +39,13 @@ export function AppShell() {
         {!isOnline ? (
           <div className="status-banner status-banner-offline">
             Offline mode: showing cached planner data when available.
+          </div>
+        ) : null}
+        {isOnline && pendingCount > 0 ? (
+          <div className="status-banner status-banner-offline">
+            {isFlushing
+              ? `Syncing ${pendingCount} offline change${pendingCount === 1 ? '' : 's'}...`
+              : `${pendingCount} offline change${pendingCount === 1 ? '' : 's'} waiting to sync.`}
           </div>
         ) : null}
         {bootstrapQuery.isLoading ? <div className="status-banner">Loading family data...</div> : null}

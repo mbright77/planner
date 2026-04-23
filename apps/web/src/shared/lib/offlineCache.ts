@@ -5,8 +5,9 @@ type CachedEntry<T> = {
 };
 
 const databaseName = 'planner-offline-cache';
-const storeName = 'query-cache';
-const databaseVersion = 1;
+const queryCacheStoreName = 'query-cache';
+const mutationQueueStoreName = 'mutation-queue';
+const databaseVersion = 2;
 
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -17,14 +18,22 @@ function openDatabase(): Promise<IDBDatabase> {
     request.onupgradeneeded = () => {
       const database = request.result;
 
-      if (!database.objectStoreNames.contains(storeName)) {
-        database.createObjectStore(storeName, { keyPath: 'key' });
+      if (!database.objectStoreNames.contains(queryCacheStoreName)) {
+        database.createObjectStore(queryCacheStoreName, { keyPath: 'key' });
+      }
+
+      if (!database.objectStoreNames.contains(mutationQueueStoreName)) {
+        database.createObjectStore(mutationQueueStoreName, { keyPath: 'key' });
       }
     };
   });
 }
 
-async function withStore<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => IDBRequest<T>) {
+async function withStore<T>(
+  storeName: string,
+  mode: IDBTransactionMode,
+  run: (store: IDBObjectStore) => IDBRequest<T>,
+) {
   const database = await openDatabase();
 
   return new Promise<T>((resolve, reject) => {
@@ -40,15 +49,41 @@ async function withStore<T>(mode: IDBTransactionMode, run: (store: IDBObjectStor
 }
 
 export async function readOfflineCache<T>(key: string): Promise<CachedEntry<T> | null> {
-  const result = await withStore('readonly', (store) => store.get(key));
+  const result = await withStore(queryCacheStoreName, 'readonly', (store) => store.get(key));
 
   return (result as CachedEntry<T> | undefined) ?? null;
 }
 
 export async function writeOfflineCache<T>(key: string, value: T) {
-  await withStore('readwrite', (store) =>
+  await withStore(queryCacheStoreName, 'readwrite', (store) =>
     store.put({ key, value, updatedAt: new Date().toISOString() } satisfies CachedEntry<T>),
   );
+}
+
+export async function deleteOfflineCache(key: string) {
+  await withStore(queryCacheStoreName, 'readwrite', (store) => store.delete(key));
+}
+
+export async function readOfflineQueueStore<T>(key: string): Promise<CachedEntry<T> | null> {
+  const result = await withStore(mutationQueueStoreName, 'readonly', (store) => store.get(key));
+
+  return (result as CachedEntry<T> | undefined) ?? null;
+}
+
+export async function writeOfflineQueueStore<T>(key: string, value: T) {
+  await withStore(mutationQueueStoreName, 'readwrite', (store) =>
+    store.put({ key, value, updatedAt: new Date().toISOString() } satisfies CachedEntry<T>),
+  );
+}
+
+export async function deleteOfflineQueueStore(key: string) {
+  await withStore(mutationQueueStoreName, 'readwrite', (store) => store.delete(key));
+}
+
+export async function listOfflineQueueStore<T>() {
+  const result = await withStore(mutationQueueStoreName, 'readonly', (store) => store.getAll());
+
+  return (result as CachedEntry<T>[] | undefined) ?? [];
 }
 
 export function buildOfflineCacheKey(parts: readonly unknown[]) {

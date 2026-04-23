@@ -8,6 +8,8 @@ import {
   type ShoppingItemResponse,
 } from '../../../shared/api/shopping';
 import { useAuthSession } from '../../../processes/auth-session/AuthSessionContext';
+import { runOrQueueOfflineMutation } from '../../../shared/lib/offlineMutationQueue';
+import { syncOfflineQueryData } from '../../../shared/lib/offlineQuerySync';
 import { useOfflineQuery } from '../../../shared/lib/useOfflineQuery';
 
 function shoppingItemsKey(accessToken: string | undefined) {
@@ -50,7 +52,16 @@ export function useCreateShoppingItem() {
   const queryKey = shoppingItemsKey(session?.accessToken);
 
   return useMutation({
-    mutationFn: (request: CreateShoppingItemRequest) => createShoppingItem(session!.accessToken, request),
+    mutationFn: (request: CreateShoppingItemRequest) =>
+      runOrQueueOfflineMutation(
+        {
+          kind: 'shopping.create',
+          accessToken: session!.accessToken,
+          payload: request,
+          invalidateKeys: [queryKey, ['dashboard-overview']],
+        },
+        () => createShoppingItem(session!.accessToken, request),
+      ),
     onMutate: async (request) => {
       await queryClient.cancelQueries({ queryKey });
 
@@ -67,16 +78,23 @@ export function useCreateShoppingItem() {
       };
 
       queryClient.setQueryData<ShoppingItemResponse[]>(queryKey, (items = []) => [...items, optimisticItem]);
+      await syncOfflineQueryData<ShoppingItemResponse[]>(queryClient, queryKey);
 
       return { previousItems, optimisticId };
     },
-    onError: (_error, _request, context) => {
+    onError: async (_error, _request, context) => {
       queryClient.setQueryData(queryKey, context?.previousItems);
+      await syncOfflineQueryData<ShoppingItemResponse[]>(queryClient, queryKey);
     },
-    onSuccess: (item, _request, context) => {
+    onSuccess: async (result, _request, context) => {
+      if (result.status === 'queued') {
+        return;
+      }
+
       queryClient.setQueryData<ShoppingItemResponse[]>(queryKey, (items = []) =>
-        items.map((currentItem) => (currentItem.id === context?.optimisticId ? item : currentItem)),
+        items.map((currentItem) => (currentItem.id === context?.optimisticId ? result.data : currentItem)),
       );
+      await syncOfflineQueryData<ShoppingItemResponse[]>(queryClient, queryKey);
     },
     onSettled: async () => {
       await Promise.all([
@@ -94,7 +112,15 @@ export function useUpdateShoppingItem() {
 
   return useMutation({
     mutationFn: ({ itemId, isCompleted }: { itemId: string; isCompleted: boolean }) =>
-      updateShoppingItem(session!.accessToken, itemId, isCompleted),
+      runOrQueueOfflineMutation(
+        {
+          kind: 'shopping.update',
+          accessToken: session!.accessToken,
+          payload: { itemId, isCompleted },
+          invalidateKeys: [queryKey, ['dashboard-overview']],
+        },
+        () => updateShoppingItem(session!.accessToken, itemId, isCompleted),
+      ),
     onMutate: async ({ itemId, isCompleted }) => {
       await queryClient.cancelQueries({ queryKey });
 
@@ -103,16 +129,23 @@ export function useUpdateShoppingItem() {
       queryClient.setQueryData<ShoppingItemResponse[]>(queryKey, (items) =>
         applyShoppingItemUpdate(items, itemId, isCompleted),
       );
+      await syncOfflineQueryData<ShoppingItemResponse[]>(queryClient, queryKey);
 
       return { previousItems };
     },
-    onError: (_error, _variables, context) => {
+    onError: async (_error, _variables, context) => {
       queryClient.setQueryData(queryKey, context?.previousItems);
+      await syncOfflineQueryData<ShoppingItemResponse[]>(queryClient, queryKey);
     },
-    onSuccess: (item) => {
+    onSuccess: async (result) => {
+      if (result.status === 'queued') {
+        return;
+      }
+
       queryClient.setQueryData<ShoppingItemResponse[]>(queryKey, (items = []) =>
-        items.map((currentItem) => (currentItem.id === item.id ? item : currentItem)),
+        items.map((currentItem) => (currentItem.id === result.data.id ? result.data : currentItem)),
       );
+      await syncOfflineQueryData<ShoppingItemResponse[]>(queryClient, queryKey);
     },
     onSettled: async () => {
       await Promise.all([
