@@ -8,6 +8,14 @@ public static class PlannerEndpoints
 
         api.MapGet("/ping", () => Results.Ok(new { message = "planner-api" }));
 
+        app.MapAuthEndpoints();
+        app.MapBootstrapEndpoints();
+
+        if (app.ServiceProvider.GetRequiredService<IHostEnvironment>().IsDevelopment())
+        {
+            app.MapDevelopmentSeedEndpoints();
+        }
+
         return app;
     }
 }

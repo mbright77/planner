@@ -2,6 +2,12 @@ namespace Planner.Domain;
 
 public interface IAssemblyMarker;
 
+public enum FamilyRole
+{
+    Admin = 1,
+    Member = 2,
+}
+
 public sealed class Family
 {
     public Guid Id { get; set; }
@@ -13,6 +19,8 @@ public sealed class Family
     public DateTimeOffset CreatedAtUtc { get; set; }
 
     public ICollection<Profile> Profiles { get; set; } = new List<Profile>();
+
+    public ICollection<FamilyMembership> Memberships { get; set; } = new List<FamilyMembership>();
 }
 
 public sealed class Profile
@@ -26,6 +34,21 @@ public sealed class Profile
     public string ColorKey { get; set; } = string.Empty;
 
     public bool IsActive { get; set; } = true;
+
+    public Family Family { get; set; } = null!;
+}
+
+public sealed class FamilyMembership
+{
+    public Guid Id { get; set; }
+
+    public Guid FamilyId { get; set; }
+
+    public string UserId { get; set; } = string.Empty;
+
+    public FamilyRole Role { get; set; } = FamilyRole.Member;
+
+    public DateTimeOffset CreatedAtUtc { get; set; }
 
     public Family Family { get; set; } = null!;
 }

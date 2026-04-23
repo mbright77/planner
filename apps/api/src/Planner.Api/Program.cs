@@ -4,7 +4,7 @@ using Planner.Api.Endpoints;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
-    .AddApi()
+    .AddApi(builder.Configuration)
     .AddApplication()
     .AddInfrastructure(builder.Configuration, builder.Environment);
 
@@ -16,6 +16,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapHealthEndpoints();
 app.MapPlannerEndpoints();
