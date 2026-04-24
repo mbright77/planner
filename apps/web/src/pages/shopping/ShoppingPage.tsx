@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 import {
@@ -15,9 +15,12 @@ export function ShoppingPage() {
   const createShoppingItemMutation = useCreateShoppingItem();
   const updateShoppingItemMutation = useUpdateShoppingItem();
 
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [label, setLabel] = useState('');
   const [category, setCategory] = useState(defaultCategories[0]);
   const [addedByProfileId, setAddedByProfileId] = useState<string>('');
+  const [showDetails, setShowDetails] = useState(false);
+  const [formError, setFormError] = useState('');
 
   const groupedItems = useMemo(() => {
     const groups = new Map<string, typeof shoppingItemsQuery.data>();
@@ -34,8 +37,11 @@ export function ShoppingPage() {
     event.preventDefault();
 
     if (!label.trim()) {
+      setFormError('Add an item name before saving.');
       return;
     }
+
+    setFormError('');
 
     await createShoppingItemMutation.mutateAsync({
       label: label.trim(),
@@ -44,8 +50,10 @@ export function ShoppingPage() {
     });
 
     setLabel('');
-    setCategory(defaultCategories[0]);
     setAddedByProfileId('');
+    window.requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
   }
 
   return (
@@ -57,9 +65,24 @@ export function ShoppingPage() {
       </p>
 
       <form className="shopping-form shopping-quick-add-card" onSubmit={handleSubmit}>
+        <div className="shopping-quick-add-header shopping-field-wide">
+          <div>
+            <p className="eyebrow">Quick add</p>
+            <h3 className="profile-card-title">Capture groceries fast</h3>
+          </div>
+          <button
+            className="secondary-button calendar-small-button"
+            type="button"
+            onClick={() => setShowDetails((current) => !current)}
+          >
+            {showDetails ? 'Fewer fields' : 'More options'}
+          </button>
+        </div>
+
         <label className="field shopping-field-wide">
-          <span>Quick add</span>
+          <span>Item name</span>
           <input
+            ref={inputRef}
             value={label}
             onChange={(event) => setLabel(event.target.value)}
             placeholder="Add item (e.g., Milk)"
@@ -78,17 +101,21 @@ export function ShoppingPage() {
           </select>
         </label>
 
-        <label className="field">
-          <span>Added by</span>
-          <select value={addedByProfileId} onChange={(event) => setAddedByProfileId(event.target.value)}>
-            <option value="">No profile</option>
-            {bootstrapQuery.data?.profiles.map((profile) => (
-              <option key={profile.id} value={profile.id}>
-                {profile.displayName}
-              </option>
-            ))}
-          </select>
-        </label>
+        {showDetails ? (
+          <label className="field">
+            <span>Added by</span>
+            <select value={addedByProfileId} onChange={(event) => setAddedByProfileId(event.target.value)}>
+              <option value="">No profile</option>
+              {bootstrapQuery.data?.profiles.map((profile) => (
+                <option key={profile.id} value={profile.id}>
+                  {profile.displayName}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+
+        {formError ? <p className="form-error shopping-field-wide">{formError}</p> : null}
 
         <button className="primary-button" type="submit" disabled={createShoppingItemMutation.isPending}>
           {createShoppingItemMutation.isPending ? 'Adding...' : 'Add item'}

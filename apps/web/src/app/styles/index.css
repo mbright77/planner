@@ -510,6 +510,13 @@ select {
   box-shadow: var(--shadow);
 }
 
+.shopping-quick-add-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .shopping-group-card {
   position: relative;
   padding: 1rem;
