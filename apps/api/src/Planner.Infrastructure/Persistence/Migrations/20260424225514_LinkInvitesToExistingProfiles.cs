@@ -32,7 +32,7 @@ namespace Planner.Infrastructure.Persistence.Migrations
                 table: "profiles",
                 column: "LinkedUserId",
                 unique: true,
-                filter: "\"linked_user_id\" IS NOT NULL");
+                filter: "\"LinkedUserId\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_family_invites_ProfileId",

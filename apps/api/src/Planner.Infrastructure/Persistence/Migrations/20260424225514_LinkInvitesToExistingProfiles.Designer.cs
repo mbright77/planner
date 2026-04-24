@@ -12,7 +12,7 @@ using Planner.Infrastructure.Persistence;
 namespace Planner.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(PlannerDbContext))]
-    [Migration("20260424224538_LinkInvitesToExistingProfiles")]
+    [Migration("20260424225514_LinkInvitesToExistingProfiles")]
     partial class LinkInvitesToExistingProfiles
     {
         /// <inheritdoc />
@@ -461,7 +461,7 @@ namespace Planner.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("LinkedUserId")
                         .IsUnique()
-                        .HasFilter("\"linked_user_id\" IS NOT NULL");
+                        .HasFilter("\"LinkedUserId\" IS NOT NULL");
 
                     b.HasIndex("FamilyId", "IsActive");
 

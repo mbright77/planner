@@ -458,7 +458,7 @@ namespace Planner.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("LinkedUserId")
                         .IsUnique()
-                        .HasFilter("\"linked_user_id\" IS NOT NULL");
+                        .HasFilter("\"LinkedUserId\" IS NOT NULL");
 
                     b.HasIndex("FamilyId", "IsActive");
 

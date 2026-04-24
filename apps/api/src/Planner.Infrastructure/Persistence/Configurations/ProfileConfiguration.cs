@@ -30,7 +30,7 @@ public sealed class ProfileConfiguration : IEntityTypeConfiguration<Profile>
 
         builder.HasIndex(x => x.LinkedUserId)
             .IsUnique()
-            .HasFilter("\"linked_user_id\" IS NOT NULL");
+            .HasFilter("\"LinkedUserId\" IS NOT NULL");
 
         builder.HasOne(x => x.Family)
             .WithMany(x => x.Profiles)
