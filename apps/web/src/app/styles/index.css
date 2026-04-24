@@ -652,6 +652,13 @@ select {
   gap: 1rem;
 }
 
+.meals-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
 .meals-range-title {
   margin: 0;
   font-family: 'Plus Jakarta Sans', 'Public Sans', system-ui, sans-serif;
@@ -673,12 +680,31 @@ select {
   box-shadow: var(--shadow);
 }
 
+.meals-week-strip {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding: 0.1rem 0 0.35rem;
+  scrollbar-width: none;
+}
+
+.meals-week-strip::-webkit-scrollbar {
+  display: none;
+}
+
 .meals-compose-card {
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: 1.25rem;
   background: var(--surface);
   box-shadow: var(--shadow);
+}
+
+.meals-compose-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .meal-card {
@@ -689,6 +715,10 @@ select {
   border-radius: 1.25rem;
   background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
   box-shadow: var(--shadow);
+}
+
+.meal-card-active {
+  border-color: rgba(93, 169, 233, 0.5);
 }
 
 .meal-card-empty {
@@ -708,6 +738,13 @@ select {
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.meal-card-chip-stack {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 
 .meal-card-body {
@@ -737,6 +774,11 @@ select {
   min-height: 2.75rem;
 }
 
+.meal-card-actions {
+  display: grid;
+  gap: 0.75rem;
+}
+
 .meal-requests-section {
   margin-top: 1.75rem;
   padding: 1rem;
@@ -748,6 +790,13 @@ select {
 
 .meal-requests-header {
   margin-bottom: 0.25rem;
+}
+
+.meal-requests-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 
 .meal-requests-form {
@@ -812,12 +861,28 @@ select {
   width: 100%;
 }
 
+.meal-day-summary {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: none;
+}
+
 .meal-request-button {
   min-width: 6.5rem;
 }
 
 @media (max-width: 699px) {
   .meals-header-panel {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .meals-header-actions,
+  .meal-requests-header-actions {
+    justify-content: start;
+  }
+
+  .meals-compose-header {
     flex-direction: column;
     align-items: start;
   }
