@@ -9,4 +9,4 @@ public sealed record BootstrapResponse(
 
 public sealed record ProfileSummary(Guid Id, string DisplayName, string ColorKey, bool IsActive);
 
-public sealed record MembershipSummary(string UserId, string Email, string Role);
+public sealed record MembershipSummary(string UserId, string Email, string Role, bool CanPlanMeals);

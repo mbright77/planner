@@ -104,7 +104,7 @@ public sealed class CoreFlowsApiTests(ApiTestFactory factory) : IClassFixture<Ap
 
         var createRequestResponse = await client.PostAsJsonAsync(
             "/api/v1/meals/requests",
-            new CreateMealRequestRequest(bootstrap.Profiles[0].Id, mealDate, "Pizza", "Thin crust tonight"));
+            new CreateMealRequestRequest(mealDate, "Pizza", "Thin crust tonight"));
         Assert.Equal(HttpStatusCode.Created, createRequestResponse.StatusCode);
 
         var mealRequest = await createRequestResponse.Content.ReadFromJsonAsync<MealRequestResponse>();
@@ -270,6 +270,74 @@ public sealed class CoreFlowsApiTests(ApiTestFactory factory) : IClassFixture<Ap
         var linkedProfile = Assert.Single(profiles, x => x.Id == existingProfile.Id);
         Assert.Equal("Emma", linkedProfile.DisplayName);
         Assert.True(linkedProfile.HasLogin);
+    }
+
+    [Fact]
+    public async Task Inactive_linked_member_can_request_meals_but_cannot_plan_or_accept_them()
+    {
+        await factory.ResetDatabaseAsync();
+        using var adminClient = factory.CreateClient();
+
+        var adminAuth = await RegisterAsync(adminClient);
+        adminClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", adminAuth.AccessToken);
+
+        var createProfileResponse = await adminClient.PostAsJsonAsync(
+            "/api/v1/profiles",
+            new CreateProfileRequest("Sam", "blue"));
+        Assert.Equal(HttpStatusCode.Created, createProfileResponse.StatusCode);
+
+        var profile = await createProfileResponse.Content.ReadFromJsonAsync<ProfileResponse>();
+        Assert.NotNull(profile);
+
+        var createInviteResponse = await adminClient.PostAsJsonAsync(
+            "/api/v1/family-invites",
+            new CreateFamilyInviteRequest("sam@example.com", profile.Id));
+        Assert.Equal(HttpStatusCode.Created, createInviteResponse.StatusCode);
+
+        var invite = await createInviteResponse.Content.ReadFromJsonAsync<FamilyInviteResponse>();
+        Assert.NotNull(invite);
+
+        var acceptResponse = await adminClient.PostAsJsonAsync(
+            $"/api/v1/invites/{invite.Token}/accept",
+            new AcceptFamilyInviteRequest("sam@example.com", "Planner123!", null, null));
+        Assert.Equal(HttpStatusCode.OK, acceptResponse.StatusCode);
+
+        var memberLoginResponse = await adminClient.PostAsJsonAsync(
+            "/api/v1/auth/login",
+            new LoginRequest("sam@example.com", "Planner123!"));
+        Assert.Equal(HttpStatusCode.OK, memberLoginResponse.StatusCode);
+
+        var memberAuth = await memberLoginResponse.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(memberAuth);
+
+        var deactivateResponse = await adminClient.PutAsJsonAsync(
+            $"/api/v1/profiles/{profile.Id}",
+            new UpdateProfileRequest("Sam", "blue", false));
+        Assert.Equal(HttpStatusCode.OK, deactivateResponse.StatusCode);
+
+        using var memberClient = factory.CreateClient();
+        memberClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", memberAuth.AccessToken);
+
+        var memberBootstrap = await memberClient.GetFromJsonAsync<BootstrapResponse>("/api/v1/me/bootstrap");
+        Assert.NotNull(memberBootstrap);
+        Assert.False(memberBootstrap.Membership.CanPlanMeals);
+
+        var requestResponse = await memberClient.PostAsJsonAsync(
+            "/api/v1/meals/requests",
+            new CreateMealRequestRequest(DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1), "Tacos", null));
+        Assert.Equal(HttpStatusCode.Created, requestResponse.StatusCode);
+
+        var createdRequest = await requestResponse.Content.ReadFromJsonAsync<MealRequestResponse>();
+        Assert.NotNull(createdRequest);
+        Assert.Equal(profile.Id, createdRequest.RequesterProfileId);
+
+        var planResponse = await memberClient.PostAsJsonAsync(
+            "/api/v1/meals",
+            new CreateMealPlanRequest(DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1), "Pasta", null, profile.Id));
+        Assert.Equal(HttpStatusCode.Forbidden, planResponse.StatusCode);
+
+        var acceptRequestResponse = await memberClient.PostAsync($"/api/v1/meals/requests/{createdRequest.Id}/accept", null);
+        Assert.Equal(HttpStatusCode.Forbidden, acceptRequestResponse.StatusCode);
     }
 
     [Fact]

@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Planner.Api.Extensions;
 using Planner.Contracts.Bootstrap;
+using Planner.Domain;
 using Planner.Infrastructure.Persistence;
 
 namespace Planner.Api.Endpoints;
@@ -51,8 +52,21 @@ public static class BootstrapEndpoints
                 httpContext.User.FindFirstValue(ClaimTypes.Email)
                     ?? httpContext.User.FindFirst("email")?.Value
                     ?? string.Empty,
-                membership.Role.ToString()));
+                membership.Role.ToString(),
+                CanPlanMeals(membership)));
 
         return Results.Ok(response);
+    }
+
+    private static bool CanPlanMeals(FamilyMembership membership)
+    {
+        if (membership.Role == FamilyRole.Admin)
+        {
+            return true;
+        }
+
+        var linkedProfile = membership.Family.Profiles.FirstOrDefault(x => x.LinkedUserId == membership.UserId);
+
+        return linkedProfile?.IsActive ?? true;
     }
 }

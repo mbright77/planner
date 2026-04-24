@@ -35,7 +35,6 @@ public sealed record MealRequestResponse(
     DateTimeOffset CreatedAtUtc);
 
 public sealed record CreateMealRequestRequest(
-    Guid? RequesterProfileId,
     DateOnly? RequestedForDate,
     string Title,
     string? Notes);

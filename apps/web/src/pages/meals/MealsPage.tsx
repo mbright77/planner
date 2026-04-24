@@ -87,7 +87,6 @@ export function MealsPage() {
   const [ownerProfileId, setOwnerProfileId] = useState('');
   const [requestTitle, setRequestTitle] = useState('');
   const [requestNotes, setRequestNotes] = useState('');
-  const [requesterProfileId, setRequesterProfileId] = useState('');
   const [showMealOptions, setShowMealOptions] = useState(false);
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [mealFormError, setMealFormError] = useState('');
@@ -114,6 +113,7 @@ export function MealsPage() {
   const updateMealPlanMutation = useUpdateMealPlan(weekStart);
 
   const weekDays = useMemo(() => buildWeekDays(weekStart), [weekStart]);
+  const canPlanMeals = bootstrapQuery.data?.membership.canPlanMeals ?? true;
   const mealsByDate = useMemo(() => {
     return new Map((mealsWeekQuery.data?.meals ?? []).map((meal) => [meal.mealDate, meal]));
   }, [mealsWeekQuery.data?.meals]);
@@ -232,7 +232,6 @@ export function MealsPage() {
     setRequestFormError('');
 
     await createMealRequestMutation.mutateAsync({
-      requesterProfileId: requesterProfileId || null,
       requestedForDate: selectedDate,
       title: requestTitle.trim(),
       notes: requestNotes.trim() || null,
@@ -240,7 +239,6 @@ export function MealsPage() {
 
     setRequestTitle('');
     setRequestNotes('');
-    setRequesterProfileId('');
     setShowRequestForm(false);
   }
 
@@ -311,6 +309,9 @@ export function MealsPage() {
         <div>
           <h3 className="meals-range-title">{formatWeekRange(weekStart)}</h3>
           <p className="shopping-meta">One dinner plan per day, visible to the whole family.</p>
+          {!canPlanMeals ? (
+            <p className="shopping-meta">Your profile is excluded from planning, so you can request meals but not plan or accept them.</p>
+          ) : null}
         </div>
         <div className="meals-header-actions">
           <button className="secondary-button calendar-small-button" type="button" onClick={() => handleShiftWeek(-1)}>
@@ -345,7 +346,7 @@ export function MealsPage() {
         })}
       </div>
 
-      {selectedMeal ? (
+      {selectedMeal && canPlanMeals ? (
         <form className="meals-form meals-compose-card meals-edit-card" onSubmit={handleSaveMealEdit}>
           <div className="meals-compose-header meals-field-wide">
             <div>
@@ -398,7 +399,7 @@ export function MealsPage() {
             {updateMealPlanMutation.isPending ? 'Saving...' : `Save changes for ${formatLongDate(selectedDate)}`}
           </button>
         </form>
-      ) : (
+      ) : canPlanMeals ? (
         <form className="meals-form meals-compose-card" onSubmit={handleSubmit}>
           <div className="meals-compose-header meals-field-wide">
             <div>
@@ -452,7 +453,7 @@ export function MealsPage() {
             {createMealPlanMutation.isPending ? 'Saving...' : `Save dinner for ${formatLongDate(selectedDate)}`}
           </button>
         </form>
-      )}
+      ) : null}
 
       {mealsWeekQuery.isLoading ? <p className="page-copy">Loading weekly meals...</p> : null}
       {mealsWeekQuery.isError ? <p className="form-error">Unable to load weekly meals.</p> : null}
@@ -488,23 +489,27 @@ export function MealsPage() {
                     {meal.notes ? <p className="meal-card-notes">{meal.notes}</p> : null}
                   </div>
 
-                  <div className="meal-card-actions">
-                    <button
-                      className="secondary-button meal-card-button"
-                      type="button"
-                      onClick={() => handleStartMealEdit(day.key)}
-                    >
-                      Edit day
-                    </button>
-                  </div>
+                  {canPlanMeals ? (
+                    <div className="meal-card-actions">
+                      <button
+                        className="secondary-button meal-card-button"
+                        type="button"
+                        onClick={() => handleStartMealEdit(day.key)}
+                      >
+                        Edit day
+                      </button>
+                    </div>
+                  ) : null}
                 </>
               ) : (
                 <div className="meal-card-empty-state">
                   <p className="shopping-meta">No meal planned yet.</p>
                   <div className="meal-card-actions">
-                    <button className="secondary-button meal-card-button" type="button" onClick={() => handleSelectDay(day.key)}>
-                      Plan this day
-                    </button>
+                    {canPlanMeals ? (
+                      <button className="secondary-button meal-card-button" type="button" onClick={() => handleSelectDay(day.key)}>
+                        Plan this day
+                      </button>
+                    ) : null}
                     <button
                       className="secondary-button meal-card-button"
                       type="button"
@@ -558,18 +563,6 @@ export function MealsPage() {
                 placeholder="Request a meal idea"
                 type="text"
               />
-            </label>
-
-            <label className="field">
-              <span>Requested by</span>
-              <select value={requesterProfileId} onChange={(event) => setRequesterProfileId(event.target.value)}>
-                <option value="">No profile</option>
-                {bootstrapQuery.data?.profiles.map((profile) => (
-                  <option key={profile.id} value={profile.id}>
-                    {profile.displayName}
-                  </option>
-                ))}
-              </select>
             </label>
 
             <label className="field meal-requests-field-wide">
@@ -642,14 +635,16 @@ export function MealsPage() {
                         Assign person
                       </button>
                     )}
-                    <button
-                      className="primary-button meal-request-button"
-                      type="button"
-                      onClick={() => acceptMealRequestMutation.mutate(request.id)}
-                      disabled={acceptMealRequestMutation.isPending}
-                    >
-                      Accept
-                    </button>
+                    {canPlanMeals ? (
+                      <button
+                        className="primary-button meal-request-button"
+                        type="button"
+                        onClick={() => acceptMealRequestMutation.mutate(request.id)}
+                        disabled={acceptMealRequestMutation.isPending}
+                      >
+                        Accept
+                      </button>
+                    ) : null}
                   </div>
                 </article>
               );

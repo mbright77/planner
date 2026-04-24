@@ -74,6 +74,11 @@ public static class MealEndpoints
             return Results.NotFound();
         }
 
+        if (!await CanCurrentUserPlanMealsAsync(membership, dbContext, cancellationToken))
+        {
+            return Results.Forbid();
+        }
+
         var validation = await ValidateMealRequestAsync(membership.FamilyId, request.Title, request.OwnerProfileId, dbContext, cancellationToken);
         if (validation is not null)
         {
@@ -117,6 +122,11 @@ public static class MealEndpoints
         if (membership is null)
         {
             return Results.NotFound();
+        }
+
+        if (!await CanCurrentUserPlanMealsAsync(membership, dbContext, cancellationToken))
+        {
+            return Results.Forbid();
         }
 
         var validation = await ValidateMealRequestAsync(membership.FamilyId, request.Title, request.OwnerProfileId, dbContext, cancellationToken);
@@ -194,10 +204,12 @@ public static class MealEndpoints
             return Results.NotFound();
         }
 
+        var requesterProfileId = await GetLinkedProfileId(membership, dbContext, cancellationToken);
+
         var validation = await ValidateRequestProfilesAsync(
             membership.FamilyId,
             request.Title,
-            request.RequesterProfileId,
+            requesterProfileId,
             null,
             dbContext,
             cancellationToken);
@@ -211,7 +223,7 @@ public static class MealEndpoints
         {
             Id = Guid.NewGuid(),
             FamilyId = membership.FamilyId,
-            RequesterProfileId = request.RequesterProfileId,
+            RequesterProfileId = requesterProfileId,
             RequestedForDate = request.RequestedForDate,
             Title = request.Title.Trim(),
             Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
@@ -281,6 +293,11 @@ public static class MealEndpoints
         if (membership is null)
         {
             return Results.NotFound();
+        }
+
+        if (!await CanCurrentUserPlanMealsAsync(membership, dbContext, cancellationToken))
+        {
+            return Results.Forbid();
         }
 
         var mealRequest = await dbContext.MealRequests
@@ -413,6 +430,37 @@ public static class MealEndpoints
             mealRequest.Status.ToString(),
             mealRequest.AssigneeProfileId,
             mealRequest.CreatedAtUtc);
+    }
+
+    private static async Task<bool> CanCurrentUserPlanMealsAsync(
+        FamilyMembership membership,
+        PlannerDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        if (membership.Role == FamilyRole.Admin)
+        {
+            return true;
+        }
+
+        var linkedProfile = await dbContext.Profiles
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                x => x.FamilyId == membership.FamilyId && x.LinkedUserId == membership.UserId,
+                cancellationToken);
+
+        return linkedProfile?.IsActive ?? true;
+    }
+
+    private static async Task<Guid?> GetLinkedProfileId(
+        FamilyMembership membership,
+        PlannerDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.Profiles
+            .AsNoTracking()
+            .Where(x => x.FamilyId == membership.FamilyId && x.LinkedUserId == membership.UserId)
+            .Select(x => (Guid?)x.Id)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     private static Task<FamilyMembership?> GetMembershipAsync(

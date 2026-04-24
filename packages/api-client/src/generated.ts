@@ -1135,8 +1135,6 @@ export interface components {
             ownerProfileId: string | null;
         };
         CreateMealRequestRequest: {
-            /** Format: uuid */
-            requesterProfileId: string | null;
             /** Format: date */
             requestedForDate: string | null;
             title: string;
@@ -1274,6 +1272,7 @@ export interface components {
             userId: string;
             email: string;
             role: string;
+            canPlanMeals: boolean;
         };
         ProfileResponse: {
             /** Format: uuid */

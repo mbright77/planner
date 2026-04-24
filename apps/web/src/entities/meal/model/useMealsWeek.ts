@@ -178,7 +178,7 @@ export function useCreateMealRequest(weekStart: string) {
       const optimisticId = `meal-request-${crypto.randomUUID()}`;
       const optimisticRequest: MealRequestResponse = {
         id: optimisticId,
-        requesterProfileId: request.requesterProfileId,
+        requesterProfileId: null,
         requestedForDate: request.requestedForDate,
         title: request.title,
         notes: request.notes,
