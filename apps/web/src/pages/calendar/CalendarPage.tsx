@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 import {
@@ -72,7 +73,7 @@ function formatEventTime(startAtUtc: string, endAtUtc: string) {
 }
 
 function formatTimeInput(date: Date) {
-  return date.toTimeString().slice(0, 5);
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(11, 16);
 }
 
 function getDefaultRepeatUntil(date: string) {
@@ -110,6 +111,7 @@ export function CalendarPage() {
   const initialWeekStart = formatDateOnly(initialStart);
   const initialSelectedDate = formatDateOnly(today);
 
+  const [searchParams, setSearchParams] = useSearchParams();
   const [weekStart, setWeekStart] = useState(initialWeekStart);
   const [selectedDate, setSelectedDate] = useState(initialSelectedDate);
   const [title, setTitle] = useState('');
@@ -118,10 +120,11 @@ export function CalendarPage() {
   const [repeatsWeekly, setRepeatsWeekly] = useState(false);
   const [repeatUntil, setRepeatUntil] = useState(getDefaultRepeatUntil(initialSelectedDate));
   const [applyToSeries, setApplyToSeries] = useState(true);
-  const [startTime, setStartTime] = useState(formatTimeInput(new Date()));
-  const [endTime, setEndTime] = useState(formatTimeInput(new Date(Date.now() + 60 * 60 * 1000)));
+  const [startTime, setStartTime] = useState('18:00');
+  const [endTime, setEndTime] = useState('19:00');
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [formError, setFormError] = useState('');
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
 
   const titleInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -131,6 +134,8 @@ export function CalendarPage() {
   const updateCalendarEventMutation = useUpdateCalendarEvent(weekStart);
   const weekDays = useMemo(() => buildWeekDays(weekStart), [weekStart]);
   const calendarEvents = calendarWeekQuery.data?.events ?? [];
+  const sheet = searchParams.get('sheet');
+  const isSheetOpen = sheet === 'create-event' || sheet === 'edit-event';
 
   const eventsByDay = useMemo(() => {
     const groups = new Map<string, typeof calendarEvents>(
@@ -152,25 +157,78 @@ export function CalendarPage() {
     });
   }
 
+  function openSheet(nextSheet: 'create-event' | 'edit-event', nextDate: string, eventId?: string) {
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.set('sheet', nextSheet);
+    nextSearchParams.set('date', nextDate);
+    if (eventId) {
+      nextSearchParams.set('eventId', eventId);
+    } else {
+      nextSearchParams.delete('eventId');
+    }
+    setSearchParams(nextSearchParams, { replace: false });
+    focusComposeTitle();
+  }
+
+  function closeSheet() {
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.delete('sheet');
+    nextSearchParams.delete('date');
+    nextSearchParams.delete('eventId');
+    setSearchParams(nextSearchParams, { replace: false });
+    setFormError('');
+    setEditingEventId(null);
+  }
+
+  function seedCreateForm(date: string) {
+    setSelectedDate(date);
+    setEditingEventId(null);
+    setTitle('');
+    setNotes('');
+    setAssignedProfileId('');
+    setRepeatsWeekly(false);
+    setRepeatUntil(getDefaultRepeatUntil(date));
+    setStartTime('18:00');
+    setEndTime('19:00');
+    setShowMoreOptions(false);
+    setFormError('');
+    openSheet('create-event', date);
+  }
+
+  function seedEditForm(eventId: string) {
+    const calendarEvent = calendarEvents.find((item) => item.id === eventId);
+    if (!calendarEvent) {
+      return;
+    }
+
+    const eventDate = calendarEvent.startAtUtc.slice(0, 10);
+    setSelectedDate(eventDate);
+    setEditingEventId(calendarEvent.id);
+    setTitle(calendarEvent.title);
+    setNotes(calendarEvent.notes ?? '');
+    setAssignedProfileId(calendarEvent.assignedProfileId ?? '');
+    setRepeatsWeekly(calendarEvent.isRecurring);
+    setRepeatUntil(calendarEvent.repeatUntil ?? getDefaultRepeatUntil(eventDate));
+    setStartTime(formatTimeInput(new Date(calendarEvent.startAtUtc)));
+    setEndTime(formatTimeInput(new Date(calendarEvent.endAtUtc)));
+    setShowMoreOptions(Boolean(calendarEvent.notes || calendarEvent.assignedProfileId || calendarEvent.isRecurring));
+    setFormError('');
+    openSheet('edit-event', eventDate, calendarEvent.id);
+  }
+
   function handleSelectDay(day: string) {
     setSelectedDate(day);
-    setRepeatUntil((currentValue) =>
-      currentValue < day || currentValue === getDefaultRepeatUntil(selectedDate)
-        ? getDefaultRepeatUntil(day)
-        : currentValue,
-    );
-    focusComposeTitle();
+    setFormError('');
   }
 
   function handleShiftWeek(direction: -1 | 1) {
     const { nextWeekStart, nextSelectedDate } = shiftWeekDate(weekStart, selectedDate, direction);
     setWeekStart(nextWeekStart);
     setSelectedDate(nextSelectedDate);
-    setRepeatUntil(getDefaultRepeatUntil(nextSelectedDate));
     setFormError('');
   }
 
-  async function handleCreate(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const nextStart = combineDateAndTime(selectedDate, startTime);
@@ -193,49 +251,32 @@ export function CalendarPage() {
 
     setFormError('');
 
-    await createCalendarEventMutation.mutateAsync({
-      title: title.trim(),
-      notes: notes.trim() || null,
-      startAtUtc: nextStart.toISOString(),
-      endAtUtc: nextEnd.toISOString(),
-      assignedProfileId: assignedProfileId || null,
-      repeatsWeekly,
-      repeatUntil: repeatsWeekly ? repeatUntil : null,
-    });
+    if (editingEventId) {
+      await updateCalendarEventMutation.mutateAsync({
+        eventId: editingEventId,
+        request: {
+          title: title.trim(),
+          notes: notes.trim() || null,
+          startAtUtc: nextStart.toISOString(),
+          endAtUtc: nextEnd.toISOString(),
+          assignedProfileId: assignedProfileId || null,
+          applyToSeries: repeatsWeekly ? applyToSeries : false,
+          repeatUntil: repeatsWeekly ? repeatUntil : null,
+        },
+      });
+    } else {
+      await createCalendarEventMutation.mutateAsync({
+        title: title.trim(),
+        notes: notes.trim() || null,
+        startAtUtc: nextStart.toISOString(),
+        endAtUtc: nextEnd.toISOString(),
+        assignedProfileId: assignedProfileId || null,
+        repeatsWeekly,
+        repeatUntil: repeatsWeekly ? repeatUntil : null,
+      });
+    }
 
-    setTitle('');
-    setNotes('');
-    setAssignedProfileId('');
-    setRepeatsWeekly(false);
-    setShowMoreOptions(false);
-    setFormError('');
-  }
-
-  async function handleBumpHour(
-    eventId: string,
-    currentTitle: string,
-    currentNotes: string | null,
-    currentAssignedProfileId: string | null,
-    currentRepeatUntil: string | null,
-    currentIsRecurring: boolean,
-    startAtUtc: string,
-    endAtUtc: string,
-  ) {
-    const nextStart = new Date(new Date(startAtUtc).getTime() + 60 * 60 * 1000).toISOString();
-    const nextEnd = new Date(new Date(endAtUtc).getTime() + 60 * 60 * 1000).toISOString();
-
-    await updateCalendarEventMutation.mutateAsync({
-      eventId,
-      request: {
-        title: currentTitle,
-        notes: currentNotes,
-        startAtUtc: nextStart,
-        endAtUtc: nextEnd,
-        assignedProfileId: currentAssignedProfileId,
-        applyToSeries: currentIsRecurring ? applyToSeries : false,
-        repeatUntil: currentIsRecurring ? currentRepeatUntil : null,
-      },
-    });
+    closeSheet();
   }
 
   return (
@@ -243,7 +284,7 @@ export function CalendarPage() {
       <p className="eyebrow">Calendar</p>
       <h2 className="page-title">Weekly planner</h2>
       <p className="page-copy">
-        Pick a day first, then add the event details you need for that part of the week.
+        Pick a day first, then add or edit events in a focused mobile sheet.
       </p>
 
       <section className="calendar-header-panel">
@@ -281,92 +322,21 @@ export function CalendarPage() {
         </div>
       </section>
 
-      <form className="calendar-form calendar-compose-card" onSubmit={handleCreate}>
-        <div className="calendar-compose-header calendar-field-wide">
-          <div>
-            <p className="eyebrow">Add event</p>
-            <h3 className="profile-card-title">{formatAgendaHeading(selectedDate)}</h3>
-          </div>
-          <button
-            className="secondary-button calendar-small-button"
-            type="button"
-            onClick={() => setShowMoreOptions((current) => !current)}
-          >
-            {showMoreOptions ? 'Fewer fields' : 'More options'}
-          </button>
+      <section className="calendar-compose-card calendar-action-card">
+        <div>
+          <p className="eyebrow">Selected day</p>
+          <h3 className="profile-card-title">{formatAgendaHeading(selectedDate)}</h3>
+          <p className="shopping-meta">Use the add action or any event card to open the editing sheet.</p>
         </div>
-
-        <label className="field calendar-field-wide">
-          <span>Title</span>
-          <input
-            ref={titleInputRef}
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="Add event title"
-            type="text"
-          />
-        </label>
-
-        <div className="calendar-time-row calendar-field-wide">
-          <label className="field">
-            <span>Start time</span>
-            <input value={startTime} onChange={(event) => setStartTime(event.target.value)} type="time" />
-          </label>
-
-          <label className="field">
-            <span>End time</span>
-            <input value={endTime} onChange={(event) => setEndTime(event.target.value)} type="time" />
-          </label>
-        </div>
-
-        {showMoreOptions ? (
-          <>
-            <label className="field">
-              <span>Assigned profile</span>
-              <select value={assignedProfileId} onChange={(event) => setAssignedProfileId(event.target.value)}>
-                <option value="">Unassigned</option>
-                {bootstrapQuery.data?.profiles.map((profile) => (
-                  <option key={profile.id} value={profile.id}>
-                    {profile.displayName}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="field checkbox-field">
-              <span>Repeat weekly</span>
-              <input
-                checked={repeatsWeekly}
-                onChange={(event) => setRepeatsWeekly(event.target.checked)}
-                type="checkbox"
-              />
-            </label>
-
-            {repeatsWeekly ? (
-              <label className="field">
-                <span>Repeat until</span>
-                <input value={repeatUntil} onChange={(event) => setRepeatUntil(event.target.value)} type="date" />
-              </label>
-            ) : null}
-
-            <label className="field calendar-field-wide">
-              <span>Notes</span>
-              <textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
-            </label>
-          </>
-        ) : null}
-
-        {formError ? <p className="form-error calendar-field-wide">{formError}</p> : null}
-
-        <button className="primary-button" type="submit" disabled={createCalendarEventMutation.isPending}>
-          {createCalendarEventMutation.isPending ? 'Saving...' : `Add event on ${formatAgendaHeading(selectedDate)}`}
+        <button className="primary-button" type="button" onClick={() => seedCreateForm(selectedDate)}>
+          Add event
         </button>
-      </form>
+      </section>
 
       {calendarWeekQuery.isLoading ? <p className="page-copy">Loading weekly calendar...</p> : null}
       {calendarWeekQuery.isError ? <p className="form-error">Unable to load weekly events.</p> : null}
       <label className="field checkbox-field calendar-apply-series-toggle">
-        <span>Update all future repeats when bumping recurring events</span>
+        <span>Update all future repeats when editing recurring events</span>
         <input checked={applyToSeries} onChange={(event) => setApplyToSeries(event.target.checked)} type="checkbox" />
       </label>
 
@@ -386,9 +356,9 @@ export function CalendarPage() {
                 <button
                   className={day.key === selectedDate ? 'primary-button calendar-small-button' : 'secondary-button calendar-small-button'}
                   type="button"
-                  onClick={() => handleSelectDay(day.key)}
+                  onClick={() => seedCreateForm(day.key)}
                 >
-                  {day.key === selectedDate ? 'Adding here' : 'Add here'}
+                  Add here
                 </button>
               </div>
 
@@ -423,20 +393,9 @@ export function CalendarPage() {
                           <button
                             className="secondary-button calendar-small-button"
                             type="button"
-                            onClick={() =>
-                              handleBumpHour(
-                                calendarEvent.id,
-                                calendarEvent.title,
-                                calendarEvent.notes,
-                                calendarEvent.assignedProfileId,
-                                calendarEvent.repeatUntil,
-                                calendarEvent.isRecurring,
-                                calendarEvent.startAtUtc,
-                                calendarEvent.endAtUtc,
-                              )
-                            }
+                            onClick={() => seedEditForm(calendarEvent.id)}
                           >
-                            +1h
+                            Edit
                           </button>
                         </div>
                       </li>
@@ -452,6 +411,116 @@ export function CalendarPage() {
           );
         })}
       </div>
+
+      <button className="floating-action-button" type="button" aria-label="Add calendar event" onClick={() => seedCreateForm(selectedDate)}>
+        Add event
+      </button>
+
+      {isSheetOpen ? (
+        <>
+          <button className="mobile-sheet-backdrop" type="button" aria-label="Close event sheet" onClick={closeSheet} />
+          <section className="mobile-sheet" role="dialog" aria-modal="true" aria-labelledby="calendar-sheet-title">
+            <div className="mobile-sheet-header">
+              <div>
+                <p className="eyebrow">{editingEventId ? 'Edit event' : 'Add event'}</p>
+                <h3 id="calendar-sheet-title" className="profile-card-title">{formatAgendaHeading(selectedDate)}</h3>
+              </div>
+              <button className="secondary-button calendar-small-button" type="button" onClick={closeSheet}>
+                Close
+              </button>
+            </div>
+
+            <form className="calendar-form mobile-sheet-content" onSubmit={handleSubmit}>
+              <label className="field calendar-field-wide">
+                <span>Title</span>
+                <input
+                  ref={titleInputRef}
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  placeholder="Add event title"
+                  type="text"
+                />
+              </label>
+
+              <div className="calendar-time-row calendar-field-wide">
+                <label className="field">
+                  <span>Start time</span>
+                  <input value={startTime} onChange={(event) => setStartTime(event.target.value)} type="time" />
+                </label>
+
+                <label className="field">
+                  <span>End time</span>
+                  <input value={endTime} onChange={(event) => setEndTime(event.target.value)} type="time" />
+                </label>
+              </div>
+
+              <button
+                className="secondary-button calendar-small-button calendar-field-wide"
+                type="button"
+                onClick={() => setShowMoreOptions((current) => !current)}
+              >
+                {showMoreOptions ? 'Hide extra details' : 'Show extra details'}
+              </button>
+
+              {showMoreOptions ? (
+                <>
+                  <label className="field">
+                    <span>Assigned profile</span>
+                    <select value={assignedProfileId} onChange={(event) => setAssignedProfileId(event.target.value)}>
+                      <option value="">Unassigned</option>
+                      {bootstrapQuery.data?.profiles.map((profile) => (
+                        <option key={profile.id} value={profile.id}>
+                          {profile.displayName}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="field checkbox-field">
+                    <span>Repeat weekly</span>
+                    <input
+                      checked={repeatsWeekly}
+                      onChange={(event) => setRepeatsWeekly(event.target.checked)}
+                      type="checkbox"
+                    />
+                  </label>
+
+                  {repeatsWeekly ? (
+                    <label className="field">
+                      <span>Repeat until</span>
+                      <input value={repeatUntil} onChange={(event) => setRepeatUntil(event.target.value)} type="date" />
+                    </label>
+                  ) : null}
+
+                  <label className="field calendar-field-wide">
+                    <span>Notes</span>
+                    <textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
+                  </label>
+                </>
+              ) : null}
+
+              {formError ? <p className="form-error calendar-field-wide">{formError}</p> : null}
+
+              <div className="mobile-sheet-actions calendar-field-wide">
+                <button className="secondary-button" type="button" onClick={closeSheet}>
+                  Cancel
+                </button>
+                <button
+                  className="primary-button"
+                  type="submit"
+                  disabled={createCalendarEventMutation.isPending || updateCalendarEventMutation.isPending}
+                >
+                  {createCalendarEventMutation.isPending || updateCalendarEventMutation.isPending
+                    ? 'Saving...'
+                    : editingEventId
+                      ? 'Save event'
+                      : 'Add event'}
+                </button>
+              </div>
+            </form>
+          </section>
+        </>
+      ) : null}
     </section>
   );
 }

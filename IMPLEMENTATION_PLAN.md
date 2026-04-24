@@ -195,7 +195,7 @@ Current committed state:
 Current committed state:
 
 - Shared app shell, protected routing, and bottom navigation are implemented
-- Search-param driven sheet routing is not implemented yet
+- Search-param driven sheet routing is now implemented for calendar event create/edit and shopping item add flows
 - Current committed routes are `/login`, `/invite/:token`, `/`, `/calendar`, `/meals`, `/shopping`, `/family`, and `/settings/privacy`
 
 ### Feature-Sliced Architecture
@@ -325,6 +325,7 @@ Current committed state:
 Current committed state:
 
 - Forms currently use simple local state and lightweight inline guards
+- Calendar and shopping now use search-param driven mobile sheets for focused create and edit flows while still managing field state locally in-page
 - Zod schemas, React Hook Form integration, and draft persistence are not implemented yet
 
 ### Modals and Bottom Sheets
@@ -1193,6 +1194,7 @@ Completed in current implementation pass:
 - The API now applies fixed-window rate limiting with a stricter auth bucket and basic security response headers including CSP, frame denial, referrer policy, and content-type sniffing protection
 - `infra/scripts` and `docs/runbooks` now include explicit migration, deploy, and rollback procedures, including a rollout helper that automatically undoes failed API deployments and a migration wrapper that requires an explicit connection string
 - `docs/runbooks/production-release-checklist.md` now captures the current release gate for verification, migration, rollout, rollback, and post-release recording
+- The frontend now hardens narrow-width overflow behavior at `360x780`, converts the dashboard week summary to a swipeable mobile strip, simplifies calendar and meals around selected-day planning, replaces hidden meal assignment cycling with explicit edit and assignment controls, speeds up shopping quick add, and introduces search-param driven mobile sheets plus floating add actions for calendar and shopping
 
 ### Phase 4: Optimization
 

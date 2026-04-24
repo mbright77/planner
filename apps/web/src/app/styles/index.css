@@ -999,6 +999,13 @@ select {
   box-shadow: var(--shadow);
 }
 
+.calendar-action-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .calendar-compose-header {
   display: flex;
   align-items: start;
@@ -1095,6 +1102,63 @@ select {
   background: var(--surface-subtle);
 }
 
+.floating-action-button {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 6.5rem;
+  min-height: 3.5rem;
+  padding: 0 1.15rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--primary-strong);
+  color: white;
+  font-weight: 700;
+  box-shadow: var(--shadow-floating);
+  z-index: 12;
+}
+
+.mobile-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  border: 0;
+  background: rgba(24, 28, 32, 0.38);
+  z-index: 19;
+}
+
+.mobile-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  gap: 1rem;
+  max-height: min(85vh, 48rem);
+  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+  border-radius: 1.5rem 1.5rem 0 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-floating);
+  z-index: 20;
+}
+
+.mobile-sheet-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.mobile-sheet-content {
+  overflow: auto;
+  padding-right: 0.1rem;
+}
+
+.mobile-sheet-actions {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .calendar-small-button {
   min-height: 2.5rem;
   padding: 0 0.85rem;
@@ -1124,10 +1188,25 @@ select {
     justify-items: start;
     padding-left: 4rem;
   }
+
+  .calendar-action-card,
+  .mobile-sheet-header {
+    align-items: start;
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 480px) {
   .calendar-time-row {
+    grid-template-columns: 1fr;
+  }
+
+  .floating-action-button {
+    right: 1rem;
+    bottom: 6rem;
+  }
+
+  .mobile-sheet-actions {
     grid-template-columns: 1fr;
   }
 }
@@ -1787,6 +1866,19 @@ select {
 
   .app-content {
     padding-bottom: 1.5rem;
+  }
+
+  .floating-action-button {
+    bottom: 2rem;
+  }
+
+  .mobile-sheet {
+    left: 50%;
+    right: auto;
+    bottom: 2rem;
+    width: min(32rem, calc(100vw - 2rem));
+    border-radius: 1.5rem;
+    transform: translateX(-50%);
   }
 
   .dashboard-layout {
