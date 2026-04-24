@@ -213,7 +213,14 @@ export function FamilyPage() {
             </div>
 
             <label className="toggle-row profile-toggle-row">
-              <span>{profile.isActive ? 'Included in planning' : 'Hidden from planning'}</span>
+              <span className="profile-toggle-copy">
+                <strong>{profile.isActive ? 'Included in planning' : 'Hidden from planning'}</strong>
+                <span className="shopping-meta">
+                  {profile.isActive
+                    ? 'This member can appear in planning flows and assignments.'
+                    : 'This member stays available for sign-in, requests, and shopping updates only.'}
+                </span>
+              </span>
               <input
                 type="checkbox"
                 checked={profile.isActive}

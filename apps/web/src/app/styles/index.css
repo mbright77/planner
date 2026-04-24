@@ -1087,6 +1087,68 @@ select {
 
 .calendar-apply-series-toggle {
   margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(93, 169, 233, 0.18);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgba(93, 169, 233, 0.08) 0%, rgba(255, 255, 255, 0.94) 100%);
+  box-shadow: var(--shadow);
+}
+
+.calendar-apply-series-copy {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.calendar-apply-series-copy strong {
+  font-family: 'Plus Jakarta Sans', 'Public Sans', system-ui, sans-serif;
+  font-size: 0.95rem;
+}
+
+.calendar-apply-series-toggle input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 3.25rem;
+  height: 1.95rem;
+  margin: 0;
+  flex: none;
+  border: 1px solid rgba(93, 169, 233, 0.24);
+  border-radius: 999px;
+  background: rgba(93, 169, 233, 0.14);
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.calendar-apply-series-toggle input::after {
+  content: '';
+  position: absolute;
+  top: 0.18rem;
+  left: 0.2rem;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: white;
+  box-shadow: 0 3px 8px rgba(45, 49, 50, 0.16);
+  transition: transform 160ms ease;
+}
+
+.calendar-apply-series-toggle input:checked {
+  border-color: var(--primary-strong);
+  background: var(--primary-strong);
+}
+
+.calendar-apply-series-toggle input:checked::after {
+  transform: translateX(1.28rem);
+}
+
+.calendar-apply-series-toggle input:focus-visible {
+  outline: 3px solid rgba(93, 169, 233, 0.28);
+  outline-offset: 2px;
 }
 
 .calendar-event-actions {
@@ -1750,6 +1812,58 @@ select {
 .toggle-row > span {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.profile-toggle-copy {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.profile-toggle-copy strong {
+  font-family: 'Plus Jakarta Sans', 'Public Sans', system-ui, sans-serif;
+  font-size: 0.95rem;
+}
+
+.profile-toggle-row input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 3.25rem;
+  height: 1.95rem;
+  margin: 0;
+  flex: none;
+  border: 1px solid rgba(93, 169, 233, 0.24);
+  border-radius: 999px;
+  background: rgba(93, 169, 233, 0.14);
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.profile-toggle-row input::after {
+  content: '';
+  position: absolute;
+  top: 0.18rem;
+  left: 0.2rem;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: white;
+  box-shadow: 0 3px 8px rgba(45, 49, 50, 0.16);
+  transition: transform 160ms ease;
+}
+
+.profile-toggle-row input:checked {
+  border-color: var(--primary-strong);
+  background: var(--primary-strong);
+}
+
+.profile-toggle-row input:checked::after {
+  transform: translateX(1.28rem);
+}
+
+.profile-toggle-row input:focus-visible {
+  outline: 3px solid rgba(93, 169, 233, 0.28);
+  outline-offset: 2px;
 }
 
 @media (max-width: 480px) {

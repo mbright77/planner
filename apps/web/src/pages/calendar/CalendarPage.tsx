@@ -359,8 +359,11 @@ export function CalendarPage() {
 
       {calendarWeekQuery.isLoading ? <p className="page-copy">Loading weekly calendar...</p> : null}
       {calendarWeekQuery.isError ? <p className="form-error">Unable to load weekly events.</p> : null}
-      <label className="field checkbox-field calendar-apply-series-toggle">
-        <span>Update all future repeats when editing recurring events</span>
+      <label className="calendar-apply-series-toggle" htmlFor="calendar-apply-series-toggle">
+        <span className="calendar-apply-series-copy">
+          <strong>Update future repeats</strong>
+          <span className="shopping-meta">Apply edits to the rest of this recurring series.</span>
+        </span>
         <input checked={applyToSeries} onChange={(event) => setApplyToSeries(event.target.checked)} type="checkbox" />
       </label>
 
