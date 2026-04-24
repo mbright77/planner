@@ -1,6 +1,7 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import { useDashboardOverview } from '../../entities/dashboard/model/useDashboardOverview';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 import {
   useCalendarWeek,
@@ -129,6 +130,7 @@ export function CalendarPage() {
   const titleInputRef = useRef<HTMLInputElement | null>(null);
 
   const bootstrapQuery = useBootstrap();
+  const dashboardQuery = useDashboardOverview();
   const calendarWeekQuery = useCalendarWeek(weekStart);
   const createCalendarEventMutation = useCreateCalendarEvent(weekStart);
   const updateCalendarEventMutation = useUpdateCalendarEvent(weekStart);
@@ -136,6 +138,28 @@ export function CalendarPage() {
   const calendarEvents = calendarWeekQuery.data?.events ?? [];
   const sheet = searchParams.get('sheet');
   const isSheetOpen = sheet === 'create-event' || sheet === 'edit-event';
+
+  useEffect(() => {
+    if (!dashboardQuery.data) {
+      return;
+    }
+
+    setSelectedDate((current) => {
+      if (current !== initialSelectedDate) {
+        return current;
+      }
+
+      return dashboardQuery.data.date;
+    });
+
+    setWeekStart((current) => {
+      if (current !== initialWeekStart) {
+        return current;
+      }
+
+      return formatDateOnly(getWeekStart(new Date(`${dashboardQuery.data.date}T00:00:00`)));
+    });
+  }, [dashboardQuery.data, initialSelectedDate, initialWeekStart]);
 
   const eventsByDay = useMemo(() => {
     const groups = new Map<string, typeof calendarEvents>(

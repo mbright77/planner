@@ -168,7 +168,6 @@ export function HomePage() {
                     {dashboardQuery.data.tonightMeal.notes ? (
                       <p className="dashboard-meal-notes">{dashboardQuery.data.tonightMeal.notes}</p>
                     ) : null}
-                    <div className="dashboard-meal-action">Change meal</div>
                   </>
                 ) : (
                   <div className="dashboard-empty-card dashboard-empty-card-compact">

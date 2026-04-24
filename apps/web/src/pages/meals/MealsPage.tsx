@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { useDashboardOverview } from '../../entities/dashboard/model/useDashboardOverview';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 import {
   useAcceptMealRequest,
@@ -103,6 +104,7 @@ export function MealsPage() {
   const requestTitleRef = useRef<HTMLInputElement | null>(null);
 
   const bootstrapQuery = useBootstrap();
+  const dashboardQuery = useDashboardOverview();
   const mealsWeekQuery = useMealsWeek(weekStart);
   const mealRequestsQuery = useMealRequests(weekStart);
   const createMealPlanMutation = useCreateMealPlan(weekStart);
@@ -129,6 +131,28 @@ export function MealsPage() {
 
   const selectedMeal = mealsByDate.get(selectedDate);
   const selectedRequests = requestsByDate.get(selectedDate) ?? [];
+
+  useEffect(() => {
+    if (!dashboardQuery.data) {
+      return;
+    }
+
+    setSelectedDate((current) => {
+      if (current !== initialSelectedDate) {
+        return current;
+      }
+
+      return dashboardQuery.data.date;
+    });
+
+    setWeekStart((current) => {
+      if (current !== initialWeekStart) {
+        return current;
+      }
+
+      return formatDateOnly(getWeekStart(new Date(`${dashboardQuery.data.date}T00:00:00`)));
+    });
+  }, [dashboardQuery.data, initialSelectedDate, initialWeekStart]);
 
   useEffect(() => {
     if (selectedMeal) {
