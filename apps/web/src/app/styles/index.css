@@ -1644,6 +1644,9 @@ select {
 }
 
 .dashboard-mini-card-shopping {
+  align-content: start;
+  aspect-ratio: auto;
+  height: auto;
   background: linear-gradient(180deg, #ffffff 0%, rgba(253, 137, 138, 0.08) 100%);
 }
 

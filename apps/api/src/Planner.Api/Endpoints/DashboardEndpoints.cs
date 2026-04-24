@@ -88,7 +88,6 @@ public static class DashboardEndpoints
 
         var shoppingPreviewLabels = shoppingPreview
             .OrderBy(x => x.CreatedAtUtc)
-            .Take(3)
             .Select(x => x.Label)
             .ToArray();
 
