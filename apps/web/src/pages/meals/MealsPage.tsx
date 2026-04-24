@@ -243,11 +243,6 @@ export function MealsPage() {
         ownerProfileId: editingMealOwnerProfileId || null,
       },
     });
-
-    setEditingMealId(null);
-    setEditingMealTitle('');
-    setEditingMealNotes('');
-    setEditingMealOwnerProfileId('');
   }
 
   async function handleAssignRequest(requestId: string) {
