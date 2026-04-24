@@ -255,6 +255,21 @@ export function MealsPage() {
     setAssigningRequestProfileId('');
   }
 
+  function handleStartMealEdit(day: string) {
+    const meal = mealsByDate.get(day);
+    if (!meal) {
+      return;
+    }
+
+    setSelectedDate(day);
+    setEditingMealId(meal.id);
+    setEditingMealTitle(meal.title);
+    setEditingMealNotes(meal.notes ?? '');
+    setEditingMealOwnerProfileId(meal.ownerProfileId ?? '');
+    setMealEditError('');
+    focusMealTitle();
+  }
+
   function handleStartRequestAssignment(requestId: string, currentAssigneeProfileId: string | null) {
     setAssigningRequestId(requestId);
     setAssigningRequestProfileId(currentAssigneeProfileId ?? '');
@@ -453,7 +468,7 @@ export function MealsPage() {
                     <button
                       className="secondary-button meal-card-button"
                       type="button"
-                      onClick={() => handleSelectDay(day.key)}
+                      onClick={() => handleStartMealEdit(day.key)}
                     >
                       Edit day
                     </button>
