@@ -72,7 +72,7 @@ export function InvitePage() {
       {inviteDetails ? (
         <>
           <p className="page-copy">
-            Join <strong>{inviteDetails.familyName}</strong> as <strong>{inviteDetails.email}</strong>.
+            Join <strong>{inviteDetails.familyName}</strong> with the invite sent to <strong>{inviteDetails.email}</strong>.
           </p>
 
           {inviteDetails.isExpired ? <p className="form-error">This invite has expired.</p> : null}

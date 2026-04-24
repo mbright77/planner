@@ -105,7 +105,10 @@ export function FamilyPage() {
           <div className="profile-card-header family-section-header">
             <div>
               <p className="eyebrow">Invites</p>
-              <h3 className="profile-card-title">Invite another adult</h3>
+              <h3 className="profile-card-title">Invite a family member</h3>
+              <p className="page-copy">
+                Invited family members can sign in, view the shared planner, add calendar items, request and plan meals, and update shopping.
+              </p>
             </div>
           </div>
 
