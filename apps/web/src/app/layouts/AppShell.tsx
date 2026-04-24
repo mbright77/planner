@@ -88,7 +88,7 @@ export function AppShell() {
           <div className="topbar-avatar" aria-hidden="true">
             {familyName.slice(0, 1).toUpperCase()}
           </div>
-          <div>
+          <div className="topbar-copy">
             <p className="eyebrow topbar-eyebrow">{familyName}</p>
             <h1 className="topbar-title">{currentPage.title}</h1>
             <p className="topbar-meta">{currentPage.eyebrow} · {membershipRole}</p>

@@ -102,6 +102,10 @@ select {
   min-width: 0;
 }
 
+.topbar-copy {
+  min-width: 0;
+}
+
 .topbar-avatar {
   width: 2.75rem;
   height: 2.75rem;
@@ -126,6 +130,7 @@ select {
 .topbar-meta {
   margin: 0.35rem 0 0;
   color: var(--text-muted);
+  overflow-wrap: anywhere;
 }
 
 .topbar-eyebrow {
@@ -188,6 +193,32 @@ select {
   max-width: 36rem;
   margin-top: 0.75rem;
   color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.page-title,
+.profile-card-title,
+.calendar-month-title,
+.meals-range-title,
+.dashboard-meal-title,
+.dashboard-timeline-title,
+.meal-card-title,
+.meal-request-title,
+.shopping-item-label,
+.invite-link,
+.shopping-meta,
+.calendar-event-time,
+.calendar-event-notes,
+.calendar-event-recurrence,
+.meal-card-notes,
+.dashboard-timeline-notes,
+.dashboard-meal-notes,
+.dashboard-mini-count,
+.dashboard-section-link,
+.topbar-title,
+.eyebrow,
+.profile-stat-value {
+  overflow-wrap: anywhere;
 }
 
 .status-banner {
@@ -263,6 +294,8 @@ select {
   font-size: 0.85rem;
   font-weight: 700;
   text-transform: capitalize;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .auth-toggle {
@@ -516,6 +549,7 @@ select {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  min-width: 0;
 }
 
 .shopping-list {
@@ -543,6 +577,8 @@ select {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
 }
 
 .shopping-checkbox-row input {
@@ -554,6 +590,7 @@ select {
 .shopping-item-label {
   display: inline-block;
   font-weight: 600;
+  min-width: 0;
 }
 
 .shopping-item-label-complete {
@@ -571,12 +608,15 @@ select {
   align-items: center;
   justify-content: center;
   min-height: 2rem;
+  max-width: min(100%, 10rem);
   padding: 0.3rem 0.7rem;
   border-radius: 999px;
   background: rgba(93, 169, 233, 0.12);
   color: var(--primary-strong);
   font-size: 0.78rem;
   font-weight: 700;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .shopping-field-wide {
@@ -673,6 +713,7 @@ select {
 .meal-card-body {
   display: grid;
   gap: 0.35rem;
+  min-width: 0;
 }
 
 .meal-card-title {
@@ -757,6 +798,7 @@ select {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
+  min-width: 0;
 }
 
 .meal-request-title {
@@ -1125,6 +1167,7 @@ select {
 .dashboard-hero-copy {
   display: grid;
   gap: 0.15rem;
+  min-width: 0;
 }
 
 .dashboard-family-badge {
@@ -1138,6 +1181,9 @@ select {
   color: var(--primary-strong);
   font-weight: 700;
   box-shadow: var(--shadow);
+  max-width: 100%;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .dashboard-week-strip {
@@ -1277,6 +1323,13 @@ select {
   gap: 1rem;
 }
 
+.dashboard-timeline-card-header > div:first-child,
+.dashboard-meal-head > div:first-child,
+.profile-card-header > div:first-child,
+.invite-card > div:first-child {
+  min-width: 0;
+}
+
 .dashboard-timeline-title {
   font-family: 'Plus Jakarta Sans', 'Public Sans', system-ui, sans-serif;
   font-size: 1rem;
@@ -1376,6 +1429,7 @@ select {
   min-height: 11rem;
   align-content: space-between;
   aspect-ratio: 1 / 1;
+  min-width: 0;
 }
 
 .dashboard-mini-card-shopping {
@@ -1445,6 +1499,55 @@ select {
   justify-content: space-between;
   align-items: center;
   margin-top: 1rem;
+  gap: 1rem;
+}
+
+.toggle-row > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+  .topbar {
+    align-items: start;
+    gap: 0.75rem;
+    padding-inline: 1rem;
+  }
+
+  .topbar-title {
+    font-size: 1.4rem;
+  }
+
+  .topbar-meta {
+    font-size: 0.9rem;
+    line-height: 1.35;
+  }
+
+  .profile-card-header,
+  .dashboard-timeline-card-header,
+  .dashboard-meal-head,
+  .invite-card,
+  .shopping-group-header {
+    flex-wrap: wrap;
+  }
+
+  .shopping-list-item {
+    align-items: start;
+    flex-wrap: wrap;
+  }
+
+  .shopping-owner-chip {
+    margin-left: 2.15rem;
+  }
+
+  .profile-color-chip,
+  .dashboard-family-badge {
+    min-width: 0;
+  }
+
+  .toggle-row {
+    align-items: start;
+  }
 }
 
 .profile-toggle-row {
