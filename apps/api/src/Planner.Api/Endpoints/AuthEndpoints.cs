@@ -74,6 +74,7 @@ public static class AuthEndpoints
         {
             Id = Guid.NewGuid(),
             FamilyId = family.Id,
+            LinkedUserId = user.Id,
             DisplayName = request.DisplayName,
             ColorKey = request.ColorKey,
             IsActive = true,

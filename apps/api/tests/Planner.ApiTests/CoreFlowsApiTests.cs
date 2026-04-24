@@ -52,6 +52,7 @@ public sealed class CoreFlowsApiTests(ApiTestFactory factory) : IClassFixture<Ap
 
         var profile = await profileResponse.Content.ReadFromJsonAsync<ProfileResponse>();
         Assert.NotNull(profile);
+        Assert.False(profile.HasLogin);
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var startAtUtc = new DateTimeOffset(today.ToDateTime(new TimeOnly(16, 0), DateTimeKind.Utc));
@@ -194,18 +195,20 @@ public sealed class CoreFlowsApiTests(ApiTestFactory factory) : IClassFixture<Ap
 
         var createInviteResponse = await client.PostAsJsonAsync(
             "/api/v1/family-invites",
-            new CreateFamilyInviteRequest("adult@example.com"));
+            new CreateFamilyInviteRequest("adult@example.com", null));
         Assert.Equal(HttpStatusCode.Created, createInviteResponse.StatusCode);
 
         var invite = await createInviteResponse.Content.ReadFromJsonAsync<FamilyInviteResponse>();
         Assert.NotNull(invite);
         Assert.Equal("adult@example.com", invite.Email);
+        Assert.Null(invite.ProfileId);
 
         var inviteDetails = await client.GetFromJsonAsync<FamilyInviteDetailsResponse>($"/api/v1/invites/{invite.Token}");
         Assert.NotNull(inviteDetails);
         Assert.Equal("adult@example.com", inviteDetails.Email);
         Assert.False(inviteDetails.IsExpired);
         Assert.False(inviteDetails.IsAccepted);
+        Assert.Null(inviteDetails.ProfileId);
 
         var acceptResponse = await client.PostAsJsonAsync(
             $"/api/v1/invites/{invite.Token}/accept",
@@ -215,6 +218,58 @@ public sealed class CoreFlowsApiTests(ApiTestFactory factory) : IClassFixture<Ap
         var acceptedInvite = await client.GetFromJsonAsync<FamilyInviteDetailsResponse>($"/api/v1/invites/{invite.Token}");
         Assert.NotNull(acceptedInvite);
         Assert.True(acceptedInvite.IsAccepted);
+
+        var profiles = await client.GetFromJsonAsync<IReadOnlyList<ProfileResponse>>("/api/v1/profiles");
+        Assert.NotNull(profiles);
+        Assert.Contains(profiles, x => x.DisplayName == "Taylor" && x.HasLogin);
+    }
+
+    [Fact]
+    public async Task Family_admin_can_invite_existing_profile_without_creating_duplicate_profile()
+    {
+        await factory.ResetDatabaseAsync();
+        using var client = factory.CreateClient();
+
+        var authResponse = await RegisterAsync(client);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse.AccessToken);
+
+        var createProfileResponse = await client.PostAsJsonAsync(
+            "/api/v1/profiles",
+            new CreateProfileRequest("Emma", "pink"));
+        Assert.Equal(HttpStatusCode.Created, createProfileResponse.StatusCode);
+
+        var existingProfile = await createProfileResponse.Content.ReadFromJsonAsync<ProfileResponse>();
+        Assert.NotNull(existingProfile);
+        Assert.False(existingProfile.HasLogin);
+
+        var createInviteResponse = await client.PostAsJsonAsync(
+            "/api/v1/family-invites",
+            new CreateFamilyInviteRequest("emma@example.com", existingProfile.Id));
+        Assert.Equal(HttpStatusCode.Created, createInviteResponse.StatusCode);
+
+        var invite = await createInviteResponse.Content.ReadFromJsonAsync<FamilyInviteResponse>();
+        Assert.NotNull(invite);
+        Assert.Equal(existingProfile.Id, invite.ProfileId);
+        Assert.Equal("Emma", invite.ProfileDisplayName);
+
+        var inviteDetails = await client.GetFromJsonAsync<FamilyInviteDetailsResponse>($"/api/v1/invites/{invite.Token}");
+        Assert.NotNull(inviteDetails);
+        Assert.Equal(existingProfile.Id, inviteDetails.ProfileId);
+        Assert.Equal("Emma", inviteDetails.ProfileDisplayName);
+        Assert.Equal("pink", inviteDetails.ProfileColorKey);
+
+        var acceptResponse = await client.PostAsJsonAsync(
+            $"/api/v1/invites/{invite.Token}/accept",
+            new AcceptFamilyInviteRequest("emma@example.com", "Planner123!", null, null));
+        Assert.Equal(HttpStatusCode.OK, acceptResponse.StatusCode);
+
+        var profiles = await client.GetFromJsonAsync<IReadOnlyList<ProfileResponse>>("/api/v1/profiles");
+        Assert.NotNull(profiles);
+        Assert.Equal(2, profiles.Count);
+
+        var linkedProfile = Assert.Single(profiles, x => x.Id == existingProfile.Id);
+        Assert.Equal("Emma", linkedProfile.DisplayName);
+        Assert.True(linkedProfile.HasLogin);
     }
 
     [Fact]
@@ -228,7 +283,7 @@ public sealed class CoreFlowsApiTests(ApiTestFactory factory) : IClassFixture<Ap
 
         var createInviteResponse = await client.PostAsJsonAsync(
             "/api/v1/family-invites",
-            new CreateFamilyInviteRequest("adult@example.com"));
+            new CreateFamilyInviteRequest("adult@example.com", null));
         Assert.Equal(HttpStatusCode.Created, createInviteResponse.StatusCode);
 
         var invite = await createInviteResponse.Content.ReadFromJsonAsync<FamilyInviteResponse>();

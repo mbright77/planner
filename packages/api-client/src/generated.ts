@@ -1073,8 +1073,8 @@ export interface components {
         AcceptFamilyInviteRequest: {
             email: string;
             password: string;
-            displayName: string;
-            colorKey: string;
+            displayName: string | null;
+            colorKey: string | null;
         };
         AssignMealRequestRequest: {
             /** Format: uuid */
@@ -1123,6 +1123,8 @@ export interface components {
         };
         CreateFamilyInviteRequest: {
             email: string;
+            /** Format: uuid */
+            profileId: string | null;
         };
         CreateMealPlanRequest: {
             /** Format: date */
@@ -1220,6 +1222,10 @@ export interface components {
             expiresAtUtc: string;
             isExpired: boolean;
             isAccepted: boolean;
+            /** Format: uuid */
+            profileId: string | null;
+            profileDisplayName: string | null;
+            profileColorKey: string | null;
         };
         FamilyInviteResponse: {
             /** Format: uuid */
@@ -1231,6 +1237,9 @@ export interface components {
             /** Format: date-time */
             createdAtUtc: string;
             isAccepted: boolean;
+            /** Format: uuid */
+            profileId: string | null;
+            profileDisplayName: string | null;
         };
         LoginRequest: {
             email: string;
@@ -1272,6 +1281,7 @@ export interface components {
             displayName: string;
             colorKey: string;
             isActive: boolean;
+            hasLogin: boolean;
         };
         ProfileSummary: {
             /** Format: uuid */

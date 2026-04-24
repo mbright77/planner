@@ -608,7 +608,7 @@ planner.audit_events
 Current committed state:
 
 - Implemented core tables/entities cover families, family memberships, profiles, calendar event series, calendar events, shopping items, meal plans, and meal requests
-- Family invites are implemented for admin-created adult onboarding links
+- Family invites are implemented for additional family-member onboarding, including optional linking to an existing profile so invite acceptance can grant sign-in access without creating a duplicate planner identity
 - Refresh tokens, shopping lists, shopping categories, user consents, and audit events are not implemented yet
 
 ### Key Tables
@@ -1182,7 +1182,8 @@ Completed in current implementation pass:
 - Calendar now supports weekly recurring events backed by `calendar_event_series`, with an in-process materializer filling future occurrences
 - The calendar page exposes weekly repeat creation and future-series update behavior for recurring events
 - Family admins can now create email-based invite links and review invite status from the Family page
-- The `/invite/:token` route now supports invite acceptance into an existing family with account creation and immediate sign-in
+- Family admins can optionally link invite links to an existing active profile so invite acceptance grants sign-in access without creating a duplicate profile
+- The `/invite/:token` route now supports both creating a new profile for the invited user and linking the new account to an existing profile before immediate sign-in
 - The protected `/settings/privacy` page now supports password-confirmed account deletion and admin-only family deletion flows
 - The API exposes `/api/v1/privacy/account/delete` and `/api/v1/privacy/family/delete`, with baseline API tests covering both destructive paths
 - The shared app shell now includes a skip link, visible keyboard focus styling, polite live regions for sync and offline status, and alert semantics for bootstrap failures

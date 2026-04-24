@@ -47,9 +47,18 @@ public static class InviteEndpoints
 
         var invites = await dbContext.FamilyInvites
             .AsNoTracking()
+            .Include(x => x.Profile)
             .Where(x => x.FamilyId == membership.FamilyId)
             .OrderByDescending(x => x.CreatedAtUtc)
-            .Select(x => new FamilyInviteResponse(x.Id, x.Email, x.Token, x.ExpiresAtUtc, x.CreatedAtUtc, x.AcceptedAtUtc != null))
+            .Select(x => new FamilyInviteResponse(
+                x.Id,
+                x.Email,
+                x.Token,
+                x.ExpiresAtUtc,
+                x.CreatedAtUtc,
+                x.AcceptedAtUtc != null,
+                x.ProfileId,
+                x.Profile != null ? x.Profile.DisplayName : null))
             .ToListAsync(cancellationToken);
 
         return Results.Ok(invites);
@@ -93,21 +102,60 @@ public static class InviteEndpoints
         }
 
         var now = DateTimeOffset.UtcNow;
+        Profile? inviteProfile = null;
+
+        if (request.ProfileId is not null)
+        {
+            inviteProfile = await dbContext.Profiles
+                .FirstOrDefaultAsync(
+                    x => x.Id == request.ProfileId.Value && x.FamilyId == membership.FamilyId,
+                    cancellationToken);
+
+            if (inviteProfile is null)
+            {
+                return Results.BadRequest(new { message = "The selected profile could not be found." });
+            }
+
+            if (inviteProfile.LinkedUserId is not null)
+            {
+                return Results.Conflict(new { message = "This profile already has sign-in access." });
+            }
+        }
+
         var existingInvites = await dbContext.FamilyInvites
+            .Include(x => x.Profile)
             .Where(x => x.FamilyId == membership.FamilyId && x.Email == normalizedEmail)
             .ToListAsync(cancellationToken);
 
-        var activeInvite = existingInvites.FirstOrDefault(x => x.AcceptedAtUtc == null && x.ExpiresAtUtc > now);
+        var activeInvite = existingInvites.FirstOrDefault(
+            x => x.AcceptedAtUtc == null
+                && x.ExpiresAtUtc > now
+                && x.ProfileId == request.ProfileId);
 
         if (activeInvite is not null)
         {
             return Results.Ok(ToResponse(activeInvite));
         }
 
+        if (request.ProfileId is not null)
+        {
+            var profileInviteExists = existingInvites.Any(
+                x => x.ProfileId == request.ProfileId
+                    && x.AcceptedAtUtc == null
+                    && x.ExpiresAtUtc > now);
+
+            if (profileInviteExists)
+            {
+                return Results.Conflict(new { message = "This profile already has a pending invite." });
+            }
+        }
+
         var invite = new FamilyInvite
         {
             Id = Guid.NewGuid(),
             FamilyId = membership.FamilyId,
+            ProfileId = request.ProfileId,
+            Profile = inviteProfile,
             Email = normalizedEmail,
             Token = Convert.ToHexString(Guid.NewGuid().ToByteArray()).ToLowerInvariant(),
             CreatedAtUtc = now,
@@ -128,6 +176,7 @@ public static class InviteEndpoints
         var invite = await dbContext.FamilyInvites
             .AsNoTracking()
             .Include(x => x.Family)
+            .Include(x => x.Profile)
             .FirstOrDefaultAsync(x => x.Token == token, cancellationToken);
 
         if (invite is null)
@@ -142,7 +191,10 @@ public static class InviteEndpoints
             invite.Family.Name,
             invite.ExpiresAtUtc,
             isExpired,
-            invite.AcceptedAtUtc != null));
+            invite.AcceptedAtUtc != null,
+            invite.ProfileId,
+            invite.Profile?.DisplayName,
+            invite.Profile?.ColorKey));
     }
 
     private static async Task<IResult> AcceptInviteAsync(
@@ -155,6 +207,7 @@ public static class InviteEndpoints
     {
         var invite = await dbContext.FamilyInvites
             .Include(x => x.Family)
+            .Include(x => x.Profile)
             .FirstOrDefaultAsync(x => x.Token == token, cancellationToken);
 
         if (invite is null)
@@ -211,20 +264,49 @@ public static class InviteEndpoints
             CreatedAtUtc = now,
         };
 
-        var profile = new Profile
+        Profile? createdProfile = null;
+
+        if (invite.ProfileId is not null)
         {
-            Id = Guid.NewGuid(),
-            FamilyId = invite.FamilyId,
-            DisplayName = request.DisplayName.Trim(),
-            ColorKey = request.ColorKey.Trim().ToLowerInvariant(),
-            IsActive = true,
-        };
+            if (invite.Profile is null || invite.Profile.FamilyId != invite.FamilyId)
+            {
+                return Results.BadRequest(new { message = "This invite is linked to a missing profile." });
+            }
+
+            if (invite.Profile.LinkedUserId is not null)
+            {
+                return Results.Conflict(new { message = "This profile already has sign-in access." });
+            }
+
+            invite.Profile.LinkedUserId = user.Id;
+        }
+        else
+        {
+            var displayName = request.DisplayName?.Trim();
+            var colorKey = request.ColorKey?.Trim().ToLowerInvariant();
+
+            if (string.IsNullOrWhiteSpace(displayName) || string.IsNullOrWhiteSpace(colorKey))
+            {
+                return Results.BadRequest(new { message = "Display name and color key are required for new profiles." });
+            }
+
+            createdProfile = new Profile
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = invite.FamilyId,
+                LinkedUserId = user.Id,
+                DisplayName = displayName,
+                ColorKey = colorKey,
+                IsActive = true,
+            };
+
+            dbContext.Profiles.Add(createdProfile);
+        }
 
         invite.AcceptedAtUtc = now;
         invite.AcceptedByUserId = user.Id;
 
         dbContext.FamilyMemberships.Add(membership);
-        dbContext.Profiles.Add(profile);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         var tokenResponse = jwtTokenService.CreateAccessToken(user, invite.FamilyId, FamilyRole.Member.ToString());
@@ -234,7 +316,15 @@ public static class InviteEndpoints
 
     private static FamilyInviteResponse ToResponse(FamilyInvite invite)
     {
-        return new FamilyInviteResponse(invite.Id, invite.Email, invite.Token, invite.ExpiresAtUtc, invite.CreatedAtUtc, invite.AcceptedAtUtc != null);
+        return new FamilyInviteResponse(
+            invite.Id,
+            invite.Email,
+            invite.Token,
+            invite.ExpiresAtUtc,
+            invite.CreatedAtUtc,
+            invite.AcceptedAtUtc != null,
+            invite.ProfileId,
+            invite.Profile?.DisplayName);
     }
 
     private static Task<FamilyMembership?> GetMembershipAsync(

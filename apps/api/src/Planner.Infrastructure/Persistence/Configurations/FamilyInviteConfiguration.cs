@@ -34,9 +34,16 @@ public sealed class FamilyInviteConfiguration : IEntityTypeConfiguration<FamilyI
 
         builder.HasIndex(x => new { x.FamilyId, x.Email, x.AcceptedAtUtc });
 
+        builder.HasIndex(x => x.ProfileId);
+
         builder.HasOne(x => x.Family)
             .WithMany(x => x.Invites)
             .HasForeignKey(x => x.FamilyId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(x => x.Profile)
+            .WithMany(x => x.FamilyInvites)
+            .HasForeignKey(x => x.ProfileId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

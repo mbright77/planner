@@ -47,6 +47,8 @@ public sealed class Profile
 
     public Guid FamilyId { get; set; }
 
+    public string? LinkedUserId { get; set; }
+
     public string DisplayName { get; set; } = string.Empty;
 
     public string ColorKey { get; set; } = string.Empty;
@@ -58,6 +60,8 @@ public sealed class Profile
     public ICollection<CalendarEvent> CalendarEvents { get; set; } = new List<CalendarEvent>();
 
     public ICollection<MealPlan> MealPlans { get; set; } = new List<MealPlan>();
+
+    public ICollection<FamilyInvite> FamilyInvites { get; set; } = new List<FamilyInvite>();
 }
 
 public sealed class FamilyMembership
@@ -81,6 +85,8 @@ public sealed class FamilyInvite
 
     public Guid FamilyId { get; set; }
 
+    public Guid? ProfileId { get; set; }
+
     public string Email { get; set; } = string.Empty;
 
     public string Token { get; set; } = string.Empty;
@@ -94,6 +100,8 @@ public sealed class FamilyInvite
     public string? AcceptedByUserId { get; set; }
 
     public Family Family { get; set; } = null!;
+
+    public Profile? Profile { get; set; }
 }
 
 public sealed class ShoppingItem

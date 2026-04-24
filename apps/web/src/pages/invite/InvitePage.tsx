@@ -18,6 +18,7 @@ export function InvitePage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const isLinkedInvite = Boolean(inviteDetails?.profileId);
 
   useEffect(() => {
     setLoading(true);
@@ -37,7 +38,7 @@ export function InvitePage() {
   async function handleAccept(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!displayName.trim() || !password.trim()) {
+    if (!password.trim() || (!isLinkedInvite && !displayName.trim())) {
       return;
     }
 
@@ -48,8 +49,8 @@ export function InvitePage() {
       const session = await acceptFamilyInvite(token, {
         email: email.trim().toLowerCase(),
         password,
-        displayName: displayName.trim(),
-        colorKey,
+        displayName: isLinkedInvite ? null : displayName.trim(),
+        colorKey: isLinkedInvite ? null : colorKey,
       });
 
       setSession({ accessToken: session.accessToken, expiresAtUtc: session.expiresAtUtc });
@@ -75,6 +76,13 @@ export function InvitePage() {
             Join <strong>{inviteDetails.familyName}</strong> with the invite sent to <strong>{inviteDetails.email}</strong>.
           </p>
 
+          {isLinkedInvite ? (
+            <p className="page-copy invite-profile-copy">
+              This invite will connect your sign-in to the existing profile{' '}
+              <strong>{inviteDetails.profileDisplayName}</strong>.
+            </p>
+          ) : null}
+
           {inviteDetails.isExpired ? <p className="form-error">This invite has expired.</p> : null}
           {inviteDetails.isAccepted ? <p className="form-error">This invite has already been accepted.</p> : null}
 
@@ -85,26 +93,30 @@ export function InvitePage() {
                 <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" />
               </label>
 
-              <label className="field">
-                <span>Display name</span>
-                <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} type="text" />
-              </label>
+              {isLinkedInvite ? null : (
+                <label className="field">
+                  <span>Display name</span>
+                  <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} type="text" />
+                </label>
+              )}
 
               <label className="field">
                 <span>Password</span>
                 <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" />
               </label>
 
-              <label className="field">
-                <span>Color key</span>
-                <select value={colorKey} onChange={(event) => setColorKey(event.target.value)}>
-                  {colorOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              {isLinkedInvite ? null : (
+                <label className="field">
+                  <span>Color key</span>
+                  <select value={colorKey} onChange={(event) => setColorKey(event.target.value)}>
+                    {colorOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
 
               <button className="primary-button" type="submit" disabled={submitting}>
                 {submitting ? 'Joining...' : 'Join family'}

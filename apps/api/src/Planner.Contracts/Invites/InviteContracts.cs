@@ -6,19 +6,24 @@ public sealed record FamilyInviteResponse(
     string Token,
     DateTimeOffset ExpiresAtUtc,
     DateTimeOffset CreatedAtUtc,
-    bool IsAccepted);
+    bool IsAccepted,
+    Guid? ProfileId,
+    string? ProfileDisplayName);
 
-public sealed record CreateFamilyInviteRequest(string Email);
+public sealed record CreateFamilyInviteRequest(string Email, Guid? ProfileId);
 
 public sealed record AcceptFamilyInviteRequest(
     string Email,
     string Password,
-    string DisplayName,
-    string ColorKey);
+    string? DisplayName,
+    string? ColorKey);
 
 public sealed record FamilyInviteDetailsResponse(
     string Email,
     string FamilyName,
     DateTimeOffset ExpiresAtUtc,
     bool IsExpired,
-    bool IsAccepted);
+    bool IsAccepted,
+    Guid? ProfileId,
+    string? ProfileDisplayName,
+    string? ProfileColorKey);

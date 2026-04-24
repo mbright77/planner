@@ -40,6 +40,8 @@ export function useCreateFamilyInvite() {
         createdAtUtc: new Date().toISOString(),
         expiresAtUtc: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         isAccepted: false,
+        profileId: request.profileId ?? null,
+        profileDisplayName: null,
       };
 
       queryClient.setQueryData<FamilyInviteResponse[]>(queryKey, (invites = []) => [optimisticInvite, ...invites]);

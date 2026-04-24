@@ -1343,6 +1343,11 @@ select {
   word-break: break-all;
 }
 
+.family-invite-helper,
+.invite-profile-copy {
+  margin: 0;
+}
+
 .privacy-card {
   margin-top: 1.5rem;
   padding: 1rem;

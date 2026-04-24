@@ -65,6 +65,7 @@ export function useCreateProfile() {
         displayName: request.displayName,
         colorKey: request.colorKey,
         isActive: true,
+        hasLogin: false,
       };
 
       queryClient.setQueryData<ProfileResponse[]>(profilesQueryKey, (profiles = []) => [...profiles, optimisticProfile]);
@@ -116,11 +117,11 @@ export function useUpdateProfile() {
       const previousBootstrap = queryClient.getQueryData<BootstrapResponse>(bootstrapQueryKey);
 
       queryClient.setQueryData<ProfileResponse[]>(profilesQueryKey, (profiles = []) =>
-        profiles.map((profile) => (profile.id === profileId ? { id: profileId, ...request } : profile)),
+        profiles.map((profile) => (profile.id === profileId ? { ...profile, ...request } : profile)),
       );
       queryClient.setQueryData<BootstrapResponse | undefined>(bootstrapQueryKey, (bootstrap) =>
         updateBootstrapProfiles(bootstrap, (profiles) =>
-          profiles.map((profile) => (profile.id === profileId ? { id: profileId, ...request } : profile)),
+          profiles.map((profile) => (profile.id === profileId ? { ...profile, ...request } : profile)),
         ),
       );
 

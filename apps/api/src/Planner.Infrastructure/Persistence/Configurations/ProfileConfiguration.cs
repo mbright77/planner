@@ -20,10 +20,17 @@ public sealed class ProfileConfiguration : IEntityTypeConfiguration<Profile>
             .HasMaxLength(50)
             .IsRequired();
 
+        builder.Property(x => x.LinkedUserId)
+            .HasMaxLength(450);
+
         builder.Property(x => x.IsActive)
             .IsRequired();
 
         builder.HasIndex(x => new { x.FamilyId, x.IsActive });
+
+        builder.HasIndex(x => x.LinkedUserId)
+            .IsUnique()
+            .HasFilter("\"linked_user_id\" IS NOT NULL");
 
         builder.HasOne(x => x.Family)
             .WithMany(x => x.Profiles)

@@ -39,7 +39,7 @@ public static class ProfileEndpoints
             .AsNoTracking()
             .Where(x => x.FamilyId == membership.FamilyId)
             .OrderBy(x => x.DisplayName)
-            .Select(x => new ProfileResponse(x.Id, x.DisplayName, x.ColorKey, x.IsActive))
+            .Select(x => new ProfileResponse(x.Id, x.DisplayName, x.ColorKey, x.IsActive, x.LinkedUserId != null))
             .ToListAsync(cancellationToken);
 
         return Results.Ok(profiles);
@@ -78,7 +78,8 @@ public static class ProfileEndpoints
             profile.Id,
             profile.DisplayName,
             profile.ColorKey,
-            profile.IsActive));
+            profile.IsActive,
+            false));
     }
 
     private static async Task<IResult> UpdateProfileAsync(
@@ -113,7 +114,12 @@ public static class ProfileEndpoints
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return Results.Ok(new ProfileResponse(profile.Id, profile.DisplayName, profile.ColorKey, profile.IsActive));
+        return Results.Ok(new ProfileResponse(
+            profile.Id,
+            profile.DisplayName,
+            profile.ColorKey,
+            profile.IsActive,
+            profile.LinkedUserId != null));
     }
 
     private static Task<FamilyMembership?> GetMembershipAsync(

@@ -22,7 +22,9 @@ export function FamilyPage() {
   const [displayName, setDisplayName] = useState('');
   const [colorKey, setColorKey] = useState(colorOptions[0]);
   const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteProfileId, setInviteProfileId] = useState('');
   const isAdmin = bootstrapQuery.data?.membership.role === 'Admin';
+  const inviteableProfiles = (profilesQuery.data ?? []).filter((profile) => profile.isActive && !profile.hasLogin);
 
   async function handleCreate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,8 +60,15 @@ export function FamilyPage() {
       return;
     }
 
-    await createFamilyInviteMutation.mutateAsync({ email: inviteEmail.trim().toLowerCase() });
+    const selectedProfile = inviteableProfiles.find((profile) => profile.id === inviteProfileId);
+
+    await createFamilyInviteMutation.mutateAsync({
+      email: inviteEmail.trim().toLowerCase(),
+      profileId: selectedProfile?.id ?? null,
+    });
+
     setInviteEmail('');
+    setInviteProfileId('');
   }
 
   return (
@@ -123,10 +132,26 @@ export function FamilyPage() {
               />
             </label>
 
+            <label className="field">
+              <span>Link to existing profile (optional)</span>
+              <select value={inviteProfileId} onChange={(event) => setInviteProfileId(event.target.value)}>
+                <option value="">Create a new profile on acceptance</option>
+                {inviteableProfiles.map((profile) => (
+                  <option key={profile.id} value={profile.id}>
+                    {profile.displayName}
+                  </option>
+                ))}
+              </select>
+            </label>
+
             <button className="secondary-button" type="submit" disabled={createFamilyInviteMutation.isPending}>
               {createFamilyInviteMutation.isPending ? 'Creating...' : 'Create invite link'}
             </button>
           </form>
+
+          <p className="page-copy family-invite-helper">
+            Use this when someone already appears in your planner and now needs sign-in access.
+          </p>
 
           {familyInvitesQuery.isLoading ? <p className="page-copy">Loading invites...</p> : null}
           {familyInvitesQuery.isError ? <p className="form-error">Unable to load invites.</p> : null}
@@ -139,6 +164,9 @@ export function FamilyPage() {
                 <article key={invite.id} className="invite-card">
                   <div>
                     <strong>{invite.email}</strong>
+                    {invite.profileDisplayName ? (
+                      <p className="shopping-meta">Linked to {invite.profileDisplayName}</p>
+                    ) : null}
                     <p className="shopping-meta">Expires {new Date(invite.expiresAtUtc).toLocaleString()}</p>
                     <p className="invite-link">{inviteUrl}</p>
                   </div>
@@ -177,6 +205,10 @@ export function FamilyPage() {
               <div className="profile-stat-card">
                 <span className="profile-stat-label">Color identity</span>
                 <span className="profile-stat-value">{profile.colorKey}</span>
+              </div>
+              <div className="profile-stat-card">
+                <span className="profile-stat-label">Sign-in access</span>
+                <span className="profile-stat-value">{profile.hasLogin ? 'Has login' : 'Profile only'}</span>
               </div>
             </div>
 
