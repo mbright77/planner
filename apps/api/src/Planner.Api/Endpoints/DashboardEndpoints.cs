@@ -31,7 +31,9 @@ public static class DashboardEndpoints
             return Results.NotFound();
         }
 
-        var targetDate = date ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var familyTimeZone = ResolveTimeZone(membership.Family.Timezone);
+        var familyNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, familyTimeZone);
+        var targetDate = date ?? DateOnly.FromDateTime(familyNow.DateTime);
         var weekStart = GetWeekStart(targetDate);
         var weekEnd = weekStart.AddDays(6);
         var weekStartUtc = new DateTimeOffset(weekStart.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
@@ -192,6 +194,23 @@ public static class DashboardEndpoints
 
         return dbContext.FamilyMemberships
             .AsNoTracking()
+            .Include(x => x.Family)
             .FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
+    }
+
+    private static TimeZoneInfo ResolveTimeZone(string timeZoneId)
+    {
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return TimeZoneInfo.Utc;
+        }
+        catch (InvalidTimeZoneException)
+        {
+            return TimeZoneInfo.Utc;
+        }
     }
 }

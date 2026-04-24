@@ -5,6 +5,41 @@ import { login, register } from '../../shared/api/auth';
 import { useAuthSession } from '../../processes/auth-session/AuthSessionContext';
 
 const colorOptions = ['green', 'blue', 'pink', 'yellow'];
+const timezoneOptions = [
+  'UTC',
+  'Europe/Stockholm',
+  'Europe/London',
+  'Europe/Paris',
+  'Europe/Berlin',
+  'Europe/Madrid',
+  'Europe/Rome',
+  'Europe/Helsinki',
+  'Europe/Oslo',
+  'Europe/Copenhagen',
+  'Europe/Warsaw',
+  'Europe/Amsterdam',
+  'Europe/Zurich',
+  'America/New_York',
+  'America/Chicago',
+  'America/Denver',
+  'America/Los_Angeles',
+  'America/Toronto',
+  'America/Vancouver',
+  'America/Sao_Paulo',
+  'Asia/Tokyo',
+  'Asia/Seoul',
+  'Asia/Singapore',
+  'Asia/Bangkok',
+  'Asia/Dubai',
+  'Asia/Kolkata',
+  'Australia/Sydney',
+  'Australia/Melbourne',
+  'Pacific/Auckland',
+] as const;
+
+function formatTimezoneLabel(value: string) {
+  return value.replace(/_/g, ' ');
+}
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -22,6 +57,9 @@ export function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const destination = (location.state as { from?: string } | null)?.from ?? '/';
+  const availableTimezones = timezoneOptions.includes(timezone as (typeof timezoneOptions)[number])
+    ? timezoneOptions
+    : [timezone, ...timezoneOptions];
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -108,7 +146,13 @@ export function LoginPage() {
 
               <label className="field">
                 <span>Timezone</span>
-                <input value={timezone} onChange={(event) => setTimezone(event.target.value)} type="text" required />
+                <select value={timezone} onChange={(event) => setTimezone(event.target.value)} required>
+                  {availableTimezones.map((option) => (
+                    <option key={option} value={option}>
+                      {formatTimezoneLabel(option)}
+                    </option>
+                  ))}
+                </select>
               </label>
 
               <label className="field">
