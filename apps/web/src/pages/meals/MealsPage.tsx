@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 import {
@@ -127,6 +127,26 @@ export function MealsPage() {
     return grouped;
   }, [mealRequestsQuery.data]);
 
+  const selectedMeal = mealsByDate.get(selectedDate);
+  const selectedRequests = requestsByDate.get(selectedDate) ?? [];
+
+  useEffect(() => {
+    if (selectedMeal) {
+      setEditingMealId(selectedMeal.id);
+      setEditingMealTitle(selectedMeal.title);
+      setEditingMealNotes(selectedMeal.notes ?? '');
+      setEditingMealOwnerProfileId(selectedMeal.ownerProfileId ?? '');
+      setMealEditError('');
+      return;
+    }
+
+    setEditingMealId(null);
+    setEditingMealTitle('');
+    setEditingMealNotes('');
+    setEditingMealOwnerProfileId('');
+    setMealEditError('');
+  }, [selectedMeal]);
+
   function focusMealTitle() {
     window.requestAnimationFrame(() => {
       mealTitleRef.current?.focus();
@@ -240,29 +260,10 @@ export function MealsPage() {
     setAssigningRequestProfileId('');
   }
 
-  function handleStartMealEdit(day: string) {
-    const meal = mealsByDate.get(day);
-    if (!meal) {
-      return;
-    }
-
-    setSelectedDate(day);
-    setEditingMealId(meal.id);
-    setEditingMealTitle(meal.title);
-    setEditingMealNotes(meal.notes ?? '');
-    setEditingMealOwnerProfileId(meal.ownerProfileId ?? '');
-    setMealEditError('');
-    setShowMealOptions(true);
-    focusMealTitle();
-  }
-
   function handleStartRequestAssignment(requestId: string, currentAssigneeProfileId: string | null) {
     setAssigningRequestId(requestId);
     setAssigningRequestProfileId(currentAssigneeProfileId ?? '');
   }
-
-  const selectedMeal = mealsByDate.get(selectedDate);
-  const selectedRequests = requestsByDate.get(selectedDate) ?? [];
 
   return (
     <section className="page meals-page">
@@ -310,60 +311,6 @@ export function MealsPage() {
         })}
       </div>
 
-      <form className="meals-form meals-compose-card" onSubmit={handleSubmit}>
-        <div className="meals-compose-header meals-field-wide">
-          <div>
-            <p className="eyebrow">Plan dinner</p>
-            <h3 className="profile-card-title">{formatLongDate(selectedDate)}</h3>
-          </div>
-          <button
-            className="secondary-button calendar-small-button"
-            type="button"
-            onClick={() => setShowMealOptions((current) => !current)}
-          >
-            {showMealOptions ? 'Fewer fields' : 'More options'}
-          </button>
-        </div>
-
-        <label className="field meals-field-wide">
-          <span>Meal title</span>
-          <input
-            ref={mealTitleRef}
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="Plan dinner"
-            type="text"
-          />
-        </label>
-
-        {showMealOptions ? (
-          <>
-            <label className="field">
-              <span>Owner</span>
-              <select value={ownerProfileId} onChange={(event) => setOwnerProfileId(event.target.value)}>
-                <option value="">Unassigned</option>
-                {bootstrapQuery.data?.profiles.map((profile) => (
-                  <option key={profile.id} value={profile.id}>
-                    {profile.displayName}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="field meals-field-wide">
-              <span>Notes</span>
-              <textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
-            </label>
-          </>
-        ) : null}
-
-        {mealFormError ? <p className="form-error meals-field-wide">{mealFormError}</p> : null}
-
-        <button className="primary-button" type="submit" disabled={createMealPlanMutation.isPending}>
-          {createMealPlanMutation.isPending ? 'Saving...' : `Save dinner for ${formatLongDate(selectedDate)}`}
-        </button>
-      </form>
-
       {selectedMeal ? (
         <form className="meals-form meals-compose-card meals-edit-card" onSubmit={handleSaveMealEdit}>
           <div className="meals-compose-header meals-field-wide">
@@ -374,33 +321,42 @@ export function MealsPage() {
             <button
               className="secondary-button calendar-small-button"
               type="button"
-              onClick={() => handleStartMealEdit(selectedDate)}
+              onClick={() => setShowMealOptions((current) => !current)}
             >
-              Load current meal
+              {showMealOptions ? 'Fewer fields' : 'More options'}
             </button>
           </div>
 
           <label className="field meals-field-wide">
             <span>Meal title</span>
-            <input value={editingMealTitle} onChange={(event) => setEditingMealTitle(event.target.value)} type="text" />
+            <input
+              ref={mealTitleRef}
+              value={editingMealTitle}
+              onChange={(event) => setEditingMealTitle(event.target.value)}
+              type="text"
+            />
           </label>
 
-          <label className="field">
-            <span>Owner</span>
-            <select value={editingMealOwnerProfileId} onChange={(event) => setEditingMealOwnerProfileId(event.target.value)}>
-              <option value="">Unassigned</option>
-              {bootstrapQuery.data?.profiles.map((profile) => (
-                <option key={profile.id} value={profile.id}>
-                  {profile.displayName}
-                </option>
-              ))}
-            </select>
-          </label>
+          {showMealOptions ? (
+            <>
+              <label className="field">
+                <span>Owner</span>
+                <select value={editingMealOwnerProfileId} onChange={(event) => setEditingMealOwnerProfileId(event.target.value)}>
+                  <option value="">Unassigned</option>
+                  {bootstrapQuery.data?.profiles.map((profile) => (
+                    <option key={profile.id} value={profile.id}>
+                      {profile.displayName}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-          <label className="field meals-field-wide">
-            <span>Notes</span>
-            <textarea value={editingMealNotes} onChange={(event) => setEditingMealNotes(event.target.value)} rows={3} />
-          </label>
+              <label className="field meals-field-wide">
+                <span>Notes</span>
+                <textarea value={editingMealNotes} onChange={(event) => setEditingMealNotes(event.target.value)} rows={3} />
+              </label>
+            </>
+          ) : null}
 
           {mealEditError ? <p className="form-error meals-field-wide">{mealEditError}</p> : null}
 
@@ -408,7 +364,61 @@ export function MealsPage() {
             {updateMealPlanMutation.isPending ? 'Saving...' : `Save changes for ${formatLongDate(selectedDate)}`}
           </button>
         </form>
-      ) : null}
+      ) : (
+        <form className="meals-form meals-compose-card" onSubmit={handleSubmit}>
+          <div className="meals-compose-header meals-field-wide">
+            <div>
+              <p className="eyebrow">Plan dinner</p>
+              <h3 className="profile-card-title">{formatLongDate(selectedDate)}</h3>
+            </div>
+            <button
+              className="secondary-button calendar-small-button"
+              type="button"
+              onClick={() => setShowMealOptions((current) => !current)}
+            >
+              {showMealOptions ? 'Fewer fields' : 'More options'}
+            </button>
+          </div>
+
+          <label className="field meals-field-wide">
+            <span>Meal title</span>
+            <input
+              ref={mealTitleRef}
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="Plan dinner"
+              type="text"
+            />
+          </label>
+
+          {showMealOptions ? (
+            <>
+              <label className="field">
+                <span>Owner</span>
+                <select value={ownerProfileId} onChange={(event) => setOwnerProfileId(event.target.value)}>
+                  <option value="">Unassigned</option>
+                  {bootstrapQuery.data?.profiles.map((profile) => (
+                    <option key={profile.id} value={profile.id}>
+                      {profile.displayName}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="field meals-field-wide">
+                <span>Notes</span>
+                <textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
+              </label>
+            </>
+          ) : null}
+
+          {mealFormError ? <p className="form-error meals-field-wide">{mealFormError}</p> : null}
+
+          <button className="primary-button" type="submit" disabled={createMealPlanMutation.isPending}>
+            {createMealPlanMutation.isPending ? 'Saving...' : `Save dinner for ${formatLongDate(selectedDate)}`}
+          </button>
+        </form>
+      )}
 
       {mealsWeekQuery.isLoading ? <p className="page-copy">Loading weekly meals...</p> : null}
       {mealsWeekQuery.isError ? <p className="form-error">Unable to load weekly meals.</p> : null}
@@ -448,7 +458,7 @@ export function MealsPage() {
                     <button
                       className="secondary-button meal-card-button"
                       type="button"
-                      onClick={() => handleStartMealEdit(day.key)}
+                      onClick={() => handleSelectDay(day.key)}
                     >
                       Edit day
                     </button>
