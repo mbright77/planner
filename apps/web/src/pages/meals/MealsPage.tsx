@@ -91,6 +91,13 @@ export function MealsPage() {
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [mealFormError, setMealFormError] = useState('');
   const [requestFormError, setRequestFormError] = useState('');
+  const [editingMealId, setEditingMealId] = useState<string | null>(null);
+  const [editingMealTitle, setEditingMealTitle] = useState('');
+  const [editingMealNotes, setEditingMealNotes] = useState('');
+  const [editingMealOwnerProfileId, setEditingMealOwnerProfileId] = useState('');
+  const [mealEditError, setMealEditError] = useState('');
+  const [assigningRequestId, setAssigningRequestId] = useState<string | null>(null);
+  const [assigningRequestProfileId, setAssigningRequestProfileId] = useState('');
 
   const mealTitleRef = useRef<HTMLInputElement | null>(null);
   const requestTitleRef = useRef<HTMLInputElement | null>(null);
@@ -193,47 +200,68 @@ export function MealsPage() {
     setShowRequestForm(false);
   }
 
-  async function handleQuickAssign(
-    mealId: string,
-    currentMealDate: string,
-    currentTitle: string,
-    currentNotes: string | null,
-    currentOwnerProfileId: string | null,
-  ) {
-    const profiles = bootstrapQuery.data?.profiles ?? [];
-    if (profiles.length === 0) {
+  async function handleSaveMealEdit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!editingMealId) {
       return;
     }
 
-    const currentIndex = profiles.findIndex((profile) => profile.id === currentOwnerProfileId);
-    const nextProfile = profiles[(currentIndex + 1 + profiles.length) % profiles.length];
+    if (!editingMealTitle.trim()) {
+      setMealEditError('Add a dinner title before saving changes.');
+      return;
+    }
+
+    setMealEditError('');
 
     await updateMealPlanMutation.mutateAsync({
-      mealId,
+      mealId: editingMealId,
       request: {
-        mealDate: currentMealDate,
-        title: currentTitle,
-        notes: currentNotes,
-        ownerProfileId: nextProfile?.id ?? null,
+        mealDate: selectedDate,
+        title: editingMealTitle.trim(),
+        notes: editingMealNotes.trim() || null,
+        ownerProfileId: editingMealOwnerProfileId || null,
       },
     });
+
+    setEditingMealId(null);
+    setEditingMealTitle('');
+    setEditingMealNotes('');
+    setEditingMealOwnerProfileId('');
   }
 
-  async function handleAssignRequest(requestId: string, currentAssigneeProfileId: string | null) {
-    const profiles = bootstrapQuery.data?.profiles ?? [];
-    if (profiles.length === 0) {
+  async function handleAssignRequest(requestId: string) {
+    await assignMealRequestMutation.mutateAsync({
+      requestId,
+      assigneeProfileId: assigningRequestProfileId || null,
+    });
+
+    setAssigningRequestId(null);
+    setAssigningRequestProfileId('');
+  }
+
+  function handleStartMealEdit(day: string) {
+    const meal = mealsByDate.get(day);
+    if (!meal) {
       return;
     }
 
-    const currentIndex = profiles.findIndex((profile) => profile.id === currentAssigneeProfileId);
-    const nextProfile = profiles[(currentIndex + 1 + profiles.length) % profiles.length];
-
-    await assignMealRequestMutation.mutateAsync({
-      requestId,
-      assigneeProfileId: nextProfile?.id ?? null,
-    });
+    setSelectedDate(day);
+    setEditingMealId(meal.id);
+    setEditingMealTitle(meal.title);
+    setEditingMealNotes(meal.notes ?? '');
+    setEditingMealOwnerProfileId(meal.ownerProfileId ?? '');
+    setMealEditError('');
+    setShowMealOptions(true);
+    focusMealTitle();
   }
 
+  function handleStartRequestAssignment(requestId: string, currentAssigneeProfileId: string | null) {
+    setAssigningRequestId(requestId);
+    setAssigningRequestProfileId(currentAssigneeProfileId ?? '');
+  }
+
+  const selectedMeal = mealsByDate.get(selectedDate);
   const selectedRequests = requestsByDate.get(selectedDate) ?? [];
 
   return (
@@ -336,6 +364,52 @@ export function MealsPage() {
         </button>
       </form>
 
+      {selectedMeal ? (
+        <form className="meals-form meals-compose-card meals-edit-card" onSubmit={handleSaveMealEdit}>
+          <div className="meals-compose-header meals-field-wide">
+            <div>
+              <p className="eyebrow">Edit dinner</p>
+              <h3 className="profile-card-title">{formatLongDate(selectedDate)}</h3>
+            </div>
+            <button
+              className="secondary-button calendar-small-button"
+              type="button"
+              onClick={() => handleStartMealEdit(selectedDate)}
+            >
+              Load current meal
+            </button>
+          </div>
+
+          <label className="field meals-field-wide">
+            <span>Meal title</span>
+            <input value={editingMealTitle} onChange={(event) => setEditingMealTitle(event.target.value)} type="text" />
+          </label>
+
+          <label className="field">
+            <span>Owner</span>
+            <select value={editingMealOwnerProfileId} onChange={(event) => setEditingMealOwnerProfileId(event.target.value)}>
+              <option value="">Unassigned</option>
+              {bootstrapQuery.data?.profiles.map((profile) => (
+                <option key={profile.id} value={profile.id}>
+                  {profile.displayName}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="field meals-field-wide">
+            <span>Notes</span>
+            <textarea value={editingMealNotes} onChange={(event) => setEditingMealNotes(event.target.value)} rows={3} />
+          </label>
+
+          {mealEditError ? <p className="form-error meals-field-wide">{mealEditError}</p> : null}
+
+          <button className="primary-button" type="submit" disabled={updateMealPlanMutation.isPending || !editingMealId}>
+            {updateMealPlanMutation.isPending ? 'Saving...' : `Save changes for ${formatLongDate(selectedDate)}`}
+          </button>
+        </form>
+      ) : null}
+
       {mealsWeekQuery.isLoading ? <p className="page-copy">Loading weekly meals...</p> : null}
       {mealsWeekQuery.isError ? <p className="form-error">Unable to load weekly meals.</p> : null}
 
@@ -374,18 +448,9 @@ export function MealsPage() {
                     <button
                       className="secondary-button meal-card-button"
                       type="button"
-                      onClick={() => handleSelectDay(day.key)}
+                      onClick={() => handleStartMealEdit(day.key)}
                     >
                       Edit day
-                    </button>
-                    <button
-                      className="secondary-button meal-card-button"
-                      type="button"
-                      onClick={() =>
-                        handleQuickAssign(meal.id, meal.mealDate, meal.title, meal.notes, meal.ownerProfileId)
-                      }
-                    >
-                      Rotate owner
                     </button>
                   </div>
                 </>
@@ -501,14 +566,38 @@ export function MealsPage() {
                   </div>
 
                   <div className="meal-request-actions">
-                    <button
-                      className="secondary-button meal-request-button"
-                      type="button"
-                      onClick={() => handleAssignRequest(request.id, request.assigneeProfileId)}
-                      disabled={assignMealRequestMutation.isPending}
-                    >
-                      Assign
-                    </button>
+                    {assigningRequestId === request.id ? (
+                      <>
+                        <label className="field meal-request-assign-field">
+                          <span>Assign person</span>
+                          <select value={assigningRequestProfileId} onChange={(event) => setAssigningRequestProfileId(event.target.value)}>
+                            <option value="">Unassigned</option>
+                            {bootstrapQuery.data?.profiles.map((profile) => (
+                              <option key={profile.id} value={profile.id}>
+                                {profile.displayName}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <button
+                          className="secondary-button meal-request-button"
+                          type="button"
+                          onClick={() => handleAssignRequest(request.id)}
+                          disabled={assignMealRequestMutation.isPending}
+                        >
+                          Save assignment
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        className="secondary-button meal-request-button"
+                        type="button"
+                        onClick={() => handleStartRequestAssignment(request.id, request.assigneeProfileId)}
+                        disabled={assignMealRequestMutation.isPending}
+                      >
+                        Assign person
+                      </button>
+                    )}
                     <button
                       className="primary-button meal-request-button"
                       type="button"

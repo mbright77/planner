@@ -861,6 +861,10 @@ select {
   width: 100%;
 }
 
+.meal-request-assign-field {
+  width: 100%;
+}
+
 .meal-day-summary {
   font-size: 0.72rem;
   font-weight: 600;
