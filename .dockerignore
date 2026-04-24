@@ -1,0 +1,7 @@
+**/bin/
+**/obj/
+node_modules/
+.git/
+.playwright-mcp/
+audit-*.png
+audit-*.md
