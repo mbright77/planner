@@ -32,6 +32,7 @@ Current committed reality:
 - The frontend uses plain CSS and local `useState` forms, not Tailwind or React Hook Form
 - Core first-pass slices are committed for profiles, shopping, calendar, meals, and meal requests
 - The home dashboard, generated API client, IndexedDB-backed offline support, and weekly recurring calendar events are implemented
+- Calendar event cards now support cross-platform add-to-calendar export using Google Calendar links on desktop/Android and `.ics` download on iOS
 - CI/CD and real infra manifests are not implemented yet
 
 Use the sections below as product direction, but treat the notes marked "Current committed state" as the source of truth for what exists today.
@@ -1104,7 +1105,7 @@ Current committed state:
 - Invite-based onboarding for additional adults
 - Push notifications
 - Advanced offline conflict resolution
-- Data export tooling
+- Advanced data export tooling beyond single-event calendar export
 
 ### Phase 1: Foundation
 
@@ -1184,12 +1185,16 @@ Completed in current implementation pass:
 - Family admins can now create email-based invite links and review invite status from the Family page
 - Family admins can optionally link invite links to an existing active profile so invite acceptance grants sign-in access without creating a duplicate profile
 - The `/invite/:token` route now supports both creating a new profile for the invited user and linking the new account to an existing profile before immediate sign-in
+- Bootstrap now includes a `canPlanMeals` membership hint derived from the signed-in member's linked profile activity so the meals UI can reflect planning permissions cleanly
+- Linked members whose profiles are excluded from planning can still submit meal requests and update shopping, but they can no longer plan meals or accept meal requests
+- Meal request creation now derives `requesterProfileId` from the signed-in member's linked profile instead of exposing a requester picker in the UI
 - The protected `/settings/privacy` page now supports password-confirmed account deletion and admin-only family deletion flows
 - The API exposes `/api/v1/privacy/account/delete` and `/api/v1/privacy/family/delete`, with baseline API tests covering both destructive paths
 - The shared app shell now includes a skip link, visible keyboard focus styling, polite live regions for sync and offline status, and alert semantics for bootstrap failures
 - The web app now has a lightweight Vitest + React Testing Library setup with initial accessibility-focused coverage for the app shell
 - Shopping list and meal request queries now poll every 30 seconds while online, while calendar and meals remain manual/revalidation driven to avoid unnecessary background traffic
 - The web app now ships a basic manifest and theme-color metadata, and `pnpm --filter @planner/web lighthouse:mobile` builds, previews, and audits the mobile experience locally with Lighthouse
+- Calendar event cards now expose an `Add to calendar` action that exports the current event to Google Calendar or downloads an `.ics` file for iOS calendar import
 - Offline replay failures now stay in the local queue with explicit failed status and trigger an app-shell alert so conflicting offline changes are visible instead of silently stalling in the console
 - Query-plan review on an isolated local Postgres instance showed the shopping list endpoint still sorting after the family filter, so the shopping index now includes `Label` to match the live `(family, is_completed, category, label)` ordering
 - The API now applies fixed-window rate limiting with a stricter auth bucket and basic security response headers including CSP, frame denial, referrer policy, and content-type sniffing protection

@@ -8,6 +8,7 @@ import {
   useCreateCalendarEvent,
   useUpdateCalendarEvent,
 } from '../../entities/event/model/useCalendarWeek';
+import { addToCalendar } from '../../shared/lib/calendar';
 
 function getWeekStart(date: Date) {
   const utcDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
@@ -71,6 +72,15 @@ function formatEventTime(startAtUtc: string, endAtUtc: string) {
   const end = new Date(endAtUtc);
 
   return `${start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} - ${end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+}
+
+function exportCalendarEvent(calendarEvent: { title: string; notes: string | null; startAtUtc: string; endAtUtc: string }) {
+  addToCalendar({
+    title: calendarEvent.title,
+    description: calendarEvent.notes ?? undefined,
+    start: new Date(calendarEvent.startAtUtc),
+    end: new Date(calendarEvent.endAtUtc),
+  });
 }
 
 function formatTimeInput(date: Date) {
@@ -417,6 +427,13 @@ export function CalendarPage() {
 
                         <div className="calendar-event-actions">
                           {assignedProfile ? <span className="shopping-meta">{assignedProfile.displayName}</span> : null}
+                          <button
+                            className="secondary-button calendar-small-button"
+                            type="button"
+                            onClick={() => exportCalendarEvent(calendarEvent)}
+                          >
+                            Add to calendar
+                          </button>
                           <button
                             className="secondary-button calendar-small-button"
                             type="button"
