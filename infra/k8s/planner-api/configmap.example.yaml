@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: planner-api-config
+  namespace: brightroom
+data:
+  ASPNETCORE_ENVIRONMENT: Production
+  PathBase: /planner-api
+  AllowedOrigins: https://mbright77.github.io
+  Jwt__Issuer: planner-api
+  Jwt__Audience: planner-web

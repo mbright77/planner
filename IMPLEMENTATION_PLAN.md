@@ -843,21 +843,22 @@ GitHub Actions pipeline stages:
 
 Current committed state:
 
-- No GitHub Actions workflows are committed yet
+- Separate GitHub Actions workflows are now committed for frontend GitHub Pages deployment and backend K3s deployment
+- The repo now contains `apps/api/Dockerfile`, a backend deploy bundle under `deploy/backend`, and committed planner API manifest templates under `infra/k8s/planner-api`
 
 ### Pre-Deployment Work
 
 These items must be completed before enabling the production deployment described in `DEPLOYMENT.md`.
 
-- [ ] Add frontend GitHub Pages repo-path support through Vite `base` and router `basename`
-- [ ] Add GitHub Pages SPA fallback handling for direct route navigation
-- [ ] Replace localhost-only backend CORS configuration with configurable exact origins
-- [ ] Add forwarded-header handling for nginx and ingress proxying
-- [ ] Add configurable backend `PathBase` support and set `/planner-api` in production
-- [ ] Add backend Dockerfile for `Planner.Api`
-- [ ] Add separate GitHub Actions workflows for frontend Pages deploy and backend K3s deploy
-- [ ] Add backend deploy bundle and remote `scp` plus SSH deployment script following the `allergen-info` pattern
-- [ ] Add committed backend deployment configuration for `Deployment/planner-api`, `Service/planner-api`, `ConfigMap/planner-api-config`, and `Secret/planner-api-secrets`
+- [x] Add frontend GitHub Pages repo-path support through Vite `base` and router `basename`
+- [x] Add GitHub Pages SPA fallback handling for direct route navigation
+- [x] Replace localhost-only backend CORS configuration with configurable exact origins
+- [x] Add forwarded-header handling for nginx and ingress proxying
+- [x] Add configurable backend `PathBase` support and set `/planner-api` in production
+- [x] Add backend Dockerfile for `Planner.Api`
+- [x] Add separate GitHub Actions workflows for frontend Pages deploy and backend K3s deploy
+- [x] Add backend deploy bundle and remote `scp` plus SSH deployment script following the `allergen-info` pattern
+- [x] Add committed backend deployment configuration for `Deployment/planner-api`, `Service/planner-api`, `ConfigMap/planner-api-config`, and `Secret/planner-api-secrets`
 - [ ] Provision a dedicated `planner` database and `planner_app` credentials in the existing `brightroom` PostgreSQL instance
 - [ ] Run the first production migration manually before relying on deployment automation
 - [ ] Coordinate the BrightRoom ingress update for the `/planner-api` path-stripped route
@@ -1144,9 +1145,7 @@ Current committed state:
 
 Pre-deployment blockers tracked outside the phase checklist:
 
-- GitHub Pages deployment requires repo-path support and SPA fallback handling in `apps/web`
-- Backend deployment requires production-safe CORS, forwarded headers, and `PathBase` support in `apps/api`
-- Backend deployment requires a real Dockerfile, workflow automation, and committed deploy-bundle assets
+- External rollout still requires database provisioning, the first manual production migration, and the BrightRoom ingress update for `/planner-api`
 
 Completed in current implementation pass:
 

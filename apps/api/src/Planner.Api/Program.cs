@@ -10,6 +10,7 @@ builder.Services
     .AddInfrastructure(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
+var pathBase = builder.Configuration.GetValue<string>("PathBase");
 
 if (app.Environment.IsDevelopment())
 {
@@ -21,8 +22,15 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseForwardedHeaders();
+
+if (!string.IsNullOrWhiteSpace(pathBase))
+{
+    app.UsePathBase(pathBase);
+}
+
 app.UseHttpsRedirection();
-app.UseCors("WebDevClient");
+app.UseCors(ServiceCollectionExtensions.GetFrontendClientPolicyName());
 app.UseMiddleware<SecurityHeadersMiddleware>();
 if (!app.Environment.IsEnvironment("Testing"))
 {

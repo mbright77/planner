@@ -1,0 +1,143 @@
+name: Deploy Backend to k3s
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/deploy-backend-k3s.yml'
+      - 'apps/api/**'
+      - 'deploy/backend/**'
+      - 'infra/**'
+      - 'planner.sln'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: backend-production
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/planner-api
+
+jobs:
+  check-deploy-enabled:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report deployment toggle state
+        run: |
+          if [ "${{ vars.RUN_DEPLOY }}" = "true" ]; then
+            echo "Backend deployment is enabled."
+          else
+            echo "Backend deployment is disabled because RUN_DEPLOY is not set to 'true'."
+          fi
+
+  build-test-push:
+    needs: check-deploy-enabled
+    if: ${{ vars.RUN_DEPLOY == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      image-ref: ${{ steps.meta.outputs.image-ref }}
+      image-tag: ${{ steps.meta.outputs.image-tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Build backend
+        run: dotnet build planner.sln --configuration Release
+
+      - name: Test backend
+        run: dotnet test planner.sln --configuration Release -m:1
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
+        run: |
+          echo "image-tag=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          echo "image-ref=${REGISTRY,,}/${IMAGE_NAME,,}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/api/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image-ref }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+
+      - name: Package backend deployment bundle
+        run: tar -czf backend-deploy-bundle.tar.gz deploy/backend infra/k8s/planner-api
+
+      - name: Upload backend deployment bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-deploy-bundle
+          path: backend-deploy-bundle.tar.gz
+
+  deploy:
+    needs: build-test-push
+    if: ${{ vars.RUN_DEPLOY == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download backend deployment bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-deploy-bundle
+
+      - name: Configure SSH key
+        env:
+          VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          VPS_PORT: ${{ vars.VPS_PORT }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${VPS_PORT:-22}" "${{ vars.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Copy deploy bundle to VPS
+        env:
+          VPS_PORT: ${{ vars.VPS_PORT }}
+        run: |
+          scp -P "${VPS_PORT:-22}" backend-deploy-bundle.tar.gz "${{ vars.VPS_USER }}@${{ vars.VPS_HOST }}:/tmp/backend-deploy-bundle.tar.gz"
+
+      - name: Run remote deployment
+        env:
+          IMAGE_REF: ${{ needs.build-test-push.outputs.image-ref }}
+          VPS_USER: ${{ vars.VPS_USER }}
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_PORT: ${{ vars.VPS_PORT }}
+          ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
+          JWT_ISSUER: ${{ vars.JWT_ISSUER }}
+          JWT_AUDIENCE: ${{ vars.JWT_AUDIENCE }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          GHCR_EMAIL: ${{ secrets.GHCR_EMAIL }}
+          GHCR_IMAGE_PULL_SECRET_NAME: ${{ vars.GHCR_IMAGE_PULL_SECRET_NAME }}
+          PLANNER_CONNECTION_STRING: ${{ secrets.PLANNER_CONNECTION_STRING }}
+          PLANNER_JWT_SIGNING_KEY: ${{ secrets.PLANNER_JWT_SIGNING_KEY }}
+        run: |
+          ssh -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}" \
+            "IMAGE_REF='${IMAGE_REF}' ALLOWED_ORIGINS='${ALLOWED_ORIGINS}' JWT_ISSUER='${JWT_ISSUER}' JWT_AUDIENCE='${JWT_AUDIENCE}' GHCR_USERNAME='${GHCR_USERNAME}' GHCR_TOKEN='${GHCR_TOKEN}' GHCR_EMAIL='${GHCR_EMAIL}' GHCR_IMAGE_PULL_SECRET_NAME='${GHCR_IMAGE_PULL_SECRET_NAME}' PLANNER_CONNECTION_STRING='${PLANNER_CONNECTION_STRING}' PLANNER_JWT_SIGNING_KEY='${PLANNER_JWT_SIGNING_KEY}' bash -s" < deploy/backend/deploy.sh

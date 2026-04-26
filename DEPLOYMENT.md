@@ -261,7 +261,7 @@ ConnectionStrings__Planner="Host=postgres;Port=5432;Database=planner;Username=pl
 
 ## Pre-Deployment Application Changes
 
-These items should be completed before enabling production deployment.
+These items are the required production-enablement changes for this repository.
 
 - Frontend:
   - support `VITE_APP_BASE_PATH`
@@ -276,6 +276,16 @@ These items should be completed before enabling production deployment.
   - add GitHub Actions workflows
   - add backend deploy bundle and remote deploy script
   - add committed deployment configuration for `planner-api`
+
+Current repository state:
+
+- The frontend now supports the GitHub Pages repo path through Vite `base`, router `basename`, and a Pages fallback file.
+- The backend now supports configurable CORS origins, forwarded headers, and configurable `PathBase`.
+- The backend Dockerfile, backend deploy bundle, GitHub Actions workflows, and committed `planner-api` deployment assets are now present in the repository.
+- External prerequisites still remain before the first live rollout:
+  - provision the `planner` database and `planner_app` credentials in the existing PostgreSQL server
+  - apply the first production migration manually
+  - add the `/planner-api` ingress rule in the BrightRoom repository
 
 ## Rollout Order
 

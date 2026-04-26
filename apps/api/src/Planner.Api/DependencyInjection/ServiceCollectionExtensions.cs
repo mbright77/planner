@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using Planner.Application;
 using Planner.Infrastructure;
@@ -10,19 +11,38 @@ namespace Planner.Api.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
+    private const string FrontendClientPolicy = "FrontendClient";
+
     public static IServiceCollection AddApi(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         services.AddOpenApi();
+
+        var allowedOrigins = configuration.GetValue<string>("AllowedOrigins")
+            ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            ?? [];
+
         services.AddCors(options =>
         {
-            options.AddPolicy("WebDevClient", policy =>
+            options.AddPolicy(FrontendClientPolicy, policy =>
             {
-                policy.WithOrigins(
-                        "http://localhost:5173",
-                        "http://127.0.0.1:5173")
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
+                var origins = environment.IsDevelopment()
+                    ? new[] { "http://localhost:5173", "http://127.0.0.1:5173" }
+                    : allowedOrigins;
+
+                if (origins.Length > 0)
+                {
+                    policy.WithOrigins(origins)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                }
             });
+        });
+
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
         });
 
         services.AddAuthorization();
@@ -103,5 +123,10 @@ public static class ServiceCollectionExtensions
         IWebHostEnvironment environment)
     {
         return services.AddInfrastructureServices(configuration, environment);
+    }
+
+    public static string GetFrontendClientPolicyName()
+    {
+        return FrontendClientPolicy;
     }
 }
