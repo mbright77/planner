@@ -214,6 +214,9 @@ Use GitHub Actions secrets for sensitive values.
 - `PLANNER_CONNECTION_STRING`
 - `PLANNER_JWT_SIGNING_KEY`
 
+
+
+
 ## Kubernetes ConfigMap Keys
 
 Recommended non-sensitive runtime keys for `planner-api-config`:
