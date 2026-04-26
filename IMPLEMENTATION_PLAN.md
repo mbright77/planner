@@ -33,7 +33,7 @@ Current committed reality:
 - Core first-pass slices are committed for profiles, shopping, calendar, meals, and meal requests
 - The home dashboard, generated API client, IndexedDB-backed offline support, and weekly recurring calendar events are implemented
 - Calendar event cards now support cross-platform add-to-calendar export using Google Calendar links on desktop/Android and `.ics` download on iOS
-- CI/CD and real infra manifests are not implemented yet
+- CI/CD and real infra manifests are not implemented yet, but deployment requirements and production inputs are now documented in `DEPLOYMENT.md`
 
 Use the sections below as product direction, but treat the notes marked "Current committed state" as the source of truth for what exists today.
 
@@ -46,7 +46,7 @@ Use the sections below as product direction, but treat the notes marked "Current
 - Frontend: React + TypeScript + Vite PWA
 - Backend: ASP.NET Core Web API
 - Database: PostgreSQL
-- Frontend hosting: Google Pages static hosting target
+- Frontend hosting: GitHub Pages static hosting target
 - Backend hosting: single-node K3s on a VPS using the existing ingress in namespace `brightroom`
 
 ### Architecture Summary
@@ -74,7 +74,7 @@ Use the sections below as product direction, but treat the notes marked "Current
         |
         | HTTPS
         v
-[Google Pages Static Host]
+[GitHub Pages Static Host]
         |
         | API calls
         v
@@ -779,7 +779,7 @@ Current committed state:
 
 ### Deployment Topology
 
-- Frontend deployed as static assets to Google Pages
+- Frontend deployed as static assets to GitHub Pages
 - Backend deployed to a single-node K3s cluster in namespace `brightroom`
 - PostgreSQL can be a single small instance for MVP, hosted in the simplest operationally safe way available to the team
 - Run background work inside the API process
@@ -787,6 +787,10 @@ Current committed state:
 Current committed state:
 
 - This remains target deployment intent; no committed deployment manifests or automation implement it yet
+- The production deployment design is now documented in `DEPLOYMENT.md`
+- The frontend target is the default GitHub Pages repo path at `https://mbright77.github.io/planner/`
+- The backend target is `https://hub.brightmatter.net/planner-api` behind the BrightRoom ingress
+- The backend should mirror the existing path-stripped `safescan-api` ingress model with `PathBase=/planner-api`
 
 ### K3s Setup Overview
 
@@ -840,6 +844,23 @@ GitHub Actions pipeline stages:
 Current committed state:
 
 - No GitHub Actions workflows are committed yet
+
+### Pre-Deployment Work
+
+These items must be completed before enabling the production deployment described in `DEPLOYMENT.md`.
+
+- [ ] Add frontend GitHub Pages repo-path support through Vite `base` and router `basename`
+- [ ] Add GitHub Pages SPA fallback handling for direct route navigation
+- [ ] Replace localhost-only backend CORS configuration with configurable exact origins
+- [ ] Add forwarded-header handling for nginx and ingress proxying
+- [ ] Add configurable backend `PathBase` support and set `/planner-api` in production
+- [ ] Add backend Dockerfile for `Planner.Api`
+- [ ] Add separate GitHub Actions workflows for frontend Pages deploy and backend K3s deploy
+- [ ] Add backend deploy bundle and remote `scp` plus SSH deployment script following the `allergen-info` pattern
+- [ ] Add committed backend deployment configuration for `Deployment/planner-api`, `Service/planner-api`, `ConfigMap/planner-api-config`, and `Secret/planner-api-secrets`
+- [ ] Provision a dedicated `planner` database and `planner_app` credentials in the existing `brightroom` PostgreSQL instance
+- [ ] Run the first production migration manually before relying on deployment automation
+- [ ] Coordinate the BrightRoom ingress update for the `/planner-api` path-stripped route
 
 K3s deployment note:
 
@@ -1121,6 +1142,12 @@ Current committed state:
 - [ ] Configure CI/CD baseline
 - [ ] Add Kubernetes manifests and environment templates
 
+Pre-deployment blockers tracked outside the phase checklist:
+
+- GitHub Pages deployment requires repo-path support and SPA fallback handling in `apps/web`
+- Backend deployment requires production-safe CORS, forwarded headers, and `PathBase` support in `apps/api`
+- Backend deployment requires a real Dockerfile, workflow automation, and committed deploy-bundle assets
+
 Completed in current implementation pass:
 
 - Monorepo scaffold created with `apps`, `packages`, `infra`, and supporting docs folders
@@ -1277,7 +1304,7 @@ Completed in current implementation pass:
 
 ## Assumptions
 
-- The Google Pages target supports static SPA deployment
+- The GitHub Pages target supports static SPA deployment when the app is built with the repo base path and a fallback file for direct route loads
 - MVP usage is limited to a small number of families and modest traffic
 - Push notifications are not required for MVP
 - Child family members can exist only as profiles without user accounts
