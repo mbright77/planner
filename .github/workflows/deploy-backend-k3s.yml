@@ -141,3 +141,14 @@ jobs:
         run: |
           ssh -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}" \
             "IMAGE_REF='${IMAGE_REF}' ALLOWED_ORIGINS='${ALLOWED_ORIGINS}' JWT_ISSUER='${JWT_ISSUER}' JWT_AUDIENCE='${JWT_AUDIENCE}' GHCR_USERNAME='${GHCR_USERNAME}' GHCR_TOKEN='${GHCR_TOKEN}' GHCR_EMAIL='${GHCR_EMAIL}' GHCR_IMAGE_PULL_SECRET_NAME='${GHCR_IMAGE_PULL_SECRET_NAME}' PLANNER_CONNECTION_STRING='${PLANNER_CONNECTION_STRING}' PLANNER_JWT_SIGNING_KEY='${PLANNER_JWT_SIGNING_KEY}' bash -s" < deploy/backend/deploy.sh
+
+      - name: Run DB migration Job on VPS
+        if: ${{ vars.RUN_MIGRATIONS_ON_DEPLOY == 'true' }}
+        env:
+          VPS_USER: ${{ vars.VPS_USER }}
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_PORT: ${{ vars.VPS_PORT }}
+        run: |
+          echo "Applying migration Job manifest on VPS..."
+          ssh -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}" \
+            "cd \"$HOME/deployments/planner\" && kubectl -n brightroom apply -f infra/k8s/planner-api/job-migrate.yaml && kubectl -n brightroom wait --for=condition=complete job/planner-db-migrate --timeout=600s || (kubectl -n brightroom logs job/planner-db-migrate --all-containers --tail=200; exit 1)"
