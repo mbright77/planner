@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: planner-db-migrate
+  namespace: brightroom
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      containers:
+        - name: migrator
+          # Replace the image tag as needed (e.g. ghcr.io/mbright77/planner-migrator:v1)
+          image: ghcr.io/mbright77/planner-migrator:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: ConnectionStrings__Planner
+              valueFrom:
+                secretKeyRef:
+                  name: planner-api-secrets
+                  key: ConnectionStrings__Planner
+      # keep the Job ephemeral
+  ttlSecondsAfterFinished: 3600
