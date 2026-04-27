@@ -250,17 +250,57 @@ Jwt__SigningKey=<secret>
 
 ## Manual First Migration
 
-The first production migration remains manual.
+The first production migration must be performed deliberately. There are two supported ways to run migrations in production:
 
-1. Create the `planner` database.
-2. Create the `planner_app` PostgreSQL user.
-3. Grant the required privileges.
-4. Run the migration manually before the first production rollout:
+1) Manual migration (recommended for initial rollout)
+
+   - Create the `planner` database.
+   - Create the `planner_app` PostgreSQL user.
+   - Grant the required privileges to `planner_app` (CREATE/ALTER on schema objects; CREATEDB only if you expect the app to create the database).
+   - Run the migration manually before the first production rollout:
 
 ```bash
 ConnectionStrings__Planner="Host=postgres;Port=5432;Database=planner;Username=planner_app;Password=..." \
   infra/scripts/migrate-db.sh
 ```
+
+2) Controlled startup migration (supported by the app)
+
+   - The API now includes an optional startup migration step that will run pending EF Core migrations when the app starts. It is controlled by the `RunMigrationsOnStartup` configuration key and is disabled by default.
+   - Behavior details:
+     - It attempts to acquire a Postgres advisory lock (key 1234567890) so only one replica applies migrations.
+     - It calls `Database.Migrate()` which will create/apply pending migrations if the connected user has sufficient privileges.
+     - It retries transient failures up to 5 times with exponential backoff.
+     - On repeated failures it will log a critical error and crash startup (this is intentional — failing fast avoids serving with an invalid schema).
+
+   - Recommended safe procedure to use the startup migration in production:
+     1. Take a backup/snapshot of the production database.
+     2. Deploy the new image containing the startup migration code, but do not enable the setting yet.
+     3. Set `RunMigrationsOnStartup=true` in the `planner-api-config` ConfigMap (or pass as an env var) temporarily for the rollout. Example (kubectl):
+
+```bash
+kubectl -n brightroom create configmap planner-api-config \
+  --from-literal=RunMigrationsOnStartup=true \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+# then restart the deployment so the new setting takes effect
+kubectl -n brightroom rollout restart deployment/planner-api
+```
+
+     4. For extra safety, consider scaling the deployment to a single replica while migrations run:
+
+```bash
+kubectl -n brightroom scale deployment/planner-api --replicas=1
+```
+
+     5. Monitor pod logs for the messages `Acquired advisory lock` and `Migrations applied and advisory lock released.`
+
+     6. Once migrations complete successfully, set `RunMigrationsOnStartup=false` and scale your deployment back to the desired replica count.
+
+   - Notes / caveats:
+     - The connected DB user must have privileges to apply schema changes. If the user cannot create the database and you rely on Database.Migrate() to create the DB, create the DB manually instead.
+     - Startup migrations are intended for small, fast schema changes. For long-running or destructive migrations, prefer a controlled one-off Job or CI-run migration with a manual approval gate.
+     - Always keep a backup and a rollback plan before applying production migrations.
 
 ## Pre-Deployment Application Changes
 
