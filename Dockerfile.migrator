@@ -6,4 +6,7 @@ COPY . .
 
 RUN dotnet tool restore
 
+# Ensure the migration script is executable inside the image
+RUN chmod +x infra/scripts/migrate-db.sh
+
 CMD ["bash", "infra/scripts/migrate-db.sh"]
