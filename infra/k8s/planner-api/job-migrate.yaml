@@ -6,6 +6,9 @@ metadata:
 spec:
   backoffLimit: 1
   template:
+    metadata:
+      labels:
+        job-name: planner-db-migrate
     spec:
       restartPolicy: Never
       imagePullSecrets:
@@ -14,6 +17,7 @@ spec:
         - name: migrator
           # Replace the image tag as needed (e.g. ghcr.io/mbright77/planner-migrator:v1)
           image: ghcr.io/mbright77/planner-migrator:latest
+          command: ["/bin/bash", "-lc", "infra/scripts/migrate-db.sh"]
           imagePullPolicy: IfNotPresent
           env:
             - name: ConnectionStrings__Planner
