@@ -180,7 +180,7 @@ jobs:
             if ssh -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}" "test -d '${remote_dir}'"; then
               echo "Using ${remote_dir}"
               ssh -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}" \
-                "cd '${remote_dir}' && kubectl -n brightroom apply -f infra/k8s/planner-api/job-migrate.yaml && kubectl -n brightroom wait --for=condition=complete job/planner-db-migrate --timeout=600s || (kubectl -n brightroom logs job/planner-db-migrate --all-containers --tail=200; exit 1)"
+                "cd '${remote_dir}' && kubectl -n brightroom apply -f planner-api/job-migrate.yaml && kubectl -n brightroom wait --for=condition=complete job/planner-db-migrate --timeout=600s || (kubectl -n brightroom logs job/planner-db-migrate --all-containers --tail=200; exit 1)"
               exit 0
             fi
           done
