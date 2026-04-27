@@ -84,6 +84,29 @@ jobs:
             ${{ steps.meta.outputs.image-ref }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
 
+      - name: Build and push migrator image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile.migrator
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/planner-migrator:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/planner-migrator:main
+
+      - name: Set migrator image metadata
+        id: migrator-meta
+        run: |
+          echo "migrator-image-tag=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          echo "migrator-image-ref=${REGISTRY}/${{ github.repository_owner }}/planner-migrator:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Inject migrator image into Job manifest
+        run: |
+          MIGR_IMAGE=${{ steps.migrator-meta.outputs.migrator-image-ref }}
+          echo "Replacing migrator image in infra/k8s/planner-api/job-migrate.yaml with ${MIGR_IMAGE}"
+          sed -i "s|image: ghcr.io/mbright77/planner-migrator:latest|image: ${MIGR_IMAGE}|g" infra/k8s/planner-api/job-migrate.yaml
+          git --no-pager diff -- infra/k8s/planner-api/job-migrate.yaml || true
+
       - name: Package backend deployment bundle
         run: tar -czf backend-deploy-bundle.tar.gz deploy/backend infra/k8s/planner-api
 
