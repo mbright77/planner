@@ -42,7 +42,7 @@ function sortMeals(meals: MealPlanResponse[]) {
   return [...meals].sort((left, right) => left.mealDate.localeCompare(right.mealDate));
 }
 
-function computeWeekStartFromDate(date: string) {
+export function computeWeekStartFromDate(date: string) {
   const d = new Date(`${date}T00:00:00.000Z`);
   const day = d.getUTCDay();
   const diff = day === 0 ? -6 : 1 - day;
