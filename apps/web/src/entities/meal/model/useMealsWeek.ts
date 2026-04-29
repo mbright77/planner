@@ -42,6 +42,14 @@ function sortMeals(meals: MealPlanResponse[]) {
   return [...meals].sort((left, right) => left.mealDate.localeCompare(right.mealDate));
 }
 
+function computeWeekStartFromDate(date: string) {
+  const d = new Date(`${date}T00:00:00.000Z`);
+  const day = d.getUTCDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setUTCDate(d.getUTCDate() + diff);
+  return d.toISOString().slice(0, 10);
+}
+
 export function useMealsWeek(weekStart: string) {
   const { session } = useAuthSession();
 
@@ -121,6 +129,13 @@ export function useCreateMealPlan(weekStart: string) {
           : week,
       );
       await syncOfflineQueryData<WeeklyMealsResponse>(queryClient, mealsQueryKey);
+      // Ensure any canonical server week caches are refreshed too (server returns DateOnly mealDate)
+      try {
+        const canonicalWeekStart = computeWeekStartFromDate(result.data.mealDate);
+        await invalidateMealQueries(queryClient, session?.accessToken, weekStart, canonicalWeekStart);
+      } catch {
+        // best-effort: swallow errors to avoid breaking UI flow
+      }
     },
     onSettled: async () => {
       await Promise.all([
@@ -147,12 +162,20 @@ async function invalidateMealQueries(
   queryClient: ReturnType<typeof useQueryClient>,
   accessToken: string | undefined,
   weekStart: string,
+  alsoInvalidateWeekStart?: string,
 ) {
-  await Promise.all([
+  const promises: Promise<unknown>[] = [
     queryClient.invalidateQueries({ queryKey: mealsWeekKey(accessToken, weekStart) }),
     queryClient.invalidateQueries({ queryKey: mealRequestsKey(accessToken, weekStart) }),
     queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] }),
-  ]);
+  ];
+
+  if (alsoInvalidateWeekStart && alsoInvalidateWeekStart !== weekStart) {
+    promises.push(queryClient.invalidateQueries({ queryKey: mealsWeekKey(accessToken, alsoInvalidateWeekStart) }));
+    promises.push(queryClient.invalidateQueries({ queryKey: mealRequestsKey(accessToken, alsoInvalidateWeekStart) }));
+  }
+
+  await Promise.all(promises);
 }
 
 export function useCreateMealRequest(weekStart: string) {
@@ -334,6 +357,22 @@ export function useAcceptMealRequest(weekStart: string) {
         syncOfflineQueryData<WeeklyMealsResponse>(queryClient, mealsQueryKey),
       ]);
     },
+    onSuccess: async (result) => {
+      if (result.status === 'queued') {
+        return;
+      }
+
+      // If accepting created a meal for a requested date, ensure the canonical week is refreshed
+      try {
+        const requestedFor = result.data.requestedForDate;
+        if (requestedFor) {
+          const canonicalWeekStart = computeWeekStartFromDate(requestedFor);
+          await invalidateMealQueries(queryClient, session?.accessToken, weekStart, canonicalWeekStart);
+        }
+      } catch {
+        // ignore
+      }
+    },
     onSettled: async () => {
       await invalidateMealQueries(queryClient, session?.accessToken, weekStart);
     },
@@ -416,6 +455,12 @@ export function useUpdateMealPlan(weekStart: string) {
         };
       });
       await syncOfflineQueryData<WeeklyMealsResponse>(queryClient, mealsQueryKey);
+      try {
+        const canonicalWeekStart = computeWeekStartFromDate(result.data.mealDate);
+        await invalidateMealQueries(queryClient, session?.accessToken, weekStart, canonicalWeekStart);
+      } catch {
+        // ignore
+      }
     },
     onSettled: async () => {
       await invalidateMealQueries(queryClient, session?.accessToken, weekStart);
