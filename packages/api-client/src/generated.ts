@@ -1098,6 +1098,8 @@ export interface components {
             id: string;
             title: string;
             notes: string | null;
+            /** Format: date */
+            date: string;
             /** Format: date-time */
             startAtUtc: string;
             /** Format: date-time */
@@ -1111,10 +1113,12 @@ export interface components {
         CreateCalendarEventRequest: {
             title: string;
             notes: string | null;
-            /** Format: date-time */
-            startAtUtc: string;
-            /** Format: date-time */
-            endAtUtc: string;
+            /** Format: date */
+            date: string;
+            /** Format: time */
+            startTime: string;
+            /** Format: time */
+            endTime: string;
             /** Format: uuid */
             assignedProfileId: string | null;
             repeatsWeekly: boolean;
@@ -1313,10 +1317,12 @@ export interface components {
         UpdateCalendarEventRequest: {
             title: string;
             notes: string | null;
-            /** Format: date-time */
-            startAtUtc: string;
-            /** Format: date-time */
-            endAtUtc: string;
+            /** Format: date */
+            date: string;
+            /** Format: time */
+            startTime: string;
+            /** Format: time */
+            endTime: string;
             /** Format: uuid */
             assignedProfileId: string | null;
             applyToSeries: boolean;

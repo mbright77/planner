@@ -36,29 +36,47 @@ public static class CalendarEndpoints
             return Results.NotFound();
         }
 
-        var weekStart = start ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var familyTimeZone = ResolveTimeZone(membership.Family.Timezone);
+        var familyNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, familyTimeZone);
+        var targetDate = start ?? DateOnly.FromDateTime(familyNow.DateTime);
+        var weekStart = GetWeekStart(targetDate);
         var weekEnd = weekStart.AddDays(6);
-        var startUtc = weekStart.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        var endUtc = weekEnd.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
 
-        var familyEvents = await dbContext.CalendarEvents
+        var weekStartLocal = weekStart.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified);
+        var weekEndExclusiveLocal = weekEnd.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified);
+
+        var weekStartUtc = TimeZoneInfo.ConvertTimeToUtc(weekStartLocal, familyTimeZone);
+        var weekEndExclusiveUtc = TimeZoneInfo.ConvertTimeToUtc(weekEndExclusiveLocal, familyTimeZone);
+
+        var weekStartUtcOffset = new DateTimeOffset(weekStartUtc, TimeSpan.Zero);
+        var weekEndExclusiveUtcOffset = new DateTimeOffset(weekEndExclusiveUtc, TimeSpan.Zero);
+
+        var familyEventsRaw = await dbContext.CalendarEvents
             .AsNoTracking()
             .Include(x => x.Series)
             .Where(x => x.FamilyId == membership.FamilyId)
             .ToListAsync(cancellationToken);
 
-        var events = familyEvents
-            .Where(x => x.StartAtUtc >= startUtc && x.StartAtUtc < endUtc)
+        var familyEvents = familyEventsRaw
+            .Where(x => x.StartAtUtc >= weekStartUtcOffset && x.StartAtUtc < weekEndExclusiveUtcOffset)
             .OrderBy(x => x.StartAtUtc)
-            .Select(x => new CalendarEventResponse(
-                x.Id,
-                x.Title,
-                x.Notes,
-                x.StartAtUtc,
-                x.EndAtUtc,
-                x.AssignedProfileId,
-                x.SeriesId != null,
-                x.SeriesId != null ? x.Series!.RepeatUntil : null))
+            .ToList();
+
+        var events = familyEvents
+            .Select(x =>
+            {
+                var localDate = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(x.StartAtUtc.UtcDateTime, familyTimeZone).Date);
+                return new CalendarEventResponse(
+                    x.Id,
+                    x.Title,
+                    x.Notes,
+                    localDate,
+                    x.StartAtUtc,
+                    x.EndAtUtc,
+                    x.AssignedProfileId,
+                    x.SeriesId != null,
+                    x.SeriesId != null ? x.Series!.RepeatUntil : null);
+            })
             .ToList();
 
         return Results.Ok(new WeeklyCalendarResponse(weekStart, weekEnd, events));
@@ -77,18 +95,27 @@ public static class CalendarEndpoints
             return Results.NotFound();
         }
 
+        var familyTimeZone = ResolveTimeZone(membership.Family.Timezone);
+
         var validation = await ValidateAssignedProfileAsync(membership.FamilyId, request.AssignedProfileId, dbContext, cancellationToken);
         if (validation is not null)
         {
             return validation;
         }
 
-        if (request.EndAtUtc <= request.StartAtUtc)
+        var localStart = request.Date.ToDateTime(request.StartTime, DateTimeKind.Unspecified);
+        var localEnd = request.Date.ToDateTime(request.EndTime, DateTimeKind.Unspecified);
+        var startUtcDt = TimeZoneInfo.ConvertTimeToUtc(localStart, familyTimeZone);
+        var endUtcDt = TimeZoneInfo.ConvertTimeToUtc(localEnd, familyTimeZone);
+        var startAtUtc = new DateTimeOffset(startUtcDt, TimeSpan.Zero);
+        var endAtUtc = new DateTimeOffset(endUtcDt, TimeSpan.Zero);
+
+        if (endAtUtc <= startAtUtc)
         {
             return Results.BadRequest(new { message = "Event end time must be after the start time." });
         }
 
-        var recurrenceValidation = ValidateWeeklyRecurrence(request.RepeatsWeekly, request.RepeatUntil, request.StartAtUtc);
+        var recurrenceValidation = ValidateWeeklyRecurrence(request.RepeatsWeekly, request.RepeatUntil, startAtUtc);
         if (recurrenceValidation is not null)
         {
             return recurrenceValidation;
@@ -103,10 +130,10 @@ public static class CalendarEndpoints
                 FamilyId = membership.FamilyId,
                 Title = request.Title.Trim(),
                 Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
-                StartsAtUtc = request.StartAtUtc,
-                EndsAtUtc = request.EndAtUtc,
+                StartsAtUtc = startAtUtc,
+                EndsAtUtc = endAtUtc,
                 RepeatUntil = request.RepeatUntil!.Value,
-                MaterializedThrough = DateOnly.FromDateTime(request.StartAtUtc.UtcDateTime),
+                MaterializedThrough = DateOnly.FromDateTime(startAtUtc.UtcDateTime),
                 CreatedAtUtc = DateTimeOffset.UtcNow,
                 AssignedProfileId = request.AssignedProfileId,
             };
@@ -120,8 +147,8 @@ public static class CalendarEndpoints
             FamilyId = membership.FamilyId,
             Title = request.Title.Trim(),
             Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
-            StartAtUtc = request.StartAtUtc,
-            EndAtUtc = request.EndAtUtc,
+            StartAtUtc = startAtUtc,
+            EndAtUtc = endAtUtc,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             AssignedProfileId = request.AssignedProfileId,
             SeriesId = series?.Id,
@@ -134,13 +161,14 @@ public static class CalendarEndpoints
             await materializer.MaterializeFutureOccurrencesAsync(
                 dbContext,
                 series,
-                DateOnly.FromDateTime(request.StartAtUtc.UtcDateTime).AddDays(7),
+                DateOnly.FromDateTime(startAtUtc.UtcDateTime).AddDays(7),
                 cancellationToken);
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return Results.Created($"/api/v1/calendar/{calendarEvent.Id}", ToResponse(calendarEvent, series?.RepeatUntil));
+        var eventLocalDate = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(calendarEvent.StartAtUtc.UtcDateTime, familyTimeZone).Date);
+        return Results.Created($"/api/v1/calendar/{calendarEvent.Id}", ToResponse(calendarEvent, series?.RepeatUntil, eventLocalDate));
     }
 
     private static async Task<IResult> UpdateEventAsync(
@@ -157,13 +185,22 @@ public static class CalendarEndpoints
             return Results.NotFound();
         }
 
+        var familyTimeZone = ResolveTimeZone(membership.Family.Timezone);
+
         var validation = await ValidateAssignedProfileAsync(membership.FamilyId, request.AssignedProfileId, dbContext, cancellationToken);
         if (validation is not null)
         {
             return validation;
         }
 
-        if (request.EndAtUtc <= request.StartAtUtc)
+        var localStart = request.Date.ToDateTime(request.StartTime, DateTimeKind.Unspecified);
+        var localEnd = request.Date.ToDateTime(request.EndTime, DateTimeKind.Unspecified);
+        var startUtcDt = TimeZoneInfo.ConvertTimeToUtc(localStart, familyTimeZone);
+        var endUtcDt = TimeZoneInfo.ConvertTimeToUtc(localEnd, familyTimeZone);
+        var startAtUtc = new DateTimeOffset(startUtcDt, TimeSpan.Zero);
+        var endAtUtc = new DateTimeOffset(endUtcDt, TimeSpan.Zero);
+
+        if (endAtUtc <= startAtUtc)
         {
             return Results.BadRequest(new { message = "Event end time must be after the start time." });
         }
@@ -192,19 +229,19 @@ public static class CalendarEndpoints
             }
 
             var updatedRepeatUntil = request.RepeatUntil ?? series.RepeatUntil;
-            if (updatedRepeatUntil < DateOnly.FromDateTime(request.StartAtUtc.UtcDateTime))
+            if (updatedRepeatUntil < DateOnly.FromDateTime(startAtUtc.UtcDateTime))
             {
                 return Results.BadRequest(new { message = "Recurring events must end on or after the occurrence date." });
             }
 
             series.Title = request.Title.Trim();
             series.Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim();
-            series.StartsAtUtc = request.StartAtUtc;
-            series.EndsAtUtc = request.EndAtUtc;
+            series.StartsAtUtc = startAtUtc;
+            series.EndsAtUtc = endAtUtc;
             series.AssignedProfileId = request.AssignedProfileId;
             series.RepeatUntil = updatedRepeatUntil;
 
-            var occurrenceDate = DateOnly.FromDateTime(request.StartAtUtc.UtcDateTime);
+            var occurrenceDate = DateOnly.FromDateTime(startAtUtc.UtcDateTime);
             var seriesOccurrences = await dbContext.CalendarEvents
                 .Where(x => x.SeriesId == series.Id)
                 .ToListAsync(cancellationToken);
@@ -221,8 +258,8 @@ public static class CalendarEndpoints
                 FamilyId = membership.FamilyId,
                 Title = series.Title,
                 Notes = series.Notes,
-                StartAtUtc = request.StartAtUtc,
-                EndAtUtc = request.EndAtUtc,
+                StartAtUtc = startAtUtc,
+                EndAtUtc = endAtUtc,
                 CreatedAtUtc = calendarEvent.CreatedAtUtc,
                 AssignedProfileId = request.AssignedProfileId,
                 SeriesId = series.Id,
@@ -234,18 +271,20 @@ public static class CalendarEndpoints
             await materializer.MaterializeFutureOccurrencesAsync(dbContext, series, occurrenceDate.AddDays(7), cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            return Results.Ok(ToResponse(updatedOccurrence, series.RepeatUntil));
+            var updatedLocalDate = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(updatedOccurrence.StartAtUtc.UtcDateTime, familyTimeZone).Date);
+            return Results.Ok(ToResponse(updatedOccurrence, series.RepeatUntil, updatedLocalDate));
         }
 
         calendarEvent.Title = request.Title.Trim();
         calendarEvent.Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim();
-        calendarEvent.StartAtUtc = request.StartAtUtc;
-        calendarEvent.EndAtUtc = request.EndAtUtc;
+        calendarEvent.StartAtUtc = startAtUtc;
+        calendarEvent.EndAtUtc = endAtUtc;
         calendarEvent.AssignedProfileId = request.AssignedProfileId;
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return Results.Ok(ToResponse(calendarEvent, calendarEvent.Series?.RepeatUntil));
+        var eventLocalDate = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(calendarEvent.StartAtUtc.UtcDateTime, familyTimeZone).Date);
+        return Results.Ok(ToResponse(calendarEvent, calendarEvent.Series?.RepeatUntil, eventLocalDate));
     }
 
     private static IResult? ValidateWeeklyRecurrence(bool repeatsWeekly, DateOnly? repeatUntil, DateTimeOffset startAtUtc)
@@ -285,12 +324,13 @@ public static class CalendarEndpoints
             : Results.BadRequest(new { message = "The selected profile does not belong to this family." });
     }
 
-    private static CalendarEventResponse ToResponse(CalendarEvent calendarEvent, DateOnly? repeatUntil)
+    private static CalendarEventResponse ToResponse(CalendarEvent calendarEvent, DateOnly? repeatUntil, DateOnly eventDate)
     {
         return new CalendarEventResponse(
             calendarEvent.Id,
             calendarEvent.Title,
             calendarEvent.Notes,
+            eventDate,
             calendarEvent.StartAtUtc,
             calendarEvent.EndAtUtc,
             calendarEvent.AssignedProfileId,
@@ -307,6 +347,34 @@ public static class CalendarEndpoints
 
         return dbContext.FamilyMemberships
             .AsNoTracking()
+            .Include(x => x.Family)
             .FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
+    }
+
+    private static DateOnly GetWeekStart(DateOnly date)
+    {
+        var diff = date.DayOfWeek switch
+        {
+            DayOfWeek.Sunday => -6,
+            _ => DayOfWeek.Monday - date.DayOfWeek,
+        };
+
+        return date.AddDays(diff);
+    }
+
+    private static TimeZoneInfo ResolveTimeZone(string timeZoneId)
+    {
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return TimeZoneInfo.Utc;
+        }
+        catch (InvalidTimeZoneException)
+        {
+            return TimeZoneInfo.Utc;
+        }
     }
 }

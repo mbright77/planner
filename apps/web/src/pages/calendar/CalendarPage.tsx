@@ -167,17 +167,24 @@ export function CalendarPage() {
         return current;
       }
 
-      return formatDateOnly(getWeekStart(new Date(`${dashboardQuery.data.date}T00:00:00`)));
+      // Prefer server-provided weekStart from calendar query if available
+      return calendarWeekQuery.data?.weekStart ?? formatDateOnly(getWeekStart(new Date(`${dashboardQuery.data.date}T00:00:00`)));
     });
   }, [dashboardQuery.data, initialSelectedDate, initialWeekStart]);
 
+  useEffect(() => {
+    // If the calendar query returns a canonical weekStart, update local state when unchanged
+    if (!calendarWeekQuery.data) return;
+
+    setWeekStart((current) => (current === initialWeekStart ? calendarWeekQuery.data!.weekStart : current));
+    setSelectedDate((current) => (current === initialSelectedDate ? dashboardQuery.data?.date ?? current : current));
+  }, [calendarWeekQuery.data, initialWeekStart, initialSelectedDate, dashboardQuery.data]);
+
   const eventsByDay = useMemo(() => {
-    const groups = new Map<string, typeof calendarEvents>(
-      weekDays.map((day) => [day.key, []]),
-    );
+    const groups = new Map<string, typeof calendarEvents>(weekDays.map((day) => [day.key, []]));
 
     for (const calendarEvent of calendarEvents) {
-      const dayKey = calendarEvent.startAtUtc.slice(0, 10);
+      const dayKey = (calendarEvent as any).date ?? calendarEvent.startAtUtc.slice(0, 10);
       const existing = groups.get(dayKey) ?? [];
       groups.set(dayKey, [...existing, calendarEvent]);
     }
@@ -235,7 +242,7 @@ export function CalendarPage() {
       return;
     }
 
-    const eventDate = calendarEvent.startAtUtc.slice(0, 10);
+    const eventDate = (calendarEvent as any).date ?? calendarEvent.startAtUtc.slice(0, 10);
     setSelectedDate(eventDate);
     setEditingEventId(calendarEvent.id);
     setTitle(calendarEvent.title);
@@ -291,8 +298,9 @@ export function CalendarPage() {
         request: {
           title: title.trim(),
           notes: notes.trim() || null,
-          startAtUtc: nextStart.toISOString(),
-          endAtUtc: nextEnd.toISOString(),
+          date: selectedDate,
+          startTime,
+          endTime,
           assignedProfileId: assignedProfileId || null,
           applyToSeries: repeatsWeekly ? applyToSeries : false,
           repeatUntil: repeatsWeekly ? repeatUntil : null,
@@ -302,8 +310,9 @@ export function CalendarPage() {
       await createCalendarEventMutation.mutateAsync({
         title: title.trim(),
         notes: notes.trim() || null,
-        startAtUtc: nextStart.toISOString(),
-        endAtUtc: nextEnd.toISOString(),
+        date: selectedDate,
+        startTime,
+        endTime,
         assignedProfileId: assignedProfileId || null,
         repeatsWeekly,
         repeatUntil: repeatsWeekly ? repeatUntil : null,

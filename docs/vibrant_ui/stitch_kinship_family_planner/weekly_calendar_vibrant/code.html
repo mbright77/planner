@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#ffdad7",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#574500",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed": "#00201e",
+                    "surface-bright": "#f4fafd",
+                    "on-error-container": "#93000a",
+                    "on-secondary-container": "#6f5900",
+                    "tertiary": "#006a65",
+                    "error-container": "#ffdad6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-background": "#161d1f",
+                    "background": "#f4fafd",
+                    "on-surface": "#161d1f",
+                    "surface-container-low": "#eef5f7",
+                    "surface-variant": "#dde4e6",
+                    "outline": "#8d706e",
+                    "error": "#ba1a1a",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#00504c",
+                    "primary-container": "#ff5f5d",
+                    "on-surface-variant": "#5a413f",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed-dim": "#5dd9d0",
+                    "secondary-fixed": "#ffe084",
+                    "primary": "#b3272c",
+                    "tertiary-container": "#0da79f",
+                    "on-tertiary-container": "#003531",
+                    "surface-container-high": "#e2e9ec",
+                    "surface": "#f4fafd",
+                    "on-primary-fixed-variant": "#910818",
+                    "on-primary-container": "#64000b",
+                    "tertiary-fixed": "#7cf6ec",
+                    "secondary-container": "#fdd022",
+                    "surface-container": "#e8eff1",
+                    "on-secondary-fixed": "#231b00",
+                    "surface-tint": "#b3272c",
+                    "inverse-surface": "#2b3234",
+                    "secondary": "#735c00",
+                    "secondary-fixed-dim": "#eec208",
+                    "outline-variant": "#e2bebc",
+                    "surface-dim": "#d4dbdd",
+                    "inverse-on-surface": "#ebf2f4",
+                    "surface-container-highest": "#dde4e6",
+                    "on-primary-fixed": "#410005",
+                    "inverse-primary": "#ffb3ae",
+                    "primary-fixed-dim": "#ffb3ae"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-gap": "16px",
+                    "container-margin": "24px",
+                    "unit": "8px",
+                    "section-padding": "32px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "label-bold": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "label-bold": ["14px", {"lineHeight": "20px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .squishy-active:active {
+            transform: translateY(2px) scale(0.98);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md fixed top-0 w-full z-50 border-b-2 border-rose-100 dark:border-rose-900/20 shadow-[0_4px_20px_rgba(255,95,93,0.1)] flex justify-between items-center px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border-2 border-rose-400 overflow-hidden">
+<img alt="User Profile" data-alt="close-up portrait of a happy mother with a warm smile, soft natural lighting, high quality photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDS38g9EL2HYi95YwaaMMpGq3l_4YxsJWjWUk7VOcW_vFjDASrXKyY_juWFiR30h2MJQpvNJtocoXGWPoOoKyRBeOCV6TZqq5NKGM49PMGwS3hq1hY_WugMC5oGGM0Uw2kexNG5F02pcgZi1sJQI7ls2v0W3g0YoJnIqXdezchRy_QA7ME2KWqfLYfV-u1v52OUq13RMAMXppGdsRtI4vvg95CPxNAzA6mIVps_BpUnjSvXAfGOuyLPBoLb-yyVsCGZmAh9nxBrYlY"/>
+</div>
+<h1 class="font-['Plus_Jakarta_Sans'] font-extrabold text-lg text-rose-500 dark:text-rose-400">Hello, Fam!</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-rose-500 hover:scale-105 transition-transform">notifications</button>
+</div>
+</header>
+<main class="pt-24 px-6 space-y-6 max-w-2xl mx-auto">
+<!-- Calendar Header -->
+<div class="flex items-center justify-between">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">September 2024</h2>
+<p class="font-body-md text-body-md text-outline">Weekly Family Schedule</p>
+</div>
+<button class="bg-gradient-to-br from-primary-container to-secondary-container text-white px-4 py-2 rounded-xl font-label-bold text-label-bold shadow-lg flex items-center gap-2 squishy-active">
+<span class="material-symbols-outlined">add</span>
+                EVENT
+            </button>
+</div>
+<!-- Date Scroller (Horizontal) -->
+<div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+<div class="flex-shrink-0 flex flex-col items-center justify-center w-16 h-24 bg-white rounded-[24px] border-2 border-rose-50 shadow-sm">
+<span class="font-label-bold text-outline">MON</span>
+<span class="font-headline-md text-headline-md text-on-surface">11</span>
+</div>
+<div class="flex-shrink-0 flex flex-col items-center justify-center w-16 h-24 bg-white rounded-[24px] border-2 border-rose-50 shadow-sm">
+<span class="font-label-bold text-outline">TUE</span>
+<span class="font-headline-md text-headline-md text-on-surface">12</span>
+</div>
+<!-- Active State -->
+<div class="flex-shrink-0 flex flex-col items-center justify-center w-20 h-28 bg-gradient-to-b from-primary-container to-primary text-white rounded-[24px] shadow-[0_8px_24px_rgba(255,95,93,0.3)] scale-105 border-b-4 border-black/10">
+<span class="font-label-bold">WED</span>
+<span class="font-display-lg text-headline-lg">13</span>
+<div class="w-1.5 h-1.5 bg-white rounded-full mt-1"></div>
+</div>
+<div class="flex-shrink-0 flex flex-col items-center justify-center w-16 h-24 bg-white rounded-[24px] border-2 border-rose-50 shadow-sm">
+<span class="font-label-bold text-outline">THU</span>
+<span class="font-headline-md text-headline-md text-on-surface">14</span>
+</div>
+<div class="flex-shrink-0 flex flex-col items-center justify-center w-16 h-24 bg-white rounded-[24px] border-2 border-rose-50 shadow-sm">
+<span class="font-label-bold text-outline">FRI</span>
+<span class="font-headline-md text-headline-md text-on-surface">15</span>
+</div>
+</div>
+<!-- Timeline / Events Section -->
+<div class="space-y-4">
+<!-- 08:00 AM Event -->
+<div class="flex gap-4">
+<div class="w-16 pt-2 text-right">
+<span class="font-label-bold text-outline">08:00</span>
+</div>
+<div class="flex-1 bg-white p-4 rounded-[28px] border-l-[12px] border-secondary-container shadow-md hover:shadow-xl transition-all group">
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-bold text-secondary text-xs bg-secondary-fixed px-3 py-1 rounded-full">SCHOOL</span>
+<h3 class="font-headline-md text-body-lg mt-1 group-hover:text-primary transition-colors">School Drop-off</h3>
+<div class="flex items-center gap-2 text-outline mt-2">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="font-body-md text-sm">Sunshine Elementary</span>
+</div>
+</div>
+<div class="flex -space-x-2">
+<img alt="Member" class="w-8 h-8 rounded-full border-2 border-white" data-alt="portrait of a young boy smiling broadly, colorful background, playful atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_fJIZqqWzAn9W1TX0LzqkWId0bCYqWJnOZdRH4hQfLbi-uTgLx8CaXy2WfGzmNkIKkk8AKkSu2yiyn5PAZI10Ui0-074BxsCCXayfNriYxfN2hn6VpwJW9v4KR8WI9T_RS7nwUSu_Sj1lbrHqOfwm8fvsHSroAljCYYJ8Nux9Qm7vu3QjRCLUo0k-dvKOR0-2Kegf2oZuCkaWfc5Q-47PXlR-QyLLFjFolN8vtyNSLKEkwrRf_a7js1KDItM56Snlpy4czvdqV0M"/>
+<img alt="Member" class="w-8 h-8 rounded-full border-2 border-white" data-alt="portrait of a young girl with pigtails laughing, sunny park background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwMJyGiG1Sfj0miFcKfQx6Dcu6CqUsFZRBKk8R_EEMKpD-EOe39XXudCSgw1kxLQgoOe2lFrJgUtrDQ02KD0jI_4TsQuKU1TFgKHzPgV61gh3PO361yABFCJctSqbAElqe6tSTFoee1VmFtyy84z_9UY6JjSm6YNPJmCKnO9cIUTGbXXT3hRo7KTm22nu96BMAtGzLROstKMJrcVkCxIUivE-gFki8oWkeaBglZNR3E1BD59ojpoFB9Vr8r0aQCR65bHhVGj6jXSs"/>
+</div>
+</div>
+</div>
+</div>
+<!-- 12:30 PM Event -->
+<div class="flex gap-4">
+<div class="w-16 pt-2 text-right">
+<span class="font-label-bold text-outline">12:30</span>
+</div>
+<div class="flex-1 bg-white p-4 rounded-[28px] border-l-[12px] border-tertiary-container shadow-md hover:shadow-xl transition-all group">
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-bold text-tertiary text-xs bg-tertiary-fixed px-3 py-1 rounded-full">MEALS</span>
+<h3 class="font-headline-md text-body-lg mt-1 group-hover:text-primary transition-colors">Family Lunch Picnic</h3>
+<div class="flex items-center gap-2 text-outline mt-2">
+<span class="material-symbols-outlined text-sm">restaurant</span>
+<span class="font-body-md text-sm">Central Park - Oak Grove</span>
+</div>
+</div>
+<div class="flex -space-x-2">
+<img alt="Member" class="w-8 h-8 rounded-full border-2 border-white" data-alt="professional portrait of a man in casual attire, warm smile, blurred office background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGm2GUvRBzCMmYorSB5AyJgCWZ8E1Ll7isoPwWUD-ptrUwbqULh4mQ82wNYlLvvnwhx-E5GBO7wbF7hzGStIcjGoHBP_2k7hih5BWPmdyUQph3uhdeLZflV6YTKxTWVOVeJyo39N53h31gP2QspLBg26QQA7GK7VQX9YcD5Cgj5_dKkP8WJi5pROYQNZR3VtCnkGQ_Pp3l2KKOA1TBDwkLdVhQyiwfhQMSRw8WVKrNdyynw9ZtMKrTjBL20clqboDo6BVoyRARsU8"/>
+<img alt="Member" class="w-8 h-8 rounded-full border-2 border-white" data-alt="lifestyle portrait of a woman outdoors, soft lighting, vibrant colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFxVKYhogl4rMYqsgB5q3rclVwfCIbHRfoQyAKAmxL7Qqjjuy4Y3f2coOodrK7X_vqY5daFoFla4UpSCfMXITLmww5vvyvcOxUCSkoYoxCQQa74vKZDwNm2g2QARnyV-nXUNZ1rRlCFyVqdNO5az5yp2hEZKp1jEJB4SLVW4bkxaifBDHJNu1VTYjGgvlK5YaxTLdtdagTlaRi4JVoxCskEY4os54osN-FqcSh4IIU-X2KIdsKykk7-onugwjWUByIdbWyLoF2SKY"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Active / Current Time Marker -->
+<div class="flex items-center gap-4 relative">
+<div class="w-16 text-right">
+<span class="font-label-bold text-primary">02:15</span>
+</div>
+<div class="flex-1 h-[2px] bg-primary relative">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full ring-4 ring-primary-fixed"></div>
+</div>
+</div>
+<!-- 04:00 PM Event -->
+<div class="flex gap-4">
+<div class="w-16 pt-2 text-right">
+<span class="font-label-bold text-outline">16:00</span>
+</div>
+<div class="flex-1 bg-white p-4 rounded-[28px] border-l-[12px] border-primary-container shadow-md hover:shadow-xl transition-all group">
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-bold text-on-primary-container text-xs bg-primary-fixed px-3 py-1 rounded-full">EXTRACURRICULAR</span>
+<h3 class="font-headline-md text-body-lg mt-1 group-hover:text-primary transition-colors">Soccer Practice</h3>
+<div class="flex items-center gap-2 text-outline mt-2">
+<span class="material-symbols-outlined text-sm">sports_soccer</span>
+<span class="font-body-md text-sm">Field 4 - Community Center</span>
+</div>
+</div>
+<div class="flex -space-x-2">
+<img alt="Member" class="w-8 h-8 rounded-full border-2 border-white" data-alt="action shot of a child playing sports, bright jersey, sunny day outdoors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBf_p5A0F5RFkGGD1DCgluLDeCBgsiJDBeSo4MAbHKkFM0IuuMPXKhhOLmxliN1IleqQRGH5TlowxNfZ1_TR2KcnNh4NeBdUQ6DxJgZrJwQjdUrRrCIpI3GNKcet7ntq7FO12H2ddndEQtk4yDdqRd4q9VveATXdyDpJoPY5IffTSbxCoiDUdg9U-Tomo2XlDjztMLKiWBZkeFHFLrpsejiH-pFPi-JN6rciM_eGblwVFnNhb5ZOakgU5c3isTUPL1q9bn5CqRTzmI"/>
+</div>
+</div>
+</div>
+</div>
+<!-- 07:00 PM Event -->
+<div class="flex gap-4">
+<div class="w-16 pt-2 text-right">
+<span class="font-label-bold text-outline">19:00</span>
+</div>
+<div class="flex-1 bg-surface-container p-4 rounded-[28px] border-l-[12px] border-outline shadow-sm opacity-75">
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-bold text-outline text-xs bg-surface-variant px-3 py-1 rounded-full">HOME</span>
+<h3 class="font-headline-md text-body-lg mt-1 italic">Weekly Grocery Prep</h3>
+<div class="flex items-center gap-2 text-outline mt-2">
+<span class="material-symbols-outlined text-sm">shopping_cart</span>
+<span class="font-body-md text-sm">Kitchen</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Family Goal Progress (Custom Component) -->
+<div class="bg-gradient-to-r from-primary to-primary-container p-6 rounded-[32px] text-white shadow-xl mt-8">
+<div class="flex justify-between items-end mb-4">
+<div>
+<h4 class="font-headline-md text-headline-md">Weekend Trip!</h4>
+<p class="text-white/80 font-body-md">Family Chore Goal</p>
+</div>
+<span class="font-display-lg text-headline-lg">75%</span>
+</div>
+<div class="w-full h-4 bg-white/20 rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container rounded-full w-[75%] border-r-4 border-white/30"></div>
+</div>
+<p class="mt-4 text-sm font-label-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-base">celebration</span>
+                Almost there! 5 more chores to go.
+            </p>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 h-24 pb-6 bg-white dark:bg-slate-950 rounded-t-[32px] border-t-2 border-rose-50 dark:border-rose-900/20 shadow-[0_-10px_40px_rgba(255,95,93,0.15)]">
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 gap-1 hover:text-rose-400 squishy-active transition-all" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-black uppercase tracking-tighter">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-rose-500 dark:bg-rose-600 text-white rounded-2xl px-5 py-2 scale-110 shadow-lg shadow-rose-200 dark:shadow-none squishy-active transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-black uppercase tracking-tighter">Calendar</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 gap-1 hover:text-rose-400 squishy-active transition-all" href="#">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-black uppercase tracking-tighter">Meals</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 gap-1 hover:text-rose-400 squishy-active transition-all" href="#">
+<span class="material-symbols-outlined">checklist</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-black uppercase tracking-tighter">Lists</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 gap-1 hover:text-rose-400 squishy-active transition-all" href="#">
+<span class="material-symbols-outlined">family_restroom</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-black uppercase tracking-tighter">Family</span>
+</a>
+</nav>
+</body></html>

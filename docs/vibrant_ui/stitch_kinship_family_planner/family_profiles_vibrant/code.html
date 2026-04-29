@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Family Profiles Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#ffdad7",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#574500",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#00201e",
+                        "surface-bright": "#f4fafd",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#6f5900",
+                        "tertiary": "#006a65",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#161d1f",
+                        "background": "#f4fafd",
+                        "on-surface": "#161d1f",
+                        "surface-container-low": "#eef5f7",
+                        "surface-variant": "#dde4e6",
+                        "outline": "#8d706e",
+                        "error": "#ba1a1a",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#00504c",
+                        "primary-container": "#ff5f5d",
+                        "on-surface-variant": "#5a413f",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#5dd9d0",
+                        "secondary-fixed": "#ffe084",
+                        "primary": "#b3272c",
+                        "tertiary-container": "#0da79f",
+                        "on-tertiary-container": "#003531",
+                        "surface-container-high": "#e2e9ec",
+                        "surface": "#f4fafd",
+                        "on-primary-fixed-variant": "#910818",
+                        "on-primary-container": "#64000b",
+                        "tertiary-fixed": "#7cf6ec",
+                        "secondary-container": "#fdd022",
+                        "surface-container": "#e8eff1",
+                        "on-secondary-fixed": "#231b00",
+                        "surface-tint": "#b3272c",
+                        "inverse-surface": "#2b3234",
+                        "secondary": "#735c00",
+                        "secondary-fixed-dim": "#eec208",
+                        "outline-variant": "#e2bebc",
+                        "surface-dim": "#d4dbdd",
+                        "inverse-on-surface": "#ebf2f4",
+                        "surface-container-highest": "#dde4e6",
+                        "on-primary-fixed": "#410005",
+                        "inverse-primary": "#ffb3ae",
+                        "primary-fixed-dim": "#ffb3ae"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-gap": "16px",
+                        "container-margin": "24px",
+                        "unit": "8px",
+                        "section-padding": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "label-bold": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "label-bold": ["14px", {"lineHeight": "20px", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .squishy-active:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .blob-bg {
+            position: fixed;
+            z-index: -1;
+            filter: blur(60px);
+            opacity: 0.4;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body-md text-on-background min-h-screen pb-32">
+<!-- Playful Background Accents -->
+<div class="blob-bg bg-primary-container w-64 h-64 top-[-10%] left-[-10%] rounded-full"></div>
+<div class="blob-bg bg-secondary-container w-96 h-96 bottom-[-10%] right-[-10%] rounded-full"></div>
+<!-- TopAppBar -->
+<header class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md font-['Plus_Jakarta_Sans'] font-extrabold text-lg docked full-width top-0 border-b-2 border-rose-100 dark:border-rose-900/20 shadow-[0_4px_20px_rgba(255,95,93,0.1)] flex justify-between items-center w-full px-6 py-4 max-w-full sticky top-0 z-50">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-rose-500 shadow-sm">
+<img alt="User" data-alt="close-up portrait of a happy mother smiling brightly with warm sunlight filtering through her hair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZuFiFAKDxDRqRddxpT-e4gJ6lmwLpa9EasQG-XjVnErJgHshFEqwI2q43bfExGOublLmr0r5AOKjtRiFre9KM7oGwxpAkhDGhPTaqLRd8CUe3SioHwUbtZdvuczU5T-6ShueX8CCyQUMt5EKKbRQQRy6v7qIUlvJ9B3FVXkO0RaeotdRfiMf2cigmX3547hpYQCXxny332EDEPlC6_0Rj2VpQd3Bel_z8tPn0CdtDk3fVkbArxtDs77XZckcM5z6xy-DleebVQYU"/>
+</div>
+<h1 class="text-rose-500 dark:text-rose-400 font-black text-2xl">Hello, Fam!</h1>
+</div>
+<div class="flex items-center gap-3">
+<button class="material-symbols-outlined text-slate-400 p-2 rounded-full hover:bg-rose-50 transition-colors">notifications</button>
+<button class="material-symbols-outlined text-rose-500 font-bold p-2 rounded-full hover:bg-rose-50 transition-colors">settings</button>
+</div>
+</header>
+<main class="max-w-2xl mx-auto px-container-margin py-section-padding space-y-stack-gap">
+<!-- Header Section -->
+<section class="space-y-2">
+<h2 class="font-display-lg text-display-lg text-on-background">Profiles</h2>
+<p class="text-body-lg text-on-surface-variant">Tap a profile to customize or add a new family member to the squad!</p>
+</section>
+<!-- Bento Grid Profiles -->
+<div class="grid grid-cols-2 gap-4">
+<!-- Active Profile: Sarah -->
+<div class="col-span-2 group relative overflow-hidden bg-white border-2 border-primary-container rounded-[32px] p-6 shadow-xl shadow-rose-100/50 hover:scale-[1.02] transition-transform">
+<div class="absolute top-0 right-0 p-4">
+<span class="bg-primary-container text-white px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase">Active</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative">
+<div class="w-24 h-24 rounded-3xl overflow-hidden border-4 border-primary-fixed shadow-lg rotate-[-3deg]">
+<img class="w-full h-full object-cover" data-alt="portrait of a smiling woman with glasses, vibrant background with playful organic shapes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfr-osz3qxxxtwqUZuslRCcXTrVzjP6UTWSSbJWTyt6BzRcvZpEuQIMGcbXYpMrEKA2Z9tBjIn4DJ9w4ilbxGPoULRXdf8bLIIo6RA2s6VCqnO9cvmQ6V4CdmQbrg-4-DWS3H3KQKOHDo5yXTDNlVUziV_9zzpdD5XS4TWddwZp27Y6CRFloebye_oAwItH5truBFGzAgXDAqH2giFpRQfKbxUfxY2ZiBYDiw3BWyMVcH1AMCQtRUEdyPeaArPdoY4IPZiZDiNO7M"/>
+</div>
+<div class="absolute -bottom-2 -right-2 bg-secondary-container p-2 rounded-xl shadow-md">
+<span class="material-symbols-outlined text-on-secondary-container text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<div>
+<h3 class="text-headline-md font-headline-md text-primary">Sarah</h3>
+<p class="text-body-md text-on-surface-variant font-medium">Chief Happiness Officer</p>
+</div>
+</div>
+</div>
+<!-- Profile: Leo -->
+<div class="bg-white border-2 border-rose-50 rounded-[32px] p-6 space-y-4 shadow-sm hover:shadow-md hover:border-secondary-container transition-all group">
+<div class="w-16 h-16 rounded-2xl overflow-hidden border-2 border-secondary-fixed shadow-sm group-hover:rotate-3 transition-transform">
+<img class="w-full h-full object-cover" data-alt="portrait of a 7 year old boy with a messy hairstyle and a mischievous grin, energetic colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAo1WP2fIZowqikDC82i73jj_JYtxWcyDTpL-Eeghrg2UZO5My19Yjgx-VoH9zPTuetGVjF2vklx0fOzgjQsevOvQfioOUmhM4HdR5ErhR9M4nUZWn9CV97hEFf3eFxirO4jNv4U_SrJ0EMSl6YfngYMNtWAodiDDfdk8lH0n5eyUCOsI480nEsbtLR0tzMC2FpYcatAmX9onZd3j_tBfcJzDhNSDsx10yjiMzeDDeWNyWPl2YB1ct-X3o3ltx8bbDJ76N0gbhGbsE"/>
+</div>
+<div>
+<h3 class="text-headline-md font-headline-md text-on-background">Leo</h3>
+<p class="text-label-bold font-label-bold text-on-surface-variant">Master of Blocks</p>
+</div>
+<div class="pt-2">
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full w-3/4 bg-gradient-to-r from-secondary-container to-secondary rounded-full"></div>
+</div>
+<p class="text-[10px] font-black uppercase tracking-tighter mt-1 text-secondary">Level 12 Explorer</p>
+</div>
+</div>
+<!-- Profile: Maya -->
+<div class="bg-white border-2 border-rose-50 rounded-[32px] p-6 space-y-4 shadow-sm hover:shadow-md hover:border-tertiary-container transition-all group">
+<div class="w-16 h-16 rounded-2xl overflow-hidden border-2 border-tertiary-fixed shadow-sm group-hover:-rotate-3 transition-transform">
+<img class="w-full h-full object-cover" data-alt="portrait of a teenage girl with artistic style, wearing headphones, soft artistic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDx2ht9oL3jEsCI8vtHabY7OXzVRE4DJIi_PCJ4v02SXXLSiDRxMkMOcPe_mj7ObvPWieXNYBmuT31ih_EZPHQpeWdECRnlxSbQklNm5PuAFKZVMOPkHDQKqUSyjlwgf4Wu4pp7VN7l4CIQ1_c--ught56KHKAjr2fKzzwX7oQY3AnmIyGEsqGIyhB30aRjILxWUfLBph-I488xsDyJ4gXoEI_J4DvhBTq0pVyzjptGsAIXDJiGhXsQINufD-ep4QtrZzs88msahIw"/>
+</div>
+<div>
+<h3 class="text-headline-md font-headline-md text-on-background">Maya</h3>
+<p class="text-label-bold font-label-bold text-on-surface-variant">The Dreamer</p>
+</div>
+<div class="pt-2">
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full w-1/2 bg-gradient-to-r from-tertiary-container to-tertiary rounded-full"></div>
+</div>
+<p class="text-[10px] font-black uppercase tracking-tighter mt-1 text-tertiary">Level 8 Artist</p>
+</div>
+</div>
+</div>
+<!-- Add New Profile Button -->
+<button class="w-full py-6 border-4 border-dashed border-rose-100 rounded-[32px] flex flex-col items-center justify-center gap-2 group hover:border-rose-300 hover:bg-rose-50 transition-all squishy-active">
+<div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">add</span>
+</div>
+<span class="font-headline-md text-primary">Add New Explorer</span>
+</button>
+<!-- Dynamic Customization Section -->
+<section class="bg-white border-2 border-rose-50 rounded-[40px] p-8 shadow-2xl shadow-rose-100/30 space-y-6">
+<div class="flex items-center justify-between">
+<h4 class="text-headline-md font-headline-md text-on-surface">Style &amp; Vibe</h4>
+<span class="material-symbols-outlined text-secondary-container text-4xl">palette</span>
+</div>
+<!-- Color Picker Grid -->
+<div class="space-y-4">
+<label class="text-label-bold font-label-bold text-on-surface-variant uppercase tracking-widest">Select Aura Color</label>
+<div class="flex flex-wrap gap-4">
+<button class="w-12 h-12 rounded-2xl bg-primary shadow-lg ring-4 ring-primary-fixed ring-offset-2 scale-110 squishy-active"></button>
+<button class="w-12 h-12 rounded-2xl bg-secondary-container shadow-md hover:scale-105 transition-transform squishy-active"></button>
+<button class="w-12 h-12 rounded-2xl bg-tertiary-container shadow-md hover:scale-105 transition-transform squishy-active"></button>
+<button class="w-12 h-12 rounded-2xl bg-blue-400 shadow-md hover:scale-105 transition-transform squishy-active"></button>
+<button class="w-12 h-12 rounded-2xl bg-purple-500 shadow-md hover:scale-105 transition-transform squishy-active"></button>
+<button class="w-12 h-12 rounded-2xl bg-orange-500 shadow-md hover:scale-105 transition-transform squishy-active"></button>
+</div>
+</div>
+<!-- Input Fields -->
+<div class="grid grid-cols-1 gap-6">
+<div class="space-y-2">
+<label class="text-label-bold font-label-bold text-on-surface-variant uppercase tracking-widest px-2">Nickname</label>
+<input class="w-full bg-surface-container-low border-2 border-transparent focus:border-secondary-container focus:ring-0 rounded-2xl p-4 font-headline-md text-on-surface transition-all placeholder:text-slate-300" type="text" value="Sarah"/>
+</div>
+<div class="space-y-2">
+<label class="text-label-bold font-label-bold text-on-surface-variant uppercase tracking-widest px-2">Family Role</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border-2 border-transparent focus:border-secondary-container focus:ring-0 rounded-2xl p-4 font-body-lg text-on-surface appearance-none transition-all">
+<option>Chief Happiness Officer</option>
+<option>Master of Blocks</option>
+<option>The Dreamer</option>
+<option>The Grand Poobah</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="pt-4 flex gap-4">
+<button class="flex-1 bg-gradient-to-br from-primary-container to-primary text-white py-4 rounded-2xl font-headline-md shadow-lg shadow-rose-200 squishy-active">Save Vibe</button>
+<button class="px-6 py-4 border-2 border-rose-100 text-primary font-label-bold rounded-2xl squishy-active">Cancel</button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 h-24 pb-6 bg-white dark:bg-slate-950 rounded-t-[32px] border-t-2 border-rose-50 dark:border-rose-900/20 shadow-[0_-10px_40px_rgba(255,95,93,0.15)]">
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 gap-1 hover:text-rose-400 dark:hover:text-rose-300 active:scale-95 transition-all duration-300 cubic-bezier(0.34,1.56,0.64,1)">
+<span class="material-symbols-outlined">home</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-black uppercase tracking-tighter">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 gap-1 hover:text-rose-400 dark:hover:text-rose-300 active:scale-95 transition-all duration-300 cubic-bezier(0.34,1.56,0.64,1)">
+<span class="material-symbols-outlined">calendar_month</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-black uppercase tracking-tighter">Calendar</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 gap-1 hover:text-rose-400 dark:hover:text-rose-300 active:scale-95 transition-all duration-300 cubic-bezier(0.34,1.56,0.64,1)">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-black uppercase tracking-tighter">Meals</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 gap-1 hover:text-rose-400 dark:hover:text-rose-300 active:scale-95 transition-all duration-300 cubic-bezier(0.34,1.56,0.64,1)">
+<span class="material-symbols-outlined">checklist</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-black uppercase tracking-tighter">Lists</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-rose-500 dark:bg-rose-600 text-white rounded-2xl px-5 py-2 scale-110 shadow-lg shadow-rose-200 dark:shadow-none active:scale-95 transition-all duration-300 cubic-bezier(0.34,1.56,0.64,1)">
+<span class="material-symbols-outlined">family_restroom</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-black uppercase tracking-tighter">Family</span>
+</div>
+</nav>
+</body></html>

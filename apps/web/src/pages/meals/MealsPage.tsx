@@ -150,9 +150,17 @@ export function MealsPage() {
         return current;
       }
 
-      return formatDateOnly(getWeekStart(new Date(`${dashboardQuery.data.date}T00:00:00`)));
+      // Prefer server-provided weekStart from meals query if available
+      return mealsWeekQuery.data?.weekStart ?? formatDateOnly(getWeekStart(new Date(`${dashboardQuery.data.date}T00:00:00`)));
     });
   }, [dashboardQuery.data, initialSelectedDate, initialWeekStart]);
+
+  useEffect(() => {
+    if (!mealsWeekQuery.data) return;
+
+    setWeekStart((current) => (current === initialWeekStart ? mealsWeekQuery.data!.weekStart : current));
+    setSelectedDate((current) => (current === initialSelectedDate ? dashboardQuery.data?.date ?? current : current));
+  }, [mealsWeekQuery.data, initialWeekStart, initialSelectedDate, dashboardQuery.data]);
 
   useEffect(() => {
     if (selectedMeal) {

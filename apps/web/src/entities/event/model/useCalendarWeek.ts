@@ -18,14 +18,13 @@ function calendarWeekKey(accessToken: string | undefined, weekStart: string) {
   return ['calendar-week', accessToken, weekStart] as const;
 }
 
-function isEventInWeek(startAtUtc: string, weekStart: string) {
-  const eventDate = startAtUtc.slice(0, 10);
+function isEventInWeek(dateOnly: string, weekStart: string) {
   const weekStartDate = new Date(`${weekStart}T00:00:00.000Z`);
   const weekEndDate = new Date(weekStartDate);
   weekEndDate.setUTCDate(weekStartDate.getUTCDate() + 6);
   const weekEnd = weekEndDate.toISOString().slice(0, 10);
 
-  return eventDate >= weekStart && eventDate <= weekEnd;
+  return dateOnly >= weekStart && dateOnly <= weekEnd;
 }
 
 function sortEvents(events: CalendarEventResponse[]) {
@@ -63,18 +62,18 @@ export function useCreateCalendarEvent(weekStart: string) {
 
       const previousWeek = queryClient.getQueryData<WeeklyCalendarResponse>(queryKey);
       const optimisticId = `event-${crypto.randomUUID()}`;
-
-      if (isEventInWeek(request.startAtUtc, weekStart)) {
+      if (isEventInWeek(request.date, weekStart)) {
         const optimisticEvent: CalendarEventResponse = {
           id: optimisticId,
           title: request.title,
           notes: request.notes,
-          startAtUtc: request.startAtUtc,
-          endAtUtc: request.endAtUtc,
+          date: request.date,
+          startAtUtc: new Date(`${request.date}T${request.startTime}`).toISOString(),
+          endAtUtc: new Date(`${request.date}T${request.endTime}`).toISOString(),
           assignedProfileId: request.assignedProfileId,
           isRecurring: request.repeatsWeekly,
-          repeatUntil: request.repeatUntil,
-        };
+          repeatUntil: request.repeatUntil ?? null,
+        } as unknown as CalendarEventResponse;
 
         queryClient.setQueryData<WeeklyCalendarResponse | undefined>(queryKey, (week) =>
           week
@@ -101,11 +100,9 @@ export function useCreateCalendarEvent(weekStart: string) {
       queryClient.setQueryData<WeeklyCalendarResponse | undefined>(queryKey, (week) =>
         week
           ? {
-            ...week,
-            events: sortEvents(
-              week.events.map((currentEvent) =>
-                  currentEvent.id === context?.optimisticId ? result.data : currentEvent,
-                ),
+              ...week,
+              events: sortEvents(
+                week.events.map((currentEvent) => (currentEvent.id === context?.optimisticId ? result.data : currentEvent)),
               ),
             }
           : week,
@@ -148,15 +145,16 @@ export function useUpdateCalendarEvent(weekStart: string) {
         }
 
         const remainingEvents = week.events.filter((event) => event.id !== eventId);
-        const nextEvents = isEventInWeek(request.startAtUtc, weekStart)
+        const nextEvents = isEventInWeek(request.date, weekStart)
           ? sortEvents([
               ...remainingEvents,
               {
                 id: eventId,
                 title: request.title,
                 notes: request.notes,
-                startAtUtc: request.startAtUtc,
-                endAtUtc: request.endAtUtc,
+                date: request.date,
+                startAtUtc: new Date(`${request.date}T${request.startTime}`).toISOString(),
+                endAtUtc: new Date(`${request.date}T${request.endTime}`).toISOString(),
                 assignedProfileId: request.assignedProfileId,
                 isRecurring: request.applyToSeries,
                 repeatUntil: request.repeatUntil ?? null,
@@ -191,7 +189,7 @@ export function useUpdateCalendarEvent(weekStart: string) {
 
         return {
           ...week,
-          events: isEventInWeek(result.data.startAtUtc, weekStart)
+          events: isEventInWeek(result.data.date ?? result.data.startAtUtc.slice(0, 10), weekStart)
             ? sortEvents([...remainingEvents, result.data])
             : remainingEvents,
         };
