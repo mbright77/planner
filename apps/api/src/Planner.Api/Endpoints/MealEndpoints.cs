@@ -43,7 +43,10 @@ public static class MealEndpoints
             return Results.NotFound();
         }
 
-        var weekStart = start ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var familyTimeZone = ResolveTimeZone(membership.Family.Timezone);
+        var familyNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, familyTimeZone);
+        var targetDate = start ?? DateOnly.FromDateTime(familyNow.DateTime);
+        var weekStart = GetWeekStart(targetDate);
         var weekEnd = weekStart.AddDays(6);
 
         var meals = await dbContext.MealPlans
@@ -174,7 +177,10 @@ public static class MealEndpoints
             return Results.NotFound();
         }
 
-        var weekStart = start ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var familyTimeZone = ResolveTimeZone(membership.Family.Timezone);
+        var familyNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, familyTimeZone);
+        var targetDate = start ?? DateOnly.FromDateTime(familyNow.DateTime);
+        var weekStart = GetWeekStart(targetDate);
         var weekEnd = weekStart.AddDays(6);
 
         var requests = await dbContext.MealRequests
@@ -472,6 +478,34 @@ public static class MealEndpoints
 
         return dbContext.FamilyMemberships
             .AsNoTracking()
+            .Include(x => x.Family)
             .FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
+    }
+
+    private static DateOnly GetWeekStart(DateOnly date)
+    {
+        var diff = date.DayOfWeek switch
+        {
+            DayOfWeek.Sunday => -6,
+            _ => DayOfWeek.Monday - date.DayOfWeek,
+        };
+
+        return date.AddDays(diff);
+    }
+
+    private static TimeZoneInfo ResolveTimeZone(string timeZoneId)
+    {
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return TimeZoneInfo.Utc;
+        }
+        catch (InvalidTimeZoneException)
+        {
+            return TimeZoneInfo.Utc;
+        }
     }
 }
