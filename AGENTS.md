@@ -28,6 +28,14 @@ Current implementation realities:
 - Backend uses feature-grouped minimal API endpoint files directly; `Planner.Application` is mostly a placeholder right now.
 - Contracts are still handwritten in `apps/api/src/Planner.Contracts`, but a generated TypeScript API client now exists in `packages/api-client` and is consumed by the web wrappers.
 
+Recent repository changes (important for agents):
+
+- Server now computes canonical week boundaries (`weekStart`) using the family's timezone and returns `DateOnly` for family-local dates (calendar events and meals).
+- API payloads and contracts have been updated so clients send `DateOnly` (local date) and, where needed, `TimeOnly` (local time) instead of relying on client-derived UTC boundary computation.
+- Frontend conventions: prefer the server-provided `weekStart` for UI week boundaries, group items by the server `date` field, and send `DateOnly`/`TimeOnly` on creates/updates.
+- A generated TypeScript API client in `packages/api-client` is used by the web app and should be regenerated whenever contracts change.
+- EF Core translation differences (especially with the SQLite test provider) surfaced during these changes; some queries were changed to be provider-friendly (fetch minimal data via EF then apply complex UTC/timezone logic in-memory) — add tests when modifying date/time queries.
+
 When adding new work, follow the current implementation patterns unless the task explicitly asks for a broader architectural migration.
 
 ## Implementation Plan Maintenance
