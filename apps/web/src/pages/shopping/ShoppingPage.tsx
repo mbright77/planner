@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
@@ -36,6 +37,7 @@ function getCategoryAccent(category: string) {
 }
 
 export function ShoppingPage() {
+  const { t } = useTranslation('shopping');
   const [searchParams, setSearchParams] = useSearchParams();
   const bootstrapQuery = useBootstrap();
   const shoppingItemsQuery = useShoppingItems();
@@ -91,7 +93,7 @@ export function ShoppingPage() {
     event.preventDefault();
 
     if (!label.trim()) {
-      setFormError('Add an item name before saving.');
+      setFormError(t('errors.itemName'));
       return;
     }
 
@@ -110,25 +112,25 @@ export function ShoppingPage() {
 
   return (
     <section className="page shopping-page">
-      <p className="eyebrow">Shopping</p>
-      <h2 className="page-title">Shared list</h2>
+      <p className="eyebrow">{t('eyebrow')}</p>
+      <h2 className="page-title">{t('title')}</h2>
       <p className="page-copy">
-        Quickly add items, group them by category, and mark them complete during the shop.
+        {t('description')}
       </p>
 
       <section className="shopping-quick-add-card calendar-action-card">
         <div>
-          <p className="eyebrow">Quick add</p>
-          <h3 className="profile-card-title">Keep grocery capture one tap away</h3>
-          <p className="shopping-meta">Use the floating action button or the add action below to open the item sheet.</p>
+          <p className="eyebrow">{t('quickAdd.eyebrow')}</p>
+          <h3 className="profile-card-title">{t('quickAdd.title')}</h3>
+          <p className="shopping-meta">{t('quickAdd.description')}</p>
         </div>
         <button className="primary-button" type="button" onClick={openSheet}>
-          Add item
+          {t('addItem')}
         </button>
       </section>
 
-      {shoppingItemsQuery.isLoading ? <p className="page-copy">Loading shopping list...</p> : null}
-      {shoppingItemsQuery.isError ? <p className="form-error">Unable to load shopping items.</p> : null}
+      {shoppingItemsQuery.isLoading ? <p className="page-copy">{t('loading')}</p> : null}
+      {shoppingItemsQuery.isError ? <p className="form-error">{t('error')}</p> : null}
 
       <div className="shopping-groups">
         {groupedItems.length > 0 ? (
@@ -174,11 +176,11 @@ export function ShoppingPage() {
                         <button
                           className="destructive-button calendar-small-button"
                           type="button"
-                          aria-label={`Remove ${item.label} from list`}
+                          aria-label={t('removeItemAria', { label: item.label })}
                           onClick={() => deleteShoppingItemMutation.mutate(item.id)}
                           disabled={deleteShoppingItemMutation.isPending}
                         >
-                          Remove
+                          {t('remove')}
                         </button>
                       </div>
                     </li>
@@ -189,47 +191,47 @@ export function ShoppingPage() {
           ))
         ) : (
           <div className="dashboard-empty-card">
-            <p className="shopping-meta">Your shared list is clear. Add the next item when it comes to mind.</p>
+            <p className="shopping-meta">{t('empty')}</p>
           </div>
         )}
       </div>
 
-      <button className="floating-action-button" type="button" aria-label="Add shopping item" onClick={openSheet}>
-        Add item
+      <button className="floating-action-button" type="button" aria-label={t('addShoppingItemAria')} onClick={openSheet}>
+        {t('addItem')}
       </button>
 
       {isSheetOpen ? (
         <>
-          <button className="mobile-sheet-backdrop" type="button" aria-label="Close shopping item sheet" onClick={closeSheet} />
+          <button className="mobile-sheet-backdrop" type="button" aria-label={t('closeSheetAria')} onClick={closeSheet} />
           <section className="mobile-sheet" role="dialog" aria-modal="true" aria-labelledby="shopping-sheet-title">
             <div className="mobile-sheet-header">
               <div>
-                <p className="eyebrow">Quick add</p>
-                <h3 id="shopping-sheet-title" className="profile-card-title">Add shopping item</h3>
+                <p className="eyebrow">{t('quickAdd.eyebrow')}</p>
+                <h3 id="shopping-sheet-title" className="profile-card-title">{t('sheet.title')}</h3>
               </div>
               <button className="secondary-button calendar-small-button" type="button" onClick={closeSheet}>
-                Close
+                {t('close')}
               </button>
             </div>
 
             <form className="shopping-form mobile-sheet-content" onSubmit={handleSubmit}>
               <label className="field shopping-field-wide">
-                <span>Item name</span>
+                <span>{t('fields.itemName')}</span>
                 <input
                   ref={inputRef}
                   value={label}
                   onChange={(event) => setLabel(event.target.value)}
-                  placeholder="Add item (e.g., Milk)"
+                  placeholder={t('fields.itemNamePlaceholder')}
                   type="text"
                 />
               </label>
 
               <label className="field">
-                <span>Category</span>
+                <span>{t('fields.category')}</span>
                 <select value={category} onChange={(event) => setCategory(event.target.value)}>
                   {defaultCategories.map((option) => (
                     <option key={option} value={option}>
-                      {option}
+                      {t(`categories.${option.toLowerCase()}`)}
                     </option>
                   ))}
                 </select>
@@ -240,14 +242,14 @@ export function ShoppingPage() {
                 type="button"
                 onClick={() => setShowDetails((current) => !current)}
               >
-                {showDetails ? 'Hide extra details' : 'Show extra details'}
+                {showDetails ? t('hideExtraDetails') : t('showExtraDetails')}
               </button>
 
               {showDetails ? (
                 <label className="field">
-                  <span>Added by</span>
+                  <span>{t('fields.addedBy')}</span>
                   <select value={addedByProfileId} onChange={(event) => setAddedByProfileId(event.target.value)}>
-                    <option value="">No profile</option>
+                    <option value="">{t('noProfile')}</option>
                     {bootstrapQuery.data?.profiles.map((profile) => (
                       <option key={profile.id} value={profile.id}>
                         {profile.displayName}
@@ -261,10 +263,10 @@ export function ShoppingPage() {
 
               <div className="mobile-sheet-actions shopping-field-wide">
                 <button className="secondary-button" type="button" onClick={closeSheet}>
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button className="primary-button" type="submit" disabled={createShoppingItemMutation.isPending}>
-                  {createShoppingItemMutation.isPending ? 'Adding...' : 'Add item'}
+                  {createShoppingItemMutation.isPending ? t('adding') : t('addItem')}
                 </button>
               </div>
             </form>

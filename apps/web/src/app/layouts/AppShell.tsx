@@ -1,26 +1,19 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { useAuthSession } from '../../processes/auth-session/AuthSessionContext';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
+import { useAppLanguage } from '../../shared/i18n/useAppLanguage';
 import { useOfflineMutationState } from '../../shared/lib/offlineMutationQueue';
 import { useNetworkStatus } from '../../shared/lib/useNetworkStatus';
 
 const navigation = [
-  { to: '/', label: 'Home', icon: 'home' },
-  { to: '/calendar', label: 'Calendar', icon: 'calendar' },
-  { to: '/meals', label: 'Meals', icon: 'meals' },
-  { to: '/shopping', label: 'Shopping', icon: 'shopping' },
-  { to: '/family', label: 'Family', icon: 'family' },
+  { to: '/', labelKey: 'nav.home', icon: 'home' },
+  { to: '/calendar', labelKey: 'nav.calendar', icon: 'calendar' },
+  { to: '/meals', labelKey: 'nav.meals', icon: 'meals' },
+  { to: '/shopping', labelKey: 'nav.shopping', icon: 'shopping' },
+  { to: '/family', labelKey: 'nav.family', icon: 'family' },
 ] as const;
-
-const routeMeta: Record<string, { eyebrow: string; title: string }> = {
-  '/': { eyebrow: 'Dashboard', title: 'Home' },
-  '/calendar': { eyebrow: 'Weekly planner', title: 'Calendar' },
-  '/meals': { eyebrow: 'Weekly meals', title: 'Meals' },
-  '/shopping': { eyebrow: 'Shared list', title: 'Shopping' },
-  '/family': { eyebrow: 'Profiles and colors', title: 'Family' },
-  '/settings/privacy': { eyebrow: 'Account controls', title: 'Privacy' },
-};
 
 function AppIcon({ name }: { name: (typeof navigation)[number]['icon'] | 'signout' }) {
   const glyph =
@@ -44,20 +37,34 @@ function AppIcon({ name }: { name: (typeof navigation)[number]['icon'] | 'signou
 }
 
 export function AppShell() {
+  const { t } = useTranslation('common');
   const location = useLocation();
   const { clearSession } = useAuthSession();
   const bootstrapQuery = useBootstrap();
+  useAppLanguage(bootstrapQuery.data);
   const { failedCount, hasBlockingFailure, latestFailureMessage, pendingCount, isFlushing } = useOfflineMutationState();
   const { isOnline } = useNetworkStatus();
 
-  const familyName = bootstrapQuery.data?.familyName ?? 'Kinship';
+  const routeMeta: Record<string, { eyebrow: string; title: string }> = {
+    '/': { eyebrow: t('route.eyebrow.dashboard'), title: t('route.title.home') },
+    '/calendar': { eyebrow: t('route.eyebrow.weeklyPlanner'), title: t('route.title.calendar') },
+    '/meals': { eyebrow: t('route.eyebrow.weeklyMeals'), title: t('route.title.meals') },
+    '/shopping': { eyebrow: t('route.eyebrow.sharedList'), title: t('route.title.shopping') },
+    '/family': { eyebrow: t('route.eyebrow.profilesAndColors'), title: t('route.title.family') },
+    '/settings/privacy': { eyebrow: t('route.eyebrow.accountControls'), title: t('route.title.privacy') },
+  };
+
+  const familyName = bootstrapQuery.data?.familyName ?? t('defaults.familyName');
   const membershipRole = bootstrapQuery.data?.membership.role ?? 'Member';
-  const currentPage = routeMeta[location.pathname] ?? { eyebrow: 'Family planner', title: 'Planner' };
+  const currentPage = routeMeta[location.pathname] ?? {
+    eyebrow: t('route.eyebrow.familyPlanner'),
+    title: t('route.title.planner'),
+  };
 
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main-content">
-        Skip to content
+        {t('skipToContent')}
       </a>
       <header className="topbar">
         <div className="topbar-brand">
@@ -67,10 +74,10 @@ export function AppShell() {
           <div className="topbar-copy">
             <p className="eyebrow topbar-eyebrow">{familyName}</p>
             <h1 className="topbar-title">{currentPage.title}</h1>
-            <p className="topbar-meta">{currentPage.eyebrow} · {membershipRole}</p>
+            <p className="topbar-meta">{currentPage.eyebrow} · {t(`roles.${membershipRole.toLowerCase()}`, membershipRole)}</p>
           </div>
         </div>
-        <button className="icon-button" type="button" aria-label="Sign out" onClick={clearSession}>
+        <button className="icon-button" type="button" aria-label={t('signOut')} onClick={clearSession}>
           <AppIcon name="signout" />
         </button>
       </header>
@@ -78,31 +85,31 @@ export function AppShell() {
       <main id="main-content" className="app-content" tabIndex={-1}>
         {!isOnline ? (
           <div className="status-banner status-banner-offline" role="status" aria-live="polite">
-            Offline mode: showing cached planner data when available.
+            {t('status.offlineMode')}
           </div>
         ) : null}
         {isOnline && pendingCount > 0 ? (
           <div className="status-banner status-banner-offline" role="status" aria-live="polite">
             {isFlushing
-              ? `Syncing ${pendingCount} offline change${pendingCount === 1 ? '' : 's'}...`
-              : `${pendingCount} offline change${pendingCount === 1 ? '' : 's'} waiting to sync.`}
+              ? t('status.syncing', { count: pendingCount })
+              : t('status.waiting', { count: pendingCount })}
           </div>
         ) : null}
         {hasBlockingFailure ? (
           <div className="status-banner status-banner-error" role="alert">
-            {latestFailureMessage ?? `Offline sync needs attention for ${failedCount} change${failedCount === 1 ? '' : 's'}.`}
+            {latestFailureMessage ?? t('status.needsAttention', { count: failedCount })}
           </div>
         ) : null}
-        {bootstrapQuery.isLoading ? <div className="status-banner" role="status" aria-live="polite">Loading family data...</div> : null}
+        {bootstrapQuery.isLoading ? <div className="status-banner" role="status" aria-live="polite">{t('status.loadingFamilyData')}</div> : null}
         {bootstrapQuery.isError ? (
           <div className="status-banner status-banner-error" role="alert">
-            Unable to load bootstrap data. Try signing in again.
+            {t('status.bootstrapError')}
           </div>
         ) : null}
         <Outlet />
       </main>
 
-      <nav className="bottom-nav" aria-label="Primary">
+      <nav className="bottom-nav" aria-label={t('nav.primaryAria')}>
         {navigation.map((item) => (
           <NavLink
             key={item.to}
@@ -115,7 +122,7 @@ export function AppShell() {
             <span className="bottom-nav-icon" aria-hidden="true">
               <AppIcon name={item.icon} />
             </span>
-            <span className="bottom-nav-label">{item.label}</span>
+            <span className="bottom-nav-label">{t(item.labelKey)}</span>
           </NavLink>
         ))}
       </nav>

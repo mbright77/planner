@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 
 import { useDashboardOverview } from '../../entities/dashboard/model/useDashboardOverview';
@@ -126,6 +127,7 @@ function shiftWeekDate(weekStart: string, selectedDate: string, direction: -1 | 
 }
 
 export function CalendarPage() {
+  const { t } = useTranslation('calendar');
   const today = new Date();
   const initialStart = getWeekStart(today);
   const initialWeekStart = formatDateOnly(initialStart);
@@ -314,17 +316,17 @@ export function CalendarPage() {
     const nextEnd = combineDateAndTime(selectedDate, endTime);
 
     if (!title.trim()) {
-      setFormError('Add a short event title before saving.');
+      setFormError(t('errors.title'));
       return;
     }
 
     if (Number.isNaN(nextStart.getTime()) || Number.isNaN(nextEnd.getTime())) {
-      setFormError('Choose a valid start and end time.');
+      setFormError(t('errors.time'));
       return;
     }
 
     if (nextEnd <= nextStart) {
-      setFormError('End time needs to be after the start time.');
+      setFormError(t('errors.endTime'));
       return;
     }
 
@@ -362,10 +364,10 @@ export function CalendarPage() {
 
   return (
     <section className="page calendar-page">
-      <p className="eyebrow">Calendar</p>
-      <h2 className="page-title">Weekly planner</h2>
+      <p className="eyebrow">{t('eyebrow')}</p>
+      <h2 className="page-title">{t('title')}</h2>
       <p className="page-copy">
-        Pick a day first, then add or edit events in a focused mobile sheet.
+        {t('description')}
       </p>
 
       <section className="calendar-header-panel">
@@ -376,15 +378,15 @@ export function CalendarPage() {
           </div>
           <div className="calendar-header-actions">
             <button className="secondary-button calendar-small-button" type="button" onClick={() => handleShiftWeek(-1)}>
-              Previous
+              {t('previous')}
             </button>
             <button className="secondary-button calendar-small-button" type="button" onClick={() => handleShiftWeek(1)}>
-              Next
+              {t('next')}
             </button>
           </div>
         </div>
 
-        <div className="calendar-week-strip" aria-label="Week days">
+        <div className="calendar-week-strip" aria-label={t('weekDaysAria')}>
           {weekDays.map((day) => {
             const isActive = day.key === selectedDate;
             const eventCount = eventCountsByDay.get(day.key) ?? 0;
@@ -411,21 +413,21 @@ export function CalendarPage() {
 
       <section className="calendar-compose-card calendar-action-card">
         <div>
-          <p className="eyebrow">Selected day</p>
+          <p className="eyebrow">{t('selectedDay')}</p>
           <h3 className="profile-card-title">{formatAgendaHeading(selectedDate)}</h3>
-          <p className="shopping-meta">Use the add action or any event card to open the editing sheet.</p>
+          <p className="shopping-meta">{t('selectedDayDescription')}</p>
         </div>
         <button className="primary-button" type="button" onClick={() => seedCreateForm(selectedDate)}>
-          Add event
+          {t('addEvent')}
         </button>
       </section>
 
-      {calendarWeekQuery.isLoading ? <p className="page-copy">Loading weekly calendar...</p> : null}
-      {calendarWeekQuery.isError ? <p className="form-error">Unable to load weekly events.</p> : null}
+      {calendarWeekQuery.isLoading ? <p className="page-copy">{t('loading')}</p> : null}
+      {calendarWeekQuery.isError ? <p className="form-error">{t('error')}</p> : null}
       <label className="calendar-apply-series-toggle" htmlFor="calendar-apply-series-toggle">
         <span className="calendar-apply-series-copy">
-          <strong>Update future repeats</strong>
-          <span className="shopping-meta">Apply edits to the rest of this recurring series.</span>
+          <strong>{t('updateFutureRepeats')}</strong>
+          <span className="shopping-meta">{t('updateFutureRepeatsDescription')}</span>
         </span>
         <input checked={applyToSeries} onChange={(event) => setApplyToSeries(event.target.checked)} type="checkbox" />
       </label>
@@ -440,7 +442,7 @@ export function CalendarPage() {
                 <div>
                   <h3 className="profile-card-title">{formatAgendaHeading(day.key)}</h3>
                   <p className="shopping-meta">
-                    {events.length === 0 ? 'No events yet for this day.' : `${events.length} event${events.length === 1 ? '' : 's'} planned`}
+                    {events.length === 0 ? t('noEvents') : t('eventsPlanned', { count: events.length })}
                   </p>
                 </div>
                 <button
@@ -448,7 +450,7 @@ export function CalendarPage() {
                   type="button"
                   onClick={() => seedCreateForm(day.key)}
                 >
-                  Add here
+                  {t('addHere')}
                 </button>
               </div>
 
@@ -466,19 +468,19 @@ export function CalendarPage() {
                         style={{ borderLeftColor: getProfileAccentColor(assignedProfile?.colorKey) }}
                       >
                         <div className="calendar-event-content">
-                          <span className="calendar-event-category">Event</span>
+                          <span className="calendar-event-category">{t('event')}</span>
                           <strong className="calendar-event-title">{calendarEvent.title}</strong>
                           <p className="calendar-event-time">
                             {formatEventTime(calendarEvent.startAtUtc, calendarEvent.endAtUtc)}
                           </p>
                           {calendarEvent.isRecurring ? (
                             <p className="calendar-event-recurrence">
-                              Repeats weekly through {calendarEvent.repeatUntil}
+                              {t('repeatsWeeklyThrough', { date: calendarEvent.repeatUntil })}
                             </p>
                           ) : null}
                           {calendarEvent.notes ? <p className="calendar-event-notes">{calendarEvent.notes}</p> : null}
                           {assignedProfile ? (
-                            <div className="calendar-event-avatar-stack" aria-label={`Assigned to ${assignedProfile.displayName}`}>
+                            <div className="calendar-event-avatar-stack" aria-label={t('assignedTo', { name: assignedProfile.displayName })}>
                               <span
                                 className="calendar-event-avatar-chip"
                                 style={{ borderColor: getProfileAccentColor(assignedProfile.colorKey) }}
@@ -497,23 +499,23 @@ export function CalendarPage() {
                             type="button"
                             onClick={() => exportCalendarEvent(calendarEvent)}
                           >
-                            Add to calendar
+                            {t('addToCalendar')}
                           </button>
                           <button
                             className="secondary-button calendar-small-button"
                             type="button"
                             onClick={() => seedEditForm(calendarEvent.id)}
                           >
-                            Edit
+                            {t('edit')}
                           </button>
                           <button
                             className={confirmDeleteEventId === calendarEvent.id ? 'destructive-button calendar-small-button' : 'secondary-button calendar-small-button'}
                             type="button"
-                            aria-label={confirmDeleteEventId === calendarEvent.id ? `Confirm delete ${calendarEvent.title}` : `Delete ${calendarEvent.title}`}
+                            aria-label={confirmDeleteEventId === calendarEvent.id ? t('confirmDeleteEventAria', { title: calendarEvent.title }) : t('deleteEventAria', { title: calendarEvent.title })}
                             onClick={() => handleDeleteEvent(calendarEvent.id)}
                             disabled={deleteCalendarEventMutation.isPending}
                           >
-                            {confirmDeleteEventId === calendarEvent.id ? 'Confirm delete' : 'Delete'}
+                            {confirmDeleteEventId === calendarEvent.id ? t('confirmDelete') : t('delete')}
                           </button>
                         </div>
                       </li>
@@ -522,7 +524,7 @@ export function CalendarPage() {
                 </ul>
               ) : (
                 <div className="calendar-empty-day">
-                  <p className="shopping-meta">Keep this day light or use the add action above to plan something now.</p>
+                  <p className="shopping-meta">{t('emptyDayHint')}</p>
                 </div>
               )}
             </article>
@@ -530,44 +532,44 @@ export function CalendarPage() {
         })}
       </div>
 
-      <button className="floating-action-button" type="button" aria-label="Add calendar event" onClick={() => seedCreateForm(selectedDate)}>
-        Add event
+      <button className="floating-action-button" type="button" aria-label={t('addCalendarEventAria')} onClick={() => seedCreateForm(selectedDate)}>
+        {t('addEvent')}
       </button>
 
       {isSheetOpen ? (
         <>
-          <button className="mobile-sheet-backdrop" type="button" aria-label="Close event sheet" onClick={closeSheet} />
+          <button className="mobile-sheet-backdrop" type="button" aria-label={t('closeSheetAria')} onClick={closeSheet} />
           <section className="mobile-sheet" role="dialog" aria-modal="true" aria-labelledby="calendar-sheet-title">
             <div className="mobile-sheet-header">
               <div>
-                <p className="eyebrow">{editingEventId ? 'Edit event' : 'Add event'}</p>
+                <p className="eyebrow">{editingEventId ? t('editEvent') : t('addEvent')}</p>
                 <h3 id="calendar-sheet-title" className="profile-card-title">{formatAgendaHeading(selectedDate)}</h3>
               </div>
               <button className="secondary-button calendar-small-button" type="button" onClick={closeSheet}>
-                Close
+                {t('close')}
               </button>
             </div>
 
             <form className="calendar-form mobile-sheet-content" onSubmit={handleSubmit}>
               <label className="field calendar-field-wide">
-                <span>Title</span>
+                <span>{t('fields.title')}</span>
                 <input
                   ref={titleInputRef}
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
-                  placeholder="Add event title"
+                  placeholder={t('fields.titlePlaceholder')}
                   type="text"
                 />
               </label>
 
               <div className="calendar-time-row calendar-field-wide">
                 <label className="field">
-                  <span>Start time</span>
+                  <span>{t('fields.startTime')}</span>
                   <input value={startTime} onChange={(event) => setStartTime(event.target.value)} type="time" />
                 </label>
 
                 <label className="field">
-                  <span>End time</span>
+                  <span>{t('fields.endTime')}</span>
                   <input value={endTime} onChange={(event) => setEndTime(event.target.value)} type="time" />
                 </label>
               </div>
@@ -577,15 +579,15 @@ export function CalendarPage() {
                 type="button"
                 onClick={() => setShowMoreOptions((current) => !current)}
               >
-                {showMoreOptions ? 'Hide extra details' : 'Show extra details'}
+                {showMoreOptions ? t('hideExtraDetails') : t('showExtraDetails')}
               </button>
 
               {showMoreOptions ? (
                 <>
                   <label className="field">
-                    <span>Assigned profile</span>
+                    <span>{t('fields.assignedProfile')}</span>
                     <select value={assignedProfileId} onChange={(event) => setAssignedProfileId(event.target.value)}>
-                      <option value="">Unassigned</option>
+                      <option value="">{t('unassigned')}</option>
                       {bootstrapQuery.data?.profiles.map((profile) => (
                         <option key={profile.id} value={profile.id}>
                           {profile.displayName}
@@ -595,7 +597,7 @@ export function CalendarPage() {
                   </label>
 
                   <label className="field checkbox-field">
-                    <span>Repeat weekly</span>
+                    <span>{t('fields.repeatWeekly')}</span>
                     <input
                       checked={repeatsWeekly}
                       onChange={(event) => setRepeatsWeekly(event.target.checked)}
@@ -605,13 +607,13 @@ export function CalendarPage() {
 
                   {repeatsWeekly ? (
                     <label className="field">
-                      <span>Repeat until</span>
+                      <span>{t('fields.repeatUntil')}</span>
                       <input value={repeatUntil} onChange={(event) => setRepeatUntil(event.target.value)} type="date" />
                     </label>
                   ) : null}
 
                   <label className="field calendar-field-wide">
-                    <span>Notes</span>
+                    <span>{t('fields.notes')}</span>
                     <textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
                   </label>
                 </>
@@ -621,7 +623,7 @@ export function CalendarPage() {
 
               <div className="mobile-sheet-actions calendar-field-wide">
                 <button className="secondary-button" type="button" onClick={closeSheet}>
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   className="primary-button"
@@ -629,10 +631,10 @@ export function CalendarPage() {
                   disabled={createCalendarEventMutation.isPending || updateCalendarEventMutation.isPending}
                 >
                   {createCalendarEventMutation.isPending || updateCalendarEventMutation.isPending
-                    ? 'Saving...'
+                    ? t('saving')
                     : editingEventId
-                      ? 'Save event'
-                      : 'Add event'}
+                      ? t('saveEvent')
+                      : t('addEvent')}
                 </button>
               </div>
             </form>

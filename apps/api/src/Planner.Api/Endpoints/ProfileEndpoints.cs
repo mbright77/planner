@@ -39,7 +39,14 @@ public static class ProfileEndpoints
             .AsNoTracking()
             .Where(x => x.FamilyId == membership.FamilyId)
             .OrderBy(x => x.DisplayName)
-            .Select(x => new ProfileResponse(x.Id, x.DisplayName, x.ColorKey, x.IsActive, x.LinkedUserId != null))
+            .Select(x => new ProfileResponse(
+                x.Id,
+                x.DisplayName,
+                x.ColorKey,
+                x.IsActive,
+                x.LinkedUserId != null,
+                x.PreferredLanguage,
+                x.LinkedUserId))
             .ToListAsync(cancellationToken);
 
         return Results.Ok(profiles);
@@ -68,6 +75,7 @@ public static class ProfileEndpoints
             FamilyId = membership.FamilyId,
             DisplayName = request.DisplayName.Trim(),
             ColorKey = request.ColorKey.Trim().ToLowerInvariant(),
+            PreferredLanguage = request.PreferredLanguage?.Trim().ToLowerInvariant(),
             IsActive = true,
         };
 
@@ -79,7 +87,9 @@ public static class ProfileEndpoints
             profile.DisplayName,
             profile.ColorKey,
             profile.IsActive,
-            false));
+            false,
+            profile.PreferredLanguage,
+            profile.LinkedUserId));
     }
 
     private static async Task<IResult> UpdateProfileAsync(
@@ -95,11 +105,6 @@ public static class ProfileEndpoints
             return Results.NotFound();
         }
 
-        if (membership.Role != FamilyRole.Admin)
-        {
-            return Results.Forbid();
-        }
-
         var profile = await dbContext.Profiles
             .FirstOrDefaultAsync(x => x.Id == profileId && x.FamilyId == membership.FamilyId, cancellationToken);
 
@@ -108,8 +113,33 @@ public static class ProfileEndpoints
             return Results.NotFound();
         }
 
+        var isAdmin = membership.Role == FamilyRole.Admin;
+        var isSelfProfile = profile.LinkedUserId == membership.UserId;
+
+        if (!isAdmin && !isSelfProfile)
+        {
+            return Results.Forbid();
+        }
+
+        if (!isAdmin)
+        {
+            profile.PreferredLanguage = request.PreferredLanguage?.Trim().ToLowerInvariant();
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+
+            return Results.Ok(new ProfileResponse(
+                profile.Id,
+                profile.DisplayName,
+                profile.ColorKey,
+                profile.IsActive,
+                profile.LinkedUserId != null,
+                profile.PreferredLanguage,
+                profile.LinkedUserId));
+        }
+
         profile.DisplayName = request.DisplayName.Trim();
         profile.ColorKey = request.ColorKey.Trim().ToLowerInvariant();
+        profile.PreferredLanguage = request.PreferredLanguage?.Trim().ToLowerInvariant();
         profile.IsActive = request.IsActive;
 
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -119,7 +149,9 @@ public static class ProfileEndpoints
             profile.DisplayName,
             profile.ColorKey,
             profile.IsActive,
-            profile.LinkedUserId != null));
+            profile.LinkedUserId != null,
+            profile.PreferredLanguage,
+            profile.LinkedUserId));
     }
 
     private static Task<FamilyMembership?> GetMembershipAsync(

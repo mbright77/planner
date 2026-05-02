@@ -12,7 +12,9 @@ public sealed class PlannerDbContextFactory : IDesignTimeDbContextFactory<Planne
             Environment.GetEnvironmentVariable("ConnectionStrings__Planner") ??
             "Host=localhost;Port=5432;Database=planner;Username=planner;Password=planner";
 
-        optionsBuilder.UseNpgsql(connectionString);
+        optionsBuilder.UseNpgsql(
+            connectionString,
+            npgsql => npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "public"));
 
         return new PlannerDbContext(optionsBuilder.Options);
     }

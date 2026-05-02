@@ -1,0 +1,29 @@
+{
+  "eyebrow": "Dashboard",
+  "team": "team",
+  "greeting": {
+    "morning": "Good morning, {{team}}",
+    "afternoon": "Good afternoon, {{team}}",
+    "evening": "Good evening, {{team}}"
+  },
+  "fallback": {
+    "familyName": "Your family"
+  },
+  "loadingOverview": "Loading your family overview...",
+  "loading": "Loading dashboard...",
+  "error": "Unable to load the dashboard overview.",
+  "todayEventsAria": "Today's calendar events",
+  "todayTitle": "Today's Fun",
+  "startsAt": "Starts at {{time}}",
+  "assignedFallback": "Family",
+  "emptyToday": "Nothing planned today - enjoy the day!",
+  "snapshotAria": "Meals and shopping snapshot",
+  "dinner": "Dinner",
+  "noDinner": "No dinner plan yet",
+  "openMealsCta": "Open Meals to plan tonight.",
+  "groceries": "Groceries",
+  "itemsLeft_one": "{{count}} item left",
+  "itemsLeft_other": "{{count}} items left",
+  "openShoppingItemsAria": "Open shopping items",
+  "emptyList": "List is clear right now."
+}

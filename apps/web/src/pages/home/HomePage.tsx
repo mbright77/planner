@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useDashboardOverview } from '../../entities/dashboard/model/useDashboardOverview';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
@@ -26,18 +27,18 @@ function formatTimeBlock(value: string) {
   });
 }
 
-function getGreeting() {
+function getGreetingKey() {
   const hour = new Date().getHours();
 
   if (hour < 12) {
-    return 'Good morning';
+    return 'greeting.morning';
   }
 
   if (hour < 18) {
-    return 'Good afternoon';
+    return 'greeting.afternoon';
   }
 
-  return 'Good evening';
+  return 'greeting.evening';
 }
 
 function getProfileAccentColor(colorKey: string | null | undefined) {
@@ -65,9 +66,10 @@ function getProfileColorChipClass(colorKey: string | null | undefined) {
 }
 
 export function HomePage() {
+  const { t } = useTranslation('home');
   const bootstrapQuery = useBootstrap();
   const dashboardQuery = useDashboardOverview();
-  const familyName = bootstrapQuery.data?.familyName ?? 'Your family';
+  const familyName = bootstrapQuery.data?.familyName ?? t('fallback.familyName');
 
   const profilesById = useMemo(() => {
     return new Map((bootstrapQuery.data?.profiles ?? []).map((profile) => [profile.id, profile]));
@@ -92,24 +94,24 @@ export function HomePage() {
     <section className="page dashboard-page">
       <div className="home-today-header">
         <div className="home-today-header-copy">
-          <p className="eyebrow">Dashboard</p>
-          <h2 className="page-title">{getGreeting()}, team</h2>
-          <p className="page-copy">{dashboardQuery.data ? formatLongDate(dashboardQuery.data.date) : 'Loading your family overview...'}</p>
+          <p className="eyebrow">{t('eyebrow')}</p>
+          <h2 className="page-title">{t(getGreetingKey(), { team: t('team') })}</h2>
+          <p className="page-copy">{dashboardQuery.data ? formatLongDate(dashboardQuery.data.date) : t('loadingOverview')}</p>
         </div>
         <div className="home-today-family-badge">{familyName}</div>
       </div>
 
-      {dashboardQuery.isLoading ? <p className="page-copy">Loading dashboard...</p> : null}
-      {dashboardQuery.isError ? <p className="form-error">Unable to load the dashboard overview.</p> : null}
+      {dashboardQuery.isLoading ? <p className="page-copy">{t('loading')}</p> : null}
+      {dashboardQuery.isError ? <p className="form-error">{t('error')}</p> : null}
 
       {dashboardQuery.data ? (
-        <section className="home-today-section" aria-label="Today's calendar events">
+        <section className="home-today-section" aria-label={t('todayEventsAria')}>
           <div className="home-today-section-header">
             <h3 className="home-today-title">
               <span className="material-symbols-outlined home-today-title-icon" aria-hidden="true">
                 calendar_month
               </span>
-              Today&apos;s Fun
+              {t('todayTitle')}
             </h3>
             <span className="home-today-date-badge">{formatDateBadge(dashboardQuery.data.date)}</span>
           </div>
@@ -122,7 +124,7 @@ export function HomePage() {
 
                 return (
                   <li key={event.id} className="home-today-event-row">
-                    <div className="home-today-event-time" aria-label={`Starts at ${timeBlock}`}>
+                    <div className="home-today-event-time" aria-label={t('startsAt', { time: timeBlock })}>
                       <span className="home-today-event-time-clock">{timeBlock}</span>
                     </div>
 
@@ -134,7 +136,7 @@ export function HomePage() {
                       <p className="home-today-event-subtitle">
                         {assignedProfile
                           ? assignedProfile.displayName
-                          : 'Family'}
+                          : t('assignedFallback')}
                       </p>
                       {event.notes ? <p className="home-today-event-notes">{event.notes}</p> : null}
                     </article>
@@ -144,14 +146,14 @@ export function HomePage() {
             </ol>
           ) : (
             <div className="home-today-empty-state">
-              <p className="shopping-meta">Nothing planned today - enjoy the day!</p>
+              <p className="shopping-meta">{t('emptyToday')}</p>
             </div>
           )}
         </section>
       ) : null}
 
       {dashboardQuery.data ? (
-        <section className="home-bento-grid" aria-label="Meals and shopping snapshot">
+        <section className="home-bento-grid" aria-label={t('snapshotAria')}>
           <article className="home-bento-card home-bento-card-meal">
             <div>
               <span className="home-bento-icon" aria-hidden="true">
@@ -159,11 +161,11 @@ export function HomePage() {
                   restaurant
                 </span>
               </span>
-              <h3 className="home-bento-title">Dinner</h3>
+              <h3 className="home-bento-title">{t('dinner')}</h3>
               <p className="home-bento-copy">
                 {dashboardQuery.data.tonightMeal
                   ? dashboardQuery.data.tonightMeal.title
-                  : 'No dinner plan yet'}
+                  : t('noDinner')}
               </p>
               {dashboardQuery.data.tonightMeal?.notes ? (
                 <p className="shopping-meta home-bento-note">{dashboardQuery.data.tonightMeal.notes}</p>
@@ -176,7 +178,7 @@ export function HomePage() {
               </div>
             ) : (
               <div className="home-bento-foot">
-                <span className="shopping-meta">Open Meals to plan tonight.</span>
+                <span className="shopping-meta">{t('openMealsCta')}</span>
               </div>
             )}
           </article>
@@ -188,9 +190,9 @@ export function HomePage() {
                   checklist
                 </span>
               </span>
-              <h3 className="home-bento-title">Groceries</h3>
+              <h3 className="home-bento-title">{t('groceries')}</h3>
               <p className="home-bento-copy">
-                {dashboardQuery.data.shopping.openItemsCount} item{dashboardQuery.data.shopping.openItemsCount === 1 ? '' : 's'} left
+                {t('itemsLeft', { count: dashboardQuery.data.shopping.openItemsCount })}
               </p>
             </div>
 
@@ -204,7 +206,7 @@ export function HomePage() {
                 />
               </div>
               {dashboardQuery.data.shopping.previewLabels.length > 0 ? (
-                <ul className="home-bento-shopping-list" aria-label="Open shopping items">
+                <ul className="home-bento-shopping-list" aria-label={t('openShoppingItemsAria')}>
                   {dashboardQuery.data.shopping.previewLabels.map((label, index) => (
                     <li key={`${label}-${index}`} className="home-bento-shopping-item">
                       {label}
@@ -212,7 +214,7 @@ export function HomePage() {
                   ))}
                 </ul>
               ) : (
-                <p className="shopping-meta home-bento-preview">List is clear right now.</p>
+                <p className="shopping-meta home-bento-preview">{t('emptyList')}</p>
               )}
             </div>
           </article>

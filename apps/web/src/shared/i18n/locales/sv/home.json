@@ -1,0 +1,29 @@
+{
+  "eyebrow": "Oversikt",
+  "team": "team",
+  "greeting": {
+    "morning": "God morgon, {{team}}",
+    "afternoon": "God eftermiddag, {{team}}",
+    "evening": "God kvall, {{team}}"
+  },
+  "fallback": {
+    "familyName": "Din familj"
+  },
+  "loadingOverview": "Laddar familjeoversikt...",
+  "loading": "Laddar instrumentpanel...",
+  "error": "Det gick inte att ladda oversikten.",
+  "todayEventsAria": "Dagens kalenderhandelser",
+  "todayTitle": "Dagens aktiviteter",
+  "startsAt": "Startar {{time}}",
+  "assignedFallback": "Familj",
+  "emptyToday": "Inget planerat idag - njut av dagen!",
+  "snapshotAria": "Oversikt over mat och shopping",
+  "dinner": "Middag",
+  "noDinner": "Ingen middagsplan annu",
+  "openMealsCta": "Oppna Mat for att planera ikvall.",
+  "groceries": "Livsmedel",
+  "itemsLeft_one": "{{count}} vara kvar",
+  "itemsLeft_other": "{{count}} varor kvar",
+  "openShoppingItemsAria": "Oppna shoppingvaror",
+  "emptyList": "Listan ar tom just nu."
+}

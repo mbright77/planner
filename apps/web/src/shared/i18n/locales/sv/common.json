@@ -1,0 +1,50 @@
+{
+  "skipToContent": "Hoppa till innehall",
+  "signOut": "Logga ut",
+  "defaults": {
+    "familyName": "Kinship"
+  },
+  "roles": {
+    "admin": "Admin",
+    "member": "Medlem"
+  },
+  "nav": {
+    "home": "Hem",
+    "calendar": "Kalender",
+    "meals": "Mat",
+    "shopping": "Shopping",
+    "family": "Familj",
+    "primaryAria": "Primar"
+  },
+  "route": {
+    "title": {
+      "home": "Hem",
+      "calendar": "Kalender",
+      "meals": "Mat",
+      "shopping": "Shopping",
+      "family": "Familj",
+      "privacy": "Integritet",
+      "planner": "Planner"
+    },
+    "eyebrow": {
+      "dashboard": "Oversikt",
+      "weeklyPlanner": "Veckoplanering",
+      "weeklyMeals": "Veckans mat",
+      "sharedList": "Delad lista",
+      "profilesAndColors": "Profiler och farger",
+      "accountControls": "Kontoinstallningar",
+      "familyPlanner": "Familjeplanner"
+    }
+  },
+  "status": {
+    "offlineMode": "Offlinelage: visar cachad planeringsdata nar tillganglig.",
+    "syncing_one": "Synkroniserar {{count}} offlineandring...",
+    "syncing_other": "Synkroniserar {{count}} offlineandringar...",
+    "waiting_one": "{{count}} offlineandring vantar pa synkronisering.",
+    "waiting_other": "{{count}} offlineandringar vantar pa synkronisering.",
+    "needsAttention_one": "Offlinesynk krav er atgard for {{count}} andring.",
+    "needsAttention_other": "Offlinesynk krav er atgard for {{count}} andringar.",
+    "loadingFamilyData": "Laddar familjedata...",
+    "bootstrapError": "Det gick inte att ladda familjedata. Forsok logga in igen."
+  }
+}

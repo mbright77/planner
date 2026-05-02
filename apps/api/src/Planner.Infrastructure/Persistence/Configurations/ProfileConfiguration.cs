@@ -20,6 +20,9 @@ public sealed class ProfileConfiguration : IEntityTypeConfiguration<Profile>
             .HasMaxLength(50)
             .IsRequired();
 
+        builder.Property(x => x.PreferredLanguage)
+            .HasMaxLength(10);
+
         builder.Property(x => x.LinkedUserId)
             .HasMaxLength(450);
 

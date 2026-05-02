@@ -39,13 +39,32 @@ public static class BootstrapEndpoints
             return Results.NotFound();
         }
 
+        var familyMemberships = await dbContext.FamilyMemberships
+            .AsNoTracking()
+            .Where(x => x.FamilyId == membership.FamilyId)
+            .ToListAsync(cancellationToken);
+
         var response = new BootstrapResponse(
             membership.FamilyId,
             membership.Family.Name,
             membership.Family.Timezone,
             membership.Family.Profiles
                 .OrderBy(x => x.DisplayName)
-                .Select(x => new ProfileSummary(x.Id, x.DisplayName, x.ColorKey, x.IsActive))
+                .Select(x => new ProfileSummary(
+                    x.Id,
+                    x.DisplayName,
+                    x.ColorKey,
+                    x.IsActive,
+                    x.PreferredLanguage,
+                    x.LinkedUserId))
+                .ToArray(),
+            familyMemberships
+                .OrderBy(x => x.CreatedAtUtc)
+                .Select(x => new MembershipSummary(
+                    x.UserId,
+                    string.Empty,
+                    x.Role.ToString(),
+                    x.Role == FamilyRole.Admin || CanPlanMealsForUser(membership.Family.Profiles, x.UserId)))
                 .ToArray(),
             new MembershipSummary(
                 membership.UserId,
@@ -66,6 +85,13 @@ public static class BootstrapEndpoints
         }
 
         var linkedProfile = membership.Family.Profiles.FirstOrDefault(x => x.LinkedUserId == membership.UserId);
+
+        return linkedProfile?.IsActive ?? true;
+    }
+
+    private static bool CanPlanMealsForUser(IEnumerable<Profile> profiles, string userId)
+    {
+        var linkedProfile = profiles.FirstOrDefault(x => x.LinkedUserId == userId);
 
         return linkedProfile?.IsActive ?? true;
     }

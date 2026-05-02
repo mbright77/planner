@@ -1,0 +1,89 @@
+{
+  "eyebrow": "Familj",
+  "title": "Profiler och farger",
+  "description": "Hantera familjemedlemmar i plannern och hall deras fargnycklar konsekventa.",
+  "privacyLink": "Granska alternativ for radering och integritet",
+  "preferredLanguage": "Sprak",
+  "saving": "Sparar...",
+  "addMember": "+ Lagg till ny medlem",
+  "loading": "Laddar profiler...",
+  "error": "Det gick inte att ladda profiler.",
+  "fields": {
+    "displayName": "Visningsnamn",
+    "displayNamePlaceholder": "Lagg till en familjemedlem",
+    "colorKey": "Fargnyckel",
+    "profileColorAria": "Profilfarg",
+    "selectColorAria": "Valj {{color}} farg"
+  },
+  "colors": {
+    "green": "Gron",
+    "blue": "Bla",
+    "pink": "Rosa",
+    "yellow": "Gul"
+  },
+  "languages": {
+    "en": "English",
+    "sv": "Svenska"
+  },
+  "invites": {
+    "eyebrow": "Inbjudningar",
+    "title": "Bjud in en familjemedlem",
+    "description": "Inbjudna familjemedlemmar kan logga in, visa den delade plannern, lagga till kalenderposter, onska och planera mat samt uppdatera shopping.",
+    "email": "E-post",
+    "emailPlaceholder": "namn@example.com",
+    "linkProfileOptional": "Lanka till befintlig profil (valfritt)",
+    "newProfile": "Ny profil",
+    "createLink": "Skapa inbjudningslank",
+    "creating": "Skapar...",
+    "helper": "Anvand detta nar nagon redan finns i plannern och nu behaver inloggning.",
+    "loading": "Laddar inbjudningar...",
+    "error": "Det gick inte att ladda inbjudningar.",
+    "linkedTo": "Lankad till {{name}}",
+    "expires": "Gar ut {{date}}",
+    "accepted": "Accepterad",
+    "pending": "Vantande"
+  },
+  "profile": {
+    "eyebrow": "Profil",
+    "activeMember": "Aktiv medlem",
+    "inactiveMember": "Inaktiv medlem",
+    "activeBadge": "Aktiv"
+  },
+  "stats": {
+    "status": "Status",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "colorIdentity": "Fargidentitet",
+    "signInAccess": "Inloggningsatkomst",
+    "hasLogin": "Har inloggning",
+    "profileOnly": "Endast profil"
+  },
+  "toggle": {
+    "included": "Inkluderad i planering",
+    "hidden": "Dold fran planering",
+    "includedHint": "Denna medlem kan synas i planeringsfloden och tilldelningar.",
+    "hiddenHint": "Denna medlem ar tillganglig for inloggning, onskemal och shoppinguppdateringar."
+  },
+  "privacy": {
+    "eyebrow": "Integritet",
+    "title": "Radering och integritet",
+    "description": "Bekrafta destruktiva atgarder med ditt losenord. Dessa floden ar avsedda for permanent borttagning.",
+    "password": "Losenord",
+    "deleting": "Raderar...",
+    "deleteAccount": {
+      "title": "Radera mitt konto",
+      "description": "Lamna plannern och ta bort ditt konto. Detta blockeras om du ar enda familjemedlem.",
+      "action": "Radera mitt konto"
+    },
+    "deleteFamily": {
+      "title": "Radera familj",
+      "description": "Ta bort hela familjeplannern, inklusive profiler, inbjudningar, handelser, mat och shoppingdata.",
+      "action": "Radera familj"
+    },
+    "errors": {
+      "deleteAccount": "Det gick inte att radera kontot.",
+      "deleteFamily": "Det gick inte att radera familjen."
+    },
+    "backToFamilySettings": "Tillbaka till familjeinstallningar"
+  }
+}

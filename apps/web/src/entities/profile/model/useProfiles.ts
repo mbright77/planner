@@ -66,6 +66,8 @@ export function useCreateProfile() {
         colorKey: request.colorKey,
         isActive: true,
         hasLogin: false,
+        preferredLanguage: request.preferredLanguage,
+        linkedUserId: null,
       };
 
       queryClient.setQueryData<ProfileResponse[]>(profilesQueryKey, (profiles = []) => [...profiles, optimisticProfile]);

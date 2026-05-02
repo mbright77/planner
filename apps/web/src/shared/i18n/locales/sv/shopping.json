@@ -1,0 +1,42 @@
+{
+  "eyebrow": "Shopping",
+  "title": "Delad lista",
+  "description": "Lagg snabbt till varor, gruppera dem efter kategori och markera dem klara under handlingen.",
+  "quickAdd": {
+    "eyebrow": "Snabblagg till",
+    "title": "Hall matinkop ett tryck bort",
+    "description": "Anvand den flytande knappen eller lagg till-knappen nedan for att oppna varubla det."
+  },
+  "addItem": "Lagg till vara",
+  "loading": "Laddar inkopslistan...",
+  "error": "Det gick inte att ladda shoppingvaror.",
+  "remove": "Ta bort",
+  "removeItemAria": "Ta bort {{label}} fran listan",
+  "empty": "Din delade lista ar tom. Lagg till nasta vara nar du kommer pa den.",
+  "addShoppingItemAria": "Lagg till shoppingvara",
+  "closeSheetAria": "Stang shoppingpanelen",
+  "sheet": {
+    "title": "Lagg till shoppingvara"
+  },
+  "close": "Stang",
+  "showExtraDetails": "Visa extra detaljer",
+  "hideExtraDetails": "Dolj extra detaljer",
+  "noProfile": "Ingen profil",
+  "cancel": "Avbryt",
+  "adding": "Lagger till...",
+  "fields": {
+    "itemName": "Varunamn",
+    "itemNamePlaceholder": "Lagg till vara (t.ex. Mjolk)",
+    "category": "Kategori",
+    "addedBy": "Tillagd av"
+  },
+  "categories": {
+    "produce": "Frukt och gront",
+    "dairy": "Mejeri",
+    "pantry": "Skafferi",
+    "household": "Hushall"
+  },
+  "errors": {
+    "itemName": "Ange ett varunamn innan du sparar."
+  }
+}

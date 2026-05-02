@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { fetchFamilyInvite, acceptFamilyInvite } from '../../shared/api/invites';
@@ -7,6 +8,7 @@ import { useAuthSession } from '../../processes/auth-session/AuthSessionContext'
 const colorOptions = ['green', 'blue', 'pink', 'yellow'];
 
 export function InvitePage() {
+  const { t } = useTranslation('auth');
   const { token = '' } = useParams();
   const navigate = useNavigate();
   const { setSession } = useAuthSession();
@@ -30,7 +32,7 @@ export function InvitePage() {
         setEmail(details.email);
       })
       .catch(() => {
-        setError('Unable to load this invite.');
+        setError(t('invite.errors.load'));
       })
       .finally(() => setLoading(false));
   }, [token]);
@@ -56,7 +58,7 @@ export function InvitePage() {
       setSession({ accessToken: session.accessToken, expiresAtUtc: session.expiresAtUtc });
       navigate('/', { replace: true });
     } catch {
-      setError('Unable to accept this invite.');
+      setError(t('invite.errors.accept'));
     } finally {
       setSubmitting(false);
     }
@@ -64,54 +66,56 @@ export function InvitePage() {
 
   return (
     <section className="page standalone-page">
-      <p className="eyebrow">Invitation</p>
-      <h2 className="page-title">Join a family</h2>
+      <p className="eyebrow">{t('invite.eyebrow')}</p>
+      <h2 className="page-title">{t('invite.heading')}</h2>
 
-      {loading ? <p className="page-copy">Loading invite...</p> : null}
+      {loading ? <p className="page-copy">{t('invite.loading')}</p> : null}
       {error ? <p className="form-error">{error}</p> : null}
 
       {inviteDetails ? (
         <>
           <p className="page-copy">
-            Join <strong>{inviteDetails.familyName}</strong> with the invite sent to <strong>{inviteDetails.email}</strong>.
+            {t('invite.join', {
+              familyName: inviteDetails.familyName,
+              email: inviteDetails.email,
+            })}
           </p>
 
           {isLinkedInvite ? (
             <p className="page-copy invite-profile-copy">
-              This invite will connect your sign-in to the existing profile{' '}
-              <strong>{inviteDetails.profileDisplayName}</strong>.
+              {t('invite.linkedProfile', { name: inviteDetails.profileDisplayName ?? '' })}
             </p>
           ) : null}
 
-          {inviteDetails.isExpired ? <p className="form-error">This invite has expired.</p> : null}
-          {inviteDetails.isAccepted ? <p className="form-error">This invite has already been accepted.</p> : null}
+          {inviteDetails.isExpired ? <p className="form-error">{t('invite.expired')}</p> : null}
+          {inviteDetails.isAccepted ? <p className="form-error">{t('invite.alreadyAccepted')}</p> : null}
 
           {!inviteDetails.isExpired && !inviteDetails.isAccepted ? (
             <form className="auth-form" onSubmit={handleAccept}>
               <label className="field">
-                <span>Email</span>
+                <span>{t('fields.email')}</span>
                 <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" />
               </label>
 
               {isLinkedInvite ? null : (
                 <label className="field">
-                  <span>Display name</span>
+                  <span>{t('fields.displayName')}</span>
                   <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} type="text" />
                 </label>
               )}
 
               <label className="field">
-                <span>Password</span>
+                <span>{t('fields.password')}</span>
                 <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" />
               </label>
 
               {isLinkedInvite ? null : (
                 <label className="field">
-                  <span>Color key</span>
+                  <span>{t('fields.profileColor')}</span>
                   <select value={colorKey} onChange={(event) => setColorKey(event.target.value)}>
                     {colorOptions.map((option) => (
                       <option key={option} value={option}>
-                        {option}
+                        {t(`colors.${option}`)}
                       </option>
                     ))}
                   </select>
@@ -119,7 +123,7 @@ export function InvitePage() {
               )}
 
               <button className="primary-button" type="submit" disabled={submitting}>
-                {submitting ? 'Joining...' : 'Join family'}
+                {submitting ? t('invite.submitting') : t('invite.submit')}
               </button>
             </form>
           ) : null}

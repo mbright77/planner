@@ -53,6 +53,8 @@ public sealed class Profile
 
     public string ColorKey { get; set; } = string.Empty;
 
+    public string? PreferredLanguage { get; set; }
+
     public bool IsActive { get; set; } = true;
 
     public Family Family { get; set; } = null!;

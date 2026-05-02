@@ -1,0 +1,42 @@
+{
+  "eyebrow": "Shopping",
+  "title": "Shared list",
+  "description": "Quickly add items, group them by category, and mark them complete during the shop.",
+  "quickAdd": {
+    "eyebrow": "Quick add",
+    "title": "Keep grocery capture one tap away",
+    "description": "Use the floating action button or the add action below to open the item sheet."
+  },
+  "addItem": "Add item",
+  "loading": "Loading shopping list...",
+  "error": "Unable to load shopping items.",
+  "remove": "Remove",
+  "removeItemAria": "Remove {{label}} from list",
+  "empty": "Your shared list is clear. Add the next item when it comes to mind.",
+  "addShoppingItemAria": "Add shopping item",
+  "closeSheetAria": "Close shopping item sheet",
+  "sheet": {
+    "title": "Add shopping item"
+  },
+  "close": "Close",
+  "showExtraDetails": "Show extra details",
+  "hideExtraDetails": "Hide extra details",
+  "noProfile": "No profile",
+  "cancel": "Cancel",
+  "adding": "Adding...",
+  "fields": {
+    "itemName": "Item name",
+    "itemNamePlaceholder": "Add item (e.g., Milk)",
+    "category": "Category",
+    "addedBy": "Added by"
+  },
+  "categories": {
+    "produce": "Produce",
+    "dairy": "Dairy",
+    "pantry": "Pantry",
+    "household": "Household"
+  },
+  "errors": {
+    "itemName": "Add an item name before saving."
+  }
+}

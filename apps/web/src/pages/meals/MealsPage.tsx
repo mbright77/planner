@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useDashboardOverview } from '../../entities/dashboard/model/useDashboardOverview';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
@@ -81,6 +82,7 @@ function getProfileColorChipClass(colorKey: string | null | undefined) {
 }
 
 export function MealsPage() {
+  const { t } = useTranslation('meals');
   const today = new Date();
   const initialWeekStart = formatDateOnly(getWeekStart(today));
   const initialSelectedDate = formatDateOnly(today);
@@ -229,7 +231,7 @@ export function MealsPage() {
     event.preventDefault();
 
     if (!title.trim()) {
-      setMealFormError('Add a dinner title before saving.');
+      setMealFormError(t('errors.addDinnerTitle'));
       return;
     }
 
@@ -252,7 +254,7 @@ export function MealsPage() {
     event.preventDefault();
 
     if (!requestTitle.trim()) {
-      setRequestFormError('Add a short request before sending it.');
+      setRequestFormError(t('errors.addRequestTitle'));
       return;
     }
 
@@ -277,7 +279,7 @@ export function MealsPage() {
     }
 
     if (!editingMealTitle.trim()) {
-      setMealEditError('Add a dinner title before saving changes.');
+      setMealEditError(t('errors.addDinnerTitleChanges'));
       return;
     }
 
@@ -326,31 +328,31 @@ export function MealsPage() {
 
   return (
     <section className="page meals-page">
-      <p className="eyebrow">Meals</p>
-      <h2 className="page-title">Weekly meals</h2>
+      <p className="eyebrow">{t('eyebrow')}</p>
+      <h2 className="page-title">{t('title')}</h2>
       <p className="page-copy">
-        Pick a day first, then plan dinner or capture a request while that day is in view.
+        {t('description')}
       </p>
 
       <section className="meals-header-panel">
         <div>
           <h3 className="meals-range-title">{formatWeekRange(weekStart)}</h3>
-          <p className="shopping-meta">One dinner plan per day, visible to the whole family.</p>
+          <p className="shopping-meta">{t('weekMeta')}</p>
           {!canPlanMeals ? (
-            <p className="shopping-meta">Your profile is excluded from planning, so you can request meals but not plan or accept them.</p>
+            <p className="shopping-meta">{t('readOnlyNote')}</p>
           ) : null}
         </div>
         <div className="meals-header-actions">
           <button className="secondary-button calendar-small-button" type="button" onClick={() => handleShiftWeek(-1)}>
-            Previous
+            {t('previous')}
           </button>
           <button className="secondary-button calendar-small-button" type="button" onClick={() => handleShiftWeek(1)}>
-            Next
+            {t('next')}
           </button>
         </div>
       </section>
 
-      <div className="meals-week-strip" aria-label="Meal planning days">
+      <div className="meals-week-strip" aria-label={t('planningDaysAria')}>
         {weekDays.map((day) => {
           const isSelected = day.key === selectedDate;
           const meal = mealsByDate.get(day.key);
@@ -366,7 +368,7 @@ export function MealsPage() {
               <span className="calendar-week-pill-label">{day.label}</span>
               <span className="calendar-week-pill-number">{day.dayNumber}</span>
               <span className="meal-day-summary">
-                {meal ? 'Meal set' : requests.length > 0 ? `${requests.length} request${requests.length === 1 ? '' : 's'}` : 'Open'}
+                {meal ? t('mealSet') : requests.length > 0 ? t('requestsCount', { count: requests.length }) : t('open')}
               </span>
             </button>
           );
@@ -377,7 +379,7 @@ export function MealsPage() {
         <form className="meals-form meals-compose-card meals-edit-card" onSubmit={handleSaveMealEdit}>
           <div className="meals-compose-header meals-field-wide">
             <div>
-              <p className="eyebrow">Edit dinner</p>
+              <p className="eyebrow">{t('editDinner')}</p>
               <h3 className="profile-card-title">{formatLongDate(selectedDate)}</h3>
             </div>
             <button
@@ -385,12 +387,12 @@ export function MealsPage() {
               type="button"
               onClick={() => setShowMealOptions((current) => !current)}
             >
-              {showMealOptions ? 'Fewer fields' : 'More options'}
+              {showMealOptions ? t('fewerFields') : t('moreOptions')}
             </button>
           </div>
 
           <label className="field meals-field-wide">
-            <span>Meal title</span>
+            <span>{t('fields.mealTitle')}</span>
             <input
               ref={mealTitleRef}
               value={editingMealTitle}
@@ -402,9 +404,9 @@ export function MealsPage() {
           {showMealOptions ? (
             <>
               <label className="field">
-                <span>Owner</span>
+                <span>{t('fields.owner')}</span>
                 <select value={editingMealOwnerProfileId} onChange={(event) => setEditingMealOwnerProfileId(event.target.value)}>
-                  <option value="">Unassigned</option>
+                  <option value="">{t('unassigned')}</option>
                   {bootstrapQuery.data?.profiles.map((profile) => (
                     <option key={profile.id} value={profile.id}>
                       {profile.displayName}
@@ -414,7 +416,7 @@ export function MealsPage() {
               </label>
 
               <label className="field meals-field-wide">
-                <span>Notes</span>
+                <span>{t('fields.notes')}</span>
                 <textarea value={editingMealNotes} onChange={(event) => setEditingMealNotes(event.target.value)} rows={3} />
               </label>
             </>
@@ -423,14 +425,14 @@ export function MealsPage() {
           {mealEditError ? <p className="form-error meals-field-wide">{mealEditError}</p> : null}
 
           <button className="primary-button" type="submit" disabled={updateMealPlanMutation.isPending || !editingMealId}>
-            {updateMealPlanMutation.isPending ? 'Saving...' : `Save changes for ${formatLongDate(selectedDate)}`}
+            {updateMealPlanMutation.isPending ? t('saving') : t('saveChangesForDate', { date: formatLongDate(selectedDate) })}
           </button>
         </form>
       ) : canPlanMeals ? (
         <form className="meals-form meals-compose-card" onSubmit={handleSubmit}>
           <div className="meals-compose-header meals-field-wide">
             <div>
-              <p className="eyebrow">Plan dinner</p>
+              <p className="eyebrow">{t('planDinner')}</p>
               <h3 className="profile-card-title">{formatLongDate(selectedDate)}</h3>
             </div>
             <button
@@ -438,17 +440,17 @@ export function MealsPage() {
               type="button"
               onClick={() => setShowMealOptions((current) => !current)}
             >
-              {showMealOptions ? 'Fewer fields' : 'More options'}
+              {showMealOptions ? t('fewerFields') : t('moreOptions')}
             </button>
           </div>
 
           <label className="field meals-field-wide">
-            <span>Meal title</span>
+            <span>{t('fields.mealTitle')}</span>
             <input
               ref={mealTitleRef}
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Plan dinner"
+              placeholder={t('fields.mealTitlePlaceholder')}
               type="text"
             />
           </label>
@@ -456,9 +458,9 @@ export function MealsPage() {
           {showMealOptions ? (
             <>
               <label className="field">
-                <span>Owner</span>
+                <span>{t('fields.owner')}</span>
                 <select value={ownerProfileId} onChange={(event) => setOwnerProfileId(event.target.value)}>
-                  <option value="">Unassigned</option>
+                  <option value="">{t('unassigned')}</option>
                   {bootstrapQuery.data?.profiles.map((profile) => (
                     <option key={profile.id} value={profile.id}>
                       {profile.displayName}
@@ -468,7 +470,7 @@ export function MealsPage() {
               </label>
 
               <label className="field meals-field-wide">
-                <span>Notes</span>
+                <span>{t('fields.notes')}</span>
                 <textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
               </label>
             </>
@@ -477,13 +479,13 @@ export function MealsPage() {
           {mealFormError ? <p className="form-error meals-field-wide">{mealFormError}</p> : null}
 
           <button className="primary-button" type="submit" disabled={createMealPlanMutation.isPending}>
-            {createMealPlanMutation.isPending ? 'Saving...' : `Save dinner for ${formatLongDate(selectedDate)}`}
+            {createMealPlanMutation.isPending ? t('saving') : t('saveDinnerForDate', { date: formatLongDate(selectedDate) })}
           </button>
         </form>
       ) : null}
 
-      {mealsWeekQuery.isLoading ? <p className="page-copy">Loading weekly meals...</p> : null}
-      {mealsWeekQuery.isError ? <p className="form-error">Unable to load weekly meals.</p> : null}
+      {mealsWeekQuery.isLoading ? <p className="page-copy">{t('loading')}</p> : null}
+      {mealsWeekQuery.isError ? <p className="form-error">{t('error')}</p> : null}
 
       <div className="meals-grid">
         {weekDays.map((day) => {
@@ -505,7 +507,7 @@ export function MealsPage() {
                 </div>
                 <div className="meal-card-chip-stack">
                   {owner ? <span className={getProfileColorChipClass(owner.colorKey)}>{owner.displayName}</span> : null}
-                  {requests.length > 0 ? <span className="profile-color-chip">{requests.length} request{requests.length === 1 ? '' : 's'}</span> : null}
+                  {requests.length > 0 ? <span className="profile-color-chip">{t('requestsCount', { count: requests.length })}</span> : null}
                 </div>
               </div>
 
@@ -523,27 +525,27 @@ export function MealsPage() {
                         type="button"
                         onClick={() => handleStartMealEdit(day.key)}
                       >
-                        Edit day
+                        {t('editDay')}
                       </button>
                       <button
                         className={confirmDeleteMealId === meal.id ? 'destructive-button meal-card-button' : 'secondary-button meal-card-button'}
                         type="button"
                         onClick={() => handleDeleteMeal(meal.id)}
-                        aria-label={confirmDeleteMealId === meal.id ? `Confirm delete ${meal.title}` : `Delete ${meal.title}`}
+                        aria-label={confirmDeleteMealId === meal.id ? t('confirmDeleteMealAria', { title: meal.title }) : t('deleteMealAria', { title: meal.title })}
                         disabled={deleteMealPlanMutation.isPending}
                       >
-                        {confirmDeleteMealId === meal.id ? 'Confirm delete' : 'Delete'}
+                        {confirmDeleteMealId === meal.id ? t('confirmDelete') : t('delete')}
                       </button>
                     </div>
                   ) : null}
                 </>
               ) : (
                 <div className="meal-card-empty-state">
-                  <p className="shopping-meta">No meal planned yet.</p>
+                  <p className="shopping-meta">{t('noMealPlanned')}</p>
                   <div className="meal-card-actions">
                     {canPlanMeals ? (
                       <button className="secondary-button meal-card-button" type="button" onClick={() => handleSelectDay(day.key)}>
-                        Plan this day
+                        {t('planThisDay')}
                       </button>
                     ) : null}
                     <button
@@ -555,7 +557,7 @@ export function MealsPage() {
                         focusRequestTitle();
                       }}
                     >
-                      Request meal
+                      {t('requestMeal')}
                     </button>
                   </div>
                 </div>
@@ -568,11 +570,11 @@ export function MealsPage() {
       <section className="meal-requests-section">
         <div className="shopping-group-header meal-requests-header">
           <div>
-            <p className="eyebrow">Requests</p>
-            <h3 className="profile-card-title">Meal requests for {formatLongDate(selectedDate)}</h3>
+            <p className="eyebrow">{t('requests')}</p>
+            <h3 className="profile-card-title">{t('mealRequestsForDate', { date: formatLongDate(selectedDate) })}</h3>
           </div>
           <div className="meal-requests-header-actions">
-            <span className="profile-color-chip">{selectedRequests.length} open</span>
+            <span className="profile-color-chip">{t('openCount', { count: selectedRequests.length })}</span>
             <button
               className="secondary-button calendar-small-button"
               type="button"
@@ -583,39 +585,39 @@ export function MealsPage() {
                 }
               }}
             >
-              {showRequestForm ? 'Hide request form' : 'Request meal'}
+              {showRequestForm ? t('hideRequestForm') : t('requestMeal')}
             </button>
           </div>
         </div>
 
         {showRequestForm ? (
           <form className="meal-requests-form" onSubmit={handleRequestSubmit}>
-            <label className="field meal-requests-field-wide">
-              <span>Request title</span>
-              <input
+              <label className="field meal-requests-field-wide">
+                <span>{t('fields.requestTitle')}</span>
+                <input
                 ref={requestTitleRef}
                 value={requestTitle}
                 onChange={(event) => setRequestTitle(event.target.value)}
-                placeholder="Request a meal idea"
+                placeholder={t('fields.requestTitlePlaceholder')}
                 type="text"
               />
             </label>
 
             <label className="field meal-requests-field-wide">
-              <span>Notes</span>
+              <span>{t('fields.notes')}</span>
               <textarea value={requestNotes} onChange={(event) => setRequestNotes(event.target.value)} rows={2} />
             </label>
 
             {requestFormError ? <p className="form-error meal-requests-field-wide">{requestFormError}</p> : null}
 
             <button className="primary-button" type="submit" disabled={createMealRequestMutation.isPending}>
-              {createMealRequestMutation.isPending ? 'Saving...' : `Add request for ${formatLongDate(selectedDate)}`}
+              {createMealRequestMutation.isPending ? t('saving') : t('addRequestForDate', { date: formatLongDate(selectedDate) })}
             </button>
           </form>
         ) : null}
 
-        {mealRequestsQuery.isLoading ? <p className="page-copy">Loading meal requests...</p> : null}
-        {mealRequestsQuery.isError ? <p className="form-error">Unable to load meal requests.</p> : null}
+        {mealRequestsQuery.isLoading ? <p className="page-copy">{t('loadingRequests')}</p> : null}
+        {mealRequestsQuery.isError ? <p className="form-error">{t('errorRequests')}</p> : null}
 
         <div className="meal-request-list">
           {selectedRequests.length > 0 ? (
@@ -635,16 +637,16 @@ export function MealsPage() {
                       {requester ? <span className={getProfileColorChipClass(requester.colorKey)}>{requester.displayName}</span> : null}
                     </div>
                     {request.notes ? <p className="meal-card-notes">{request.notes}</p> : null}
-                    {assignee ? <p className="shopping-meta">Assigned to {assignee.displayName}</p> : null}
+                    {assignee ? <p className="shopping-meta">{t('assignedTo', { name: assignee.displayName })}</p> : null}
                   </div>
 
                   <div className="meal-request-actions">
                     {assigningRequestId === request.id ? (
                       <>
                         <label className="field meal-request-assign-field">
-                          <span>Assign person</span>
+                          <span>{t('fields.assignPerson')}</span>
                           <select value={assigningRequestProfileId} onChange={(event) => setAssigningRequestProfileId(event.target.value)}>
-                            <option value="">Unassigned</option>
+                            <option value="">{t('unassigned')}</option>
                             {bootstrapQuery.data?.profiles.map((profile) => (
                               <option key={profile.id} value={profile.id}>
                                 {profile.displayName}
@@ -658,7 +660,7 @@ export function MealsPage() {
                           onClick={() => handleAssignRequest(request.id)}
                           disabled={assignMealRequestMutation.isPending}
                         >
-                          Save assignment
+                          {t('saveAssignment')}
                         </button>
                       </>
                     ) : (
@@ -668,7 +670,7 @@ export function MealsPage() {
                         onClick={() => handleStartRequestAssignment(request.id, request.assigneeProfileId)}
                         disabled={assignMealRequestMutation.isPending}
                       >
-                        Assign person
+                        {t('assignPerson')}
                       </button>
                     )}
                     {canPlanMeals ? (
@@ -678,7 +680,7 @@ export function MealsPage() {
                         onClick={() => acceptMealRequestMutation.mutate(request.id)}
                         disabled={acceptMealRequestMutation.isPending}
                       >
-                        Accept
+                        {t('accept')}
                       </button>
                     ) : null}
                   </div>
@@ -687,7 +689,7 @@ export function MealsPage() {
             })
           ) : (
             <div className="dashboard-empty-card dashboard-empty-card-compact">
-              <p className="shopping-meta">No requests are waiting for this day.</p>
+              <p className="shopping-meta">{t('noRequestsWaiting')}</p>
             </div>
           )}
         </div>

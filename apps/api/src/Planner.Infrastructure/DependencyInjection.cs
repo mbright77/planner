@@ -19,7 +19,10 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("Planner")
             ?? "Host=localhost;Port=5432;Database=planner;Username=planner;Password=planner";
 
-        services.AddDbContext<PlannerDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddDbContext<PlannerDbContext>(options =>
+            options.UseNpgsql(
+                connectionString,
+                npgsql => npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "public")));
 
         services.AddIdentityCore<PlannerIdentityUser>(options =>
             {

@@ -1,0 +1,50 @@
+{
+  "skipToContent": "Skip to content",
+  "signOut": "Sign out",
+  "defaults": {
+    "familyName": "Kinship"
+  },
+  "roles": {
+    "admin": "Admin",
+    "member": "Member"
+  },
+  "nav": {
+    "home": "Home",
+    "calendar": "Calendar",
+    "meals": "Meals",
+    "shopping": "Shopping",
+    "family": "Family",
+    "primaryAria": "Primary"
+  },
+  "route": {
+    "title": {
+      "home": "Home",
+      "calendar": "Calendar",
+      "meals": "Meals",
+      "shopping": "Shopping",
+      "family": "Family",
+      "privacy": "Privacy",
+      "planner": "Planner"
+    },
+    "eyebrow": {
+      "dashboard": "Dashboard",
+      "weeklyPlanner": "Weekly planner",
+      "weeklyMeals": "Weekly meals",
+      "sharedList": "Shared list",
+      "profilesAndColors": "Profiles and colors",
+      "accountControls": "Account controls",
+      "familyPlanner": "Family planner"
+    }
+  },
+  "status": {
+    "offlineMode": "Offline mode: showing cached planner data when available.",
+    "syncing_one": "Syncing {{count}} offline change...",
+    "syncing_other": "Syncing {{count}} offline changes...",
+    "waiting_one": "{{count}} offline change waiting to sync.",
+    "waiting_other": "{{count}} offline changes waiting to sync.",
+    "needsAttention_one": "Offline sync needs attention for {{count}} change.",
+    "needsAttention_other": "Offline sync needs attention for {{count}} changes.",
+    "loadingFamilyData": "Loading family data...",
+    "bootstrapError": "Unable to load bootstrap data. Try signing in again."
+  }
+}

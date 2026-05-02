@@ -655,7 +655,33 @@ export interface paths {
             };
         };
         post?: never;
-        delete?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    itemId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -772,7 +798,33 @@ export interface paths {
             };
         };
         post?: never;
-        delete?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    eventId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -889,7 +941,33 @@ export interface paths {
             };
         };
         post?: never;
-        delete?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    mealId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -1091,6 +1169,7 @@ export interface components {
             familyName: string;
             timezone: string;
             profiles: components["schemas"]["ProfileSummary"][];
+            memberships: components["schemas"]["MembershipSummary"][];
             membership: components["schemas"]["MembershipSummary"];
         };
         CalendarEventResponse: {
@@ -1147,6 +1226,8 @@ export interface components {
         CreateProfileRequest: {
             displayName: string;
             colorKey: string;
+            /** @default null */
+            preferredLanguage: string | null;
         };
         CreateShoppingItemRequest: {
             label: string;
@@ -1285,6 +1366,8 @@ export interface components {
             colorKey: string;
             isActive: boolean;
             hasLogin: boolean;
+            preferredLanguage: string | null;
+            linkedUserId: string | null;
         };
         ProfileSummary: {
             /** Format: uuid */
@@ -1292,6 +1375,8 @@ export interface components {
             displayName: string;
             colorKey: string;
             isActive: boolean;
+            preferredLanguage: string | null;
+            linkedUserId: string | null;
         };
         RegisterRequest: {
             email: string;
@@ -1341,6 +1426,8 @@ export interface components {
             displayName: string;
             colorKey: string;
             isActive: boolean;
+            /** @default null */
+            preferredLanguage: string | null;
         };
         UpdateShoppingItemRequest: {
             isCompleted: boolean;

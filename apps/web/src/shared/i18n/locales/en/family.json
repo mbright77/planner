@@ -1,0 +1,89 @@
+{
+  "eyebrow": "Family",
+  "title": "Profiles and colors",
+  "description": "Manage the family members used across the planner and keep their color keys consistent.",
+  "privacyLink": "Review deletion and privacy options",
+  "preferredLanguage": "Language",
+  "saving": "Saving...",
+  "addMember": "+ Add new member",
+  "loading": "Loading profiles...",
+  "error": "Unable to load profiles.",
+  "fields": {
+    "displayName": "Display name",
+    "displayNamePlaceholder": "Add a family member",
+    "colorKey": "Color key",
+    "profileColorAria": "Profile color",
+    "selectColorAria": "Select {{color}} color"
+  },
+  "colors": {
+    "green": "Green",
+    "blue": "Blue",
+    "pink": "Pink",
+    "yellow": "Yellow"
+  },
+  "languages": {
+    "en": "English",
+    "sv": "Svenska"
+  },
+  "invites": {
+    "eyebrow": "Invites",
+    "title": "Invite a family member",
+    "description": "Invited family members can sign in, view the shared planner, add calendar items, request and plan meals, and update shopping.",
+    "email": "Email",
+    "emailPlaceholder": "name@example.com",
+    "linkProfileOptional": "Link to existing profile (optional)",
+    "newProfile": "New profile",
+    "createLink": "Create invite link",
+    "creating": "Creating...",
+    "helper": "Use this when someone already appears in your planner and now needs sign-in access.",
+    "loading": "Loading invites...",
+    "error": "Unable to load invites.",
+    "linkedTo": "Linked to {{name}}",
+    "expires": "Expires {{date}}",
+    "accepted": "Accepted",
+    "pending": "Pending"
+  },
+  "profile": {
+    "eyebrow": "Profile",
+    "activeMember": "Active member",
+    "inactiveMember": "Inactive member",
+    "activeBadge": "Active"
+  },
+  "stats": {
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "colorIdentity": "Color identity",
+    "signInAccess": "Sign-in access",
+    "hasLogin": "Has login",
+    "profileOnly": "Profile only"
+  },
+  "toggle": {
+    "included": "Included in planning",
+    "hidden": "Hidden from planning",
+    "includedHint": "This member can appear in planning flows and assignments.",
+    "hiddenHint": "This member stays available for sign-in, requests, and shopping updates only."
+  },
+  "privacy": {
+    "eyebrow": "Privacy",
+    "title": "Deletion and privacy",
+    "description": "Confirm destructive actions with your password. These flows are designed for permanent cleanup.",
+    "password": "Password",
+    "deleting": "Deleting...",
+    "deleteAccount": {
+      "title": "Delete my account",
+      "description": "Leave the planner and remove your account. This is blocked if you are the only family member.",
+      "action": "Delete my account"
+    },
+    "deleteFamily": {
+      "title": "Delete family",
+      "description": "Remove the entire family planner, including profiles, invites, events, meals, and shopping data.",
+      "action": "Delete family"
+    },
+    "errors": {
+      "deleteAccount": "Unable to delete account.",
+      "deleteFamily": "Unable to delete family."
+    },
+    "backToFamilySettings": "Back to family settings"
+  }
+}
