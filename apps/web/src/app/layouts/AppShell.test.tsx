@@ -21,7 +21,19 @@ vi.mock('../../processes/family-bootstrap/useBootstrap', () => ({
   useBootstrap: () => ({
     data: {
       familyName: 'Test Family',
-      membership: { role: 'Admin' },
+      membership: { role: 'Admin', userId: 'user-1' },
+      memberships: [{ role: 'Admin', userId: 'user-1', profileId: 'profile-1', canPlanMeals: true }],
+      profiles: [
+        {
+          id: 'profile-1',
+          displayName: 'Test User',
+          colorKey: 'blue',
+          isActive: true,
+          hasLogin: true,
+          linkedUserId: 'user-1',
+          preferredLanguage: 'en',
+        },
+      ],
     },
     isLoading: false,
     isError: false,

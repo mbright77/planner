@@ -28,14 +28,17 @@ function resolvePreferredLanguage(data: BootstrapResponse | undefined): string {
     return 'en';
   }
 
-  const currentUserProfile = data.profiles.find((profile) => profile.linkedUserId === data.membership.userId);
+  const profiles = Array.isArray(data.profiles) ? data.profiles : [];
+  const memberships = Array.isArray(data.memberships) ? data.memberships : [];
+
+  const currentUserProfile = profiles.find((profile) => profile.linkedUserId === data.membership?.userId);
   const currentUserLanguage = normalizeLanguage(currentUserProfile?.preferredLanguage);
   if (currentUserLanguage) {
     return currentUserLanguage;
   }
 
-  const adminMembership = data.memberships.find((membership) => membership.role === 'Admin');
-  const adminProfile = data.profiles.find((profile) => profile.linkedUserId === adminMembership?.userId);
+  const adminMembership = memberships.find((membership) => membership.role === 'Admin');
+  const adminProfile = profiles.find((profile) => profile.linkedUserId === adminMembership?.userId);
   const adminLanguage = normalizeLanguage(adminProfile?.preferredLanguage);
   if (adminLanguage) {
     return adminLanguage;

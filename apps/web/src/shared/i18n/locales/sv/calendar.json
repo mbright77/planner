@@ -19,7 +19,7 @@
   "event": "Händelse",
   "repeatsWeeklyThrough": "Upprepas varje vecka till {{date}}",
   "assignedTo": "Tilldelad {{name}}",
-  "addToCalendar": "Lägg till i kalender",
+  "addToCalendar": "Exportera",
   "edit": "Redigera",
   "delete": "Radera",
   "confirmDelete": "Bekräfta radering",
