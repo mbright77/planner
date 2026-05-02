@@ -1,22 +1,22 @@
 {
-  "eyebrow": "Shopping",
+  "eyebrow": "Inköp",
   "title": "Delad lista",
   "description": "Lägg snabbt till varor, gruppera dem efter kategori och markera dem klara under handlingen.",
   "quickAdd": {
     "eyebrow": "Snabbläggtill",
     "title": "Håll matinköp ett tryck bort",
-    "description": "Använd den flytande knappen eller lägg till-knappen nedan för att öppna varuBladet."
+    "description": "Använd den flytande knappen eller lägg till-knappen nedan för att öppna varubladet."
   },
   "addItem": "Lägg till vara",
   "loading": "Laddar inköpslistan...",
-  "error": "Det gick inte att ladda shoppingvaror.",
+  "error": "Det gick inte att ladda inköpsvaror.",
   "remove": "Ta bort",
   "removeItemAria": "Ta bort {{label}} från listan",
   "empty": "Din delade lista är tom. Lägg till nästa vara när du kommer på den.",
-  "addShoppingItemAria": "Lägg till shoppingvara",
+  "addShoppingItemAria": "Lägg till inköpsvara",
   "closeSheetAria": "Stäng shoppingpanelen",
   "sheet": {
-    "title": "Lägg till shoppingvara"
+    "title": "Lägg till inköpsvara"
   },
   "close": "Stäng",
   "showExtraDetails": "Visa extra detaljer",

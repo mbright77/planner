@@ -12,27 +12,49 @@ import {
 
 const defaultCategories = ['Produce', 'Dairy', 'Pantry', 'Household'];
 
+function resolveCategoryKey(category: string) {
+  const normalized = category.trim().toLowerCase();
+
+  if (normalized === 'produce' || normalized === 'frukt och gront' || normalized === 'frukt och grönt') {
+    return 'produce';
+  }
+
+  if (normalized === 'dairy' || normalized === 'mejeri') {
+    return 'dairy';
+  }
+
+  if (normalized === 'pantry' || normalized === 'skafferi') {
+    return 'pantry';
+  }
+
+  if (normalized === 'household' || normalized === 'hushall' || normalized === 'hushåll') {
+    return 'household';
+  }
+
+  return null;
+}
+
 function getProfileColorChipClass(colorKey: string | null | undefined) {
   return colorKey ? `profile-color-chip profile-color-chip-${colorKey}` : 'profile-color-chip';
 }
 
 function getCategoryIcon(category: string) {
-  const normalized = category.toLowerCase();
+  const key = resolveCategoryKey(category);
 
-  if (normalized.includes('produce')) return 'local_florist';
-  if (normalized.includes('dairy')) return 'egg_alt';
-  if (normalized.includes('pantry')) return 'kitchen';
-  if (normalized.includes('household')) return 'home';
+  if (key === 'produce') return 'local_florist';
+  if (key === 'dairy') return 'egg_alt';
+  if (key === 'pantry') return 'kitchen';
+  if (key === 'household') return 'home';
   return 'shopping_basket';
 }
 
 function getCategoryAccent(category: string) {
-  const normalized = category.toLowerCase();
+  const key = resolveCategoryKey(category);
 
-  if (normalized.includes('produce')) return '#84ac8e';
-  if (normalized.includes('dairy')) return '#5da9e9';
-  if (normalized.includes('pantry')) return '#fd898a';
-  if (normalized.includes('household')) return '#f4d35e';
+  if (key === 'produce') return '#84ac8e';
+  if (key === 'dairy') return '#5da9e9';
+  if (key === 'pantry') return '#fd898a';
+  if (key === 'household') return '#f4d35e';
   return 'var(--primary-container)';
 }
 
@@ -134,14 +156,17 @@ export function ShoppingPage() {
 
       <div className="shopping-groups">
         {groupedItems.length > 0 ? (
-          groupedItems.map(([group, items]) => (
+          groupedItems.map(([group, items]) => {
+            const categoryKey = resolveCategoryKey(group);
+
+            return (
             <article key={group} className="shopping-group-card">
               <div className="shopping-group-header shopping-group-header-decorated" style={{ borderLeftColor: getCategoryAccent(group) }}>
                 <h3 className="profile-card-title shopping-group-title">
                   <span className="material-symbols-outlined shopping-group-icon" aria-hidden="true">
                     {getCategoryIcon(group)}
                   </span>
-                  {group}
+                  {categoryKey ? t(`categories.${categoryKey}`) : group}
                 </h3>
                 <span className="shopping-group-count-badge">{items?.length ?? 0}</span>
               </div>
@@ -188,7 +213,8 @@ export function ShoppingPage() {
                 })}
               </ul>
             </article>
-          ))
+            );
+          })
         ) : (
           <div className="dashboard-empty-card">
             <p className="shopping-meta">{t('empty')}</p>
