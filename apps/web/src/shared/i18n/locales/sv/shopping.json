@@ -1,40 +1,40 @@
 {
   "eyebrow": "Shopping",
   "title": "Delad lista",
-  "description": "Lagg snabbt till varor, gruppera dem efter kategori och markera dem klara under handlingen.",
+  "description": "Lägg snabbt till varor, gruppera dem efter kategori och markera dem klara under handlingen.",
   "quickAdd": {
-    "eyebrow": "Snabblagg till",
-    "title": "Hall matinkop ett tryck bort",
-    "description": "Anvand den flytande knappen eller lagg till-knappen nedan for att oppna varubla det."
+    "eyebrow": "Snabbläggtill",
+    "title": "Håll matinköp ett tryck bort",
+    "description": "Använd den flytande knappen eller lägg till-knappen nedan för att öppna varuBladet."
   },
-  "addItem": "Lagg till vara",
-  "loading": "Laddar inkopslistan...",
+  "addItem": "Lägg till vara",
+  "loading": "Laddar inköpslistan...",
   "error": "Det gick inte att ladda shoppingvaror.",
   "remove": "Ta bort",
-  "removeItemAria": "Ta bort {{label}} fran listan",
-  "empty": "Din delade lista ar tom. Lagg till nasta vara nar du kommer pa den.",
-  "addShoppingItemAria": "Lagg till shoppingvara",
-  "closeSheetAria": "Stang shoppingpanelen",
+  "removeItemAria": "Ta bort {{label}} från listan",
+  "empty": "Din delade lista är tom. Lägg till nästa vara när du kommer på den.",
+  "addShoppingItemAria": "Lägg till shoppingvara",
+  "closeSheetAria": "Stäng shoppingpanelen",
   "sheet": {
-    "title": "Lagg till shoppingvara"
+    "title": "Lägg till shoppingvara"
   },
-  "close": "Stang",
+  "close": "Stäng",
   "showExtraDetails": "Visa extra detaljer",
-  "hideExtraDetails": "Dolj extra detaljer",
+  "hideExtraDetails": "Dölj extra detaljer",
   "noProfile": "Ingen profil",
   "cancel": "Avbryt",
-  "adding": "Lagger till...",
+  "adding": "Lägger till...",
   "fields": {
     "itemName": "Varunamn",
-    "itemNamePlaceholder": "Lagg till vara (t.ex. Mjolk)",
+    "itemNamePlaceholder": "Lägg till vara (t.ex. Mjölk)",
     "category": "Kategori",
     "addedBy": "Tillagd av"
   },
   "categories": {
-    "produce": "Frukt och gront",
+    "produce": "Frukt och grönt",
     "dairy": "Mejeri",
     "pantry": "Skafferi",
-    "household": "Hushall"
+    "household": "Hushåll"
   },
   "errors": {
     "itemName": "Ange ett varunamn innan du sparar."

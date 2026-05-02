@@ -1,23 +1,23 @@
 {
   "eyebrow": "Familj",
-  "title": "Profiler och farger",
-  "description": "Hantera familjemedlemmar i plannern och hall deras fargnycklar konsekventa.",
-  "privacyLink": "Granska alternativ for radering och integritet",
-  "preferredLanguage": "Sprak",
+  "title": "Profiler och färger",
+  "description": "Hantera familjemedlemmar i plannern och håll deras färgnycklar konsekventa.",
+  "privacyLink": "Granska alternativ för radering och integritet",
+  "preferredLanguage": "Språk",
   "saving": "Sparar...",
-  "addMember": "+ Lagg till ny medlem",
+  "addMember": "+ Lägg till ny medlem",
   "loading": "Laddar profiler...",
   "error": "Det gick inte att ladda profiler.",
   "fields": {
     "displayName": "Visningsnamn",
-    "displayNamePlaceholder": "Lagg till en familjemedlem",
-    "colorKey": "Fargnyckel",
-    "profileColorAria": "Profilfarg",
-    "selectColorAria": "Valj {{color}} farg"
+    "displayNamePlaceholder": "Lägg till en familjemedlem",
+    "colorKey": "Färgnyckel",
+    "profileColorAria": "Profilfärg",
+    "selectColorAria": "Välj {{color}} färg"
   },
   "colors": {
-    "green": "Gron",
-    "blue": "Bla",
+    "green": "Grön",
+    "blue": "Blå",
     "pink": "Rosa",
     "yellow": "Gul"
   },
@@ -28,20 +28,20 @@
   "invites": {
     "eyebrow": "Inbjudningar",
     "title": "Bjud in en familjemedlem",
-    "description": "Inbjudna familjemedlemmar kan logga in, visa den delade plannern, lagga till kalenderposter, onska och planera mat samt uppdatera shopping.",
+    "description": "Inbjudna familjemedlemmar kan logga in, visa den delade plannern, lägga till kalenderposter, önska och planera mat samt uppdatera shopping.",
     "email": "E-post",
     "emailPlaceholder": "namn@example.com",
-    "linkProfileOptional": "Lanka till befintlig profil (valfritt)",
+    "linkProfileOptional": "Länka till befintlig profil (valfritt)",
     "newProfile": "Ny profil",
-    "createLink": "Skapa inbjudningslank",
+    "createLink": "Skapa inbjudningslänk",
     "creating": "Skapar...",
-    "helper": "Anvand detta nar nagon redan finns i plannern och nu behaver inloggning.",
+    "helper": "Använd detta när någon redan finns i plannern och nu behöver inloggning.",
     "loading": "Laddar inbjudningar...",
     "error": "Det gick inte att ladda inbjudningar.",
-    "linkedTo": "Lankad till {{name}}",
-    "expires": "Gar ut {{date}}",
+    "linkedTo": "Länkad till {{name}}",
+    "expires": "Går ut {{date}}",
     "accepted": "Accepterad",
-    "pending": "Vantande"
+    "pending": "Väntande"
   },
   "profile": {
     "eyebrow": "Profil",
@@ -53,31 +53,31 @@
     "status": "Status",
     "active": "Aktiv",
     "inactive": "Inaktiv",
-    "colorIdentity": "Fargidentitet",
-    "signInAccess": "Inloggningsatkomst",
+    "colorIdentity": "Färgidentitet",
+    "signInAccess": "Inloggningsåtkomst",
     "hasLogin": "Har inloggning",
     "profileOnly": "Endast profil"
   },
   "toggle": {
     "included": "Inkluderad i planering",
-    "hidden": "Dold fran planering",
-    "includedHint": "Denna medlem kan synas i planeringsfloden och tilldelningar.",
-    "hiddenHint": "Denna medlem ar tillganglig for inloggning, onskemal och shoppinguppdateringar."
+    "hidden": "Dold från planering",
+    "includedHint": "Denna medlem kan synas i planeringsflödet och tilldelningar.",
+    "hiddenHint": "Denna medlem är tillgänglig för inloggning, önskemal och shoppinguppdateringar."
   },
   "privacy": {
     "eyebrow": "Integritet",
     "title": "Radering och integritet",
-    "description": "Bekrafta destruktiva atgarder med ditt losenord. Dessa floden ar avsedda for permanent borttagning.",
-    "password": "Losenord",
+    "description": "Bekräfta destruktiva åtgärder med ditt lösenord. Dessa flöden är avsedda för permanent borttagning.",
+    "password": "Lösenord",
     "deleting": "Raderar...",
     "deleteAccount": {
       "title": "Radera mitt konto",
-      "description": "Lamna plannern och ta bort ditt konto. Detta blockeras om du ar enda familjemedlem.",
+      "description": "Lämna plannern och ta bort ditt konto. Detta blockeras om du är enda familjemedlem.",
       "action": "Radera mitt konto"
     },
     "deleteFamily": {
       "title": "Radera familj",
-      "description": "Ta bort hela familjeplannern, inklusive profiler, inbjudningar, handelser, mat och shoppingdata.",
+      "description": "Ta bort hela familjeplannern, inklusive profiler, inbjudningar, händelser, mat och shoppingdata.",
       "action": "Radera familj"
     },
     "errors": {

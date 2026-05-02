@@ -1,5 +1,5 @@
 {
-  "skipToContent": "Hoppa till innehall",
+  "skipToContent": "Hoppa till innehåll",
   "signOut": "Logga ut",
   "defaults": {
     "familyName": "Kinship"
@@ -14,7 +14,7 @@
     "meals": "Mat",
     "shopping": "Shopping",
     "family": "Familj",
-    "primaryAria": "Primar"
+    "primaryAria": "Primär"
   },
   "route": {
     "title": {
@@ -24,27 +24,27 @@
       "shopping": "Shopping",
       "family": "Familj",
       "privacy": "Integritet",
-      "planner": "Planner"
+      "planner": "Planerare"
     },
     "eyebrow": {
-      "dashboard": "Oversikt",
+      "dashboard": "Översikt",
       "weeklyPlanner": "Veckoplanering",
       "weeklyMeals": "Veckans mat",
       "sharedList": "Delad lista",
-      "profilesAndColors": "Profiler och farger",
-      "accountControls": "Kontoinstallningar",
-      "familyPlanner": "Familjeplanner"
+      "profilesAndColors": "Profiler och färger",
+      "accountControls": "Kontoinställningar",
+      "familyPlanner": "Familjeplanerare"
     }
   },
   "status": {
-    "offlineMode": "Offlinelage: visar cachad planeringsdata nar tillganglig.",
-    "syncing_one": "Synkroniserar {{count}} offlineandring...",
-    "syncing_other": "Synkroniserar {{count}} offlineandringar...",
-    "waiting_one": "{{count}} offlineandring vantar pa synkronisering.",
-    "waiting_other": "{{count}} offlineandringar vantar pa synkronisering.",
-    "needsAttention_one": "Offlinesynk krav er atgard for {{count}} andring.",
-    "needsAttention_other": "Offlinesynk krav er atgard for {{count}} andringar.",
+    "offlineMode": "Offlineläge: visar cachad planeringsdata när tillgänglig.",
+    "syncing_one": "Synkroniserar {{count}} offlineändring...",
+    "syncing_other": "Synkroniserar {{count}} offlineändringar...",
+    "waiting_one": "{{count}} offlineändring väntar på synkronisering.",
+    "waiting_other": "{{count}} offlineändringar väntar på synkronisering.",
+    "needsAttention_one": "Offlinesynk kräver åtgärd för {{count}} ändring.",
+    "needsAttention_other": "Offlinesynk kräver åtgärd för {{count}} ändringar.",
     "loadingFamilyData": "Laddar familjedata...",
-    "bootstrapError": "Det gick inte att ladda familjedata. Forsok logga in igen."
+    "bootstrapError": "Det gick inte att ladda familjedata. Försök logga in igen."
   }
 }
