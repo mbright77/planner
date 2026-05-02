@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
@@ -62,6 +62,14 @@ export function ShoppingPage() {
   }, [shoppingItemsQuery.data]);
 
   const isSheetOpen = searchParams.get('sheet') === 'add-item';
+
+  useEffect(() => {
+    document.body.classList.toggle('body-modal-open', isSheetOpen);
+
+    return () => {
+      document.body.classList.remove('body-modal-open');
+    };
+  }, [isSheetOpen]);
 
   function openSheet() {
     const nextSearchParams = new URLSearchParams(searchParams);

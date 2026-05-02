@@ -161,6 +161,14 @@ export function CalendarPage() {
   const isSheetOpen = sheet === 'create-event' || sheet === 'edit-event';
 
   useEffect(() => {
+    document.body.classList.toggle('body-modal-open', isSheetOpen);
+
+    return () => {
+      document.body.classList.remove('body-modal-open');
+    };
+  }, [isSheetOpen]);
+
+  useEffect(() => {
     if (!dashboardQuery.data) {
       return;
     }
