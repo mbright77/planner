@@ -416,6 +416,7 @@ select {
 .field {
   display: grid;
   gap: 0.4rem;
+  min-width: 0;
 }
 
 .field span {
@@ -424,6 +425,8 @@ select {
 }
 
 .field input {
+  width: 100%;
+  min-width: 0;
   min-height: 3.5rem;
   padding: 0.75rem 0.9rem;
   border: 2px solid transparent;
@@ -432,6 +435,8 @@ select {
 }
 
 .field textarea {
+  width: 100%;
+  min-width: 0;
   padding: 0.75rem 0.9rem;
   border: 2px solid transparent;
   border-radius: 1rem;
@@ -440,11 +445,20 @@ select {
 }
 
 .field select {
+  width: 100%;
+  min-width: 0;
   min-height: 3.5rem;
   padding: 0.75rem 0.9rem;
   border: 2px solid transparent;
   border-radius: 1rem;
   background: var(--surface-subtle);
+}
+
+.profile-form > *,
+.shopping-form > *,
+.calendar-form > *,
+.meals-form > * {
+  min-width: 0;
 }
 
 .field input:focus-visible,
@@ -1655,6 +1669,11 @@ select {
   box-shadow: var(--shadow);
 }
 
+.invite-panel .profile-form {
+  grid-template-columns: 1fr;
+  align-items: stretch;
+}
+
 .family-section-header {
   margin-bottom: 0.25rem;
 }
@@ -2195,6 +2214,11 @@ select {
   .meals-form {
     grid-template-columns: 2fr 1fr 1fr auto;
     align-items: end;
+  }
+
+  .invite-panel .profile-form {
+    grid-template-columns: 1fr;
+    align-items: stretch;
   }
 
   .meal-requests-form {

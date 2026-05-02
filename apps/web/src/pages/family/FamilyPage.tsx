@@ -152,7 +152,7 @@ export function FamilyPage() {
             <label className="field">
               <span>Link to existing profile (optional)</span>
               <select value={inviteProfileId} onChange={(event) => setInviteProfileId(event.target.value)}>
-                <option value="">Create a new profile on acceptance</option>
+                <option value="">New profile</option>
                 {inviteableProfiles.map((profile) => (
                   <option key={profile.id} value={profile.id}>
                     {profile.displayName}
