@@ -10,10 +10,11 @@ This file is for coding agents working in this repository. Prefer the current co
 
 ## Current Stack
 
-- Frontend: React 19, TypeScript, Vite, React Router, TanStack Query.
+- Frontend: React 19, TypeScript, Vite, React Router, TanStack Query, react-i18next (i18n).
 - Backend: ASP.NET Core minimal API on .NET 9.
 - Database: PostgreSQL via EF Core + Npgsql.
 - Auth: ASP.NET Identity + JWT access token.
+- PWA: Installable web app with service worker (Workbox), manifest, and offline support.
 - Hosting target: static frontend + single-node K3s backend.
 
 ## Current Reality vs Target Plan
@@ -35,6 +36,10 @@ Recent repository changes (important for agents):
 - Frontend conventions: prefer the server-provided `weekStart` for UI week boundaries, group items by the server `date` field, and send `DateOnly`/`TimeOnly` on creates/updates.
 - A generated TypeScript API client in `packages/api-client` is used by the web app and should be regenerated whenever contracts change.
 - EF Core translation differences (especially with the SQLite test provider) surfaced during these changes; some queries were changed to be provider-friendly (fetch minimal data via EF then apply complex UTC/timezone logic in-memory) — add tests when modifying date/time queries.
+- Internationalization (i18n) is now live with English and Swedish language support using `react-i18next` and static JSON files organized by feature namespace (`common`, `auth`, `home`, `calendar`, `meals`, `shopping`, `family`).
+- Language preference is stored per-profile in the `Profile.PreferredLanguage` field (exposed in bootstrap `ProfileSummary`); the UI provides a language selector on the user's own profile card in the Family page.
+- Language fallback resolution: current user's language → family admin's language → `"en"`.
+- PWA is now installable with Workbox-backed service worker caching, web app manifest, and offline read/write support; build includes Lighthouse audits via `pnpm --filter @planner/web lighthouse:mobile`.
 
 When adding new work, follow the current implementation patterns unless the task explicitly asks for a broader architectural migration.
 
@@ -77,6 +82,7 @@ Frontend layout:
 - `apps/web/src/entities/*/model`: TanStack Query hooks for domain slices.
 - `apps/web/src/shared/api`: small handwritten fetch wrappers.
 - `apps/web/src/shared/config`: env configuration.
+- `apps/web/src/shared/i18n`: i18n setup with locale JSON files by feature namespace.
 
 ## Product and UX Rules
 
@@ -237,6 +243,26 @@ Conventions:
 
 Do not introduce Tailwind just because the implementation plan mentions it.
 
+### Internationalization (i18n)
+
+Current i18n setup:
+
+- Framework: `react-i18next` with static JSON locale files.
+- Supported languages: English (`en`), Swedish (`sv`).
+- Locale files: organized by feature namespace in `apps/web/src/shared/i18n/locales/{lang}/{feature}.json`.
+  - Feature namespaces: `common`, `auth`, `home`, `calendar`, `meals`, `shopping`, `family`.
+- Language preference: stored per-profile in `Profile.PreferredLanguage` (exposed in bootstrap `ProfileSummary`).
+- Language selector: visible only on the user's own profile card in the Family page.
+- Fallback resolution: current user's language → family admin's language → `"en"`.
+
+When adding new UI strings:
+
+- Use `useTranslation()` hook from `react-i18next`.
+- Add keys to all 7 namespace JSON files (both `en` and `sv`).
+- Ensure Swedish characters (åäö) are properly UTF-8 encoded in `.json` files.
+- Keep keys grouped logically by component or feature area within each namespace.
+- Use `{{count}}` placeholders for pluralization rules (e.g., `"itemsLeft_one"`, `"itemsLeft_other"`).
+
 ### Routing and Shell
 
 Current app shell and routes:
@@ -260,6 +286,23 @@ Current auth state:
 - JWT bearer auth is configured in `Planner.Api/DependencyInjection/ServiceCollectionExtensions.cs`.
 
 This is a known MVP simplification. Do not silently refactor auth storage or session semantics while doing unrelated work.
+
+## PWA and Offline Support
+
+Current PWA state:
+
+- The app is installable on all platforms (web app manifest, install icons, theme colors).
+- Service worker uses Workbox-backed precaching and runtime caching for static assets and API responses.
+- Offline read support: protected queries fall back to IndexedDB-backed cache when the browser is offline.
+- Offline write support: mutations on shopping, calendar, and meals queue in IndexedDB and flush when reconnected.
+- Build includes Lighthouse checks via `pnpm --filter @planner/web lighthouse:mobile` for mobile PWA quality.
+- Offline failures (e.g., conflicting edits) remain visible in the local queue with explicit failed status and trigger an app-shell alert.
+
+When modifying query/mutation hooks or adding new features:
+
+- Ensure read-only queries can gracefully fall back to cache when offline.
+- Consider whether mutations should queue (shopping, calendar, meals already do) or require online (e.g., some deletion flows).
+- Test offline scenarios manually and verify the offline banner and error state UI are correct.
 
 ## Database and Migration Rules
 
@@ -315,6 +358,8 @@ Implemented and usable today:
 - Calendar
 - Meals
 - Meal requests
+- Internationalization (i18n): English and Swedish language support with profile-based language preference
+- PWA: installable app with offline read/write support
 
 When adding adjacent work, inspect the nearest existing slice and mirror it instead of inventing a new pattern.
 
@@ -326,7 +371,7 @@ Be aware of these before making changes:
 - `Planner.Domain/AssemblyMarker.cs` is carrying all entities, which is not ideal but is current convention.
 - Error payloads are not standardized yet.
 - The login page is still a placeholder relative to the implementation plan.
-- The roadmap mentions generated API clients, offline queueing, refresh cookies, and Tailwind, but those are not current implementation patterns.
+- The roadmap mentions offline queueing, refresh cookies, and Tailwind, but those are not current implementation patterns.
 
 Do not “fix” these as incidental cleanup unless the task is explicitly about them.
 
