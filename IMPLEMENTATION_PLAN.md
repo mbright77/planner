@@ -146,7 +146,7 @@ Current committed state:
 Current committed state:
 
 - Implemented stack: React 19, TypeScript, Vite, React Router, TanStack Query
-- Not yet implemented in committed app code: Zustand, React Hook Form, Zod-driven forms, Tailwind, Radix UI, Vaul, Dexie, `vite-plugin-pwa`
+- Not yet implemented in committed app code: Zustand, React Hook Form, Zod-driven forms, Tailwind, Radix UI, Vaul, Dexie
 
 ### Why These Choices
 
@@ -280,6 +280,12 @@ Current committed state:
 - Precache app shell, manifest, icons, self-hosted fonts, and critical assets
 - Use Workbox caching strategies
 - Prompt users when a new version is available
+
+Current committed state:
+
+- `vite-plugin-pwa` is wired in `apps/web/vite.config.ts` with Workbox precache and runtime caching for Google Fonts
+- The app registers the service worker via `virtual:pwa-register` on startup for production builds
+- `apps/web/public/manifest.webmanifest` now includes install-friendly PNG icons (192 and 512), a maskable icon, and standalone metadata
 
 ### Offline Support Strategy
 
@@ -1220,7 +1226,7 @@ Completed in current implementation pass:
 - The shared app shell now includes a skip link, visible keyboard focus styling, polite live regions for sync and offline status, and alert semantics for bootstrap failures
 - The web app now has a lightweight Vitest + React Testing Library setup with initial accessibility-focused coverage for the app shell
 - Shopping list and meal request queries now poll every 30 seconds while online, while calendar and meals remain manual/revalidation driven to avoid unnecessary background traffic
-- The web app now ships a basic manifest and theme-color metadata, and `pnpm --filter @planner/web lighthouse:mobile` builds, previews, and audits the mobile experience locally with Lighthouse
+- The web app now ships full installable PWA wiring (manifest, service worker registration, Workbox caching, install icons) and `pnpm --filter @planner/web lighthouse:mobile` builds, previews, and audits the mobile experience locally with Lighthouse
 - Calendar event cards now expose an `Add to calendar` action that exports the current event to Google Calendar or downloads an `.ics` file for iOS calendar import
 - Offline replay failures now stay in the local queue with explicit failed status and trigger an app-shell alert so conflicting offline changes are visible instead of silently stalling in the console
 - Query-plan review on an isolated local Postgres instance showed the shopping list endpoint still sorting after the family filter, so the shopping index now includes `Label` to match the live `(family, is_completed, category, label)` ordering
