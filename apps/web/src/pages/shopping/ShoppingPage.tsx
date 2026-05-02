@@ -10,37 +10,17 @@ import {
   useUpdateShoppingItem,
 } from '../../entities/shopping-item/model/useShoppingItems';
 
-const defaultCategories = ['Produce', 'Dairy', 'Pantry', 'Household'];
+const defaultCategories = ['produce', 'dairy', 'pantry', 'household'];
 
-function resolveCategoryKey(category: string) {
-  const normalized = category.trim().toLowerCase();
-
-  if (normalized === 'produce' || normalized === 'frukt och gront' || normalized === 'frukt och grönt') {
-    return 'produce';
-  }
-
-  if (normalized === 'dairy' || normalized === 'mejeri') {
-    return 'dairy';
-  }
-
-  if (normalized === 'pantry' || normalized === 'skafferi') {
-    return 'pantry';
-  }
-
-  if (normalized === 'household' || normalized === 'hushall' || normalized === 'hushåll') {
-    return 'household';
-  }
-
-  return null;
+function normalizeCategoryKey(category: string) {
+  return category.trim().toLowerCase();
 }
 
 function getProfileColorChipClass(colorKey: string | null | undefined) {
   return colorKey ? `profile-color-chip profile-color-chip-${colorKey}` : 'profile-color-chip';
 }
 
-function getCategoryIcon(category: string) {
-  const key = resolveCategoryKey(category);
-
+function getCategoryIcon(key: string) {
   if (key === 'produce') return 'local_florist';
   if (key === 'dairy') return 'egg_alt';
   if (key === 'pantry') return 'kitchen';
@@ -48,9 +28,7 @@ function getCategoryIcon(category: string) {
   return 'shopping_basket';
 }
 
-function getCategoryAccent(category: string) {
-  const key = resolveCategoryKey(category);
-
+function getCategoryAccent(key: string) {
   if (key === 'produce') return '#84ac8e';
   if (key === 'dairy') return '#5da9e9';
   if (key === 'pantry') return '#fd898a';
@@ -78,8 +56,9 @@ export function ShoppingPage() {
     const groups = new Map<string, typeof shoppingItemsQuery.data>();
 
     for (const item of shoppingItemsQuery.data ?? []) {
-      const existing = groups.get(item.category) ?? [];
-      groups.set(item.category, [...existing, item]);
+      const key = normalizeCategoryKey(item.category);
+      const existing = groups.get(key) ?? [];
+      groups.set(key, [...existing, item]);
     }
 
     return [...groups.entries()];
@@ -156,17 +135,14 @@ export function ShoppingPage() {
 
       <div className="shopping-groups">
         {groupedItems.length > 0 ? (
-          groupedItems.map(([group, items]) => {
-            const categoryKey = resolveCategoryKey(group);
-
-            return (
+          groupedItems.map(([group, items]) => (
             <article key={group} className="shopping-group-card">
               <div className="shopping-group-header shopping-group-header-decorated" style={{ borderLeftColor: getCategoryAccent(group) }}>
                 <h3 className="profile-card-title shopping-group-title">
                   <span className="material-symbols-outlined shopping-group-icon" aria-hidden="true">
                     {getCategoryIcon(group)}
                   </span>
-                  {categoryKey ? t(`categories.${categoryKey}`) : group}
+                  {t(`categories.${group}`, { defaultValue: group })}
                 </h3>
                 <span className="shopping-group-count-badge">{items?.length ?? 0}</span>
               </div>
@@ -179,7 +155,7 @@ export function ShoppingPage() {
                     <li key={item.id} className={item.isCompleted ? 'shopping-list-item shopping-list-item-complete' : 'shopping-list-item'}>
                       <label className="shopping-checkbox-row">
                         <span className="shopping-item-icon" aria-hidden="true">
-                          <span className="material-symbols-outlined" aria-hidden="true">{getCategoryIcon(item.category)}</span>
+                          <span className="material-symbols-outlined" aria-hidden="true">{getCategoryIcon(normalizeCategoryKey(item.category))}</span>
                         </span>
                         <input
                           type="checkbox"
@@ -213,8 +189,7 @@ export function ShoppingPage() {
                 })}
               </ul>
             </article>
-            );
-          })
+          ))
         ) : (
           <div className="dashboard-empty-card">
             <p className="shopping-meta">{t('empty')}</p>
@@ -257,7 +232,7 @@ export function ShoppingPage() {
                 <select value={category} onChange={(event) => setCategory(event.target.value)}>
                   {defaultCategories.map((option) => (
                     <option key={option} value={option}>
-                      {t(`categories.${option.toLowerCase()}`)}
+                      {t(`categories.${option}`)}
                     </option>
                   ))}
                 </select>
