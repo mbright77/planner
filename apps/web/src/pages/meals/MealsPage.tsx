@@ -7,6 +7,7 @@ import {
   useAssignMealRequest,
   useCreateMealPlan,
   useCreateMealRequest,
+  useDeleteMealPlan,
   useMealRequests,
   useMealsWeek,
   useUpdateMealPlan,
@@ -75,6 +76,10 @@ function shiftWeekDate(weekStart: string, selectedDate: string, direction: -1 | 
   };
 }
 
+function getProfileColorChipClass(colorKey: string | null | undefined) {
+  return colorKey ? `profile-color-chip profile-color-chip-${colorKey}` : 'profile-color-chip';
+}
+
 export function MealsPage() {
   const today = new Date();
   const initialWeekStart = formatDateOnly(getWeekStart(today));
@@ -98,6 +103,7 @@ export function MealsPage() {
   const [mealEditError, setMealEditError] = useState('');
   const [assigningRequestId, setAssigningRequestId] = useState<string | null>(null);
   const [assigningRequestProfileId, setAssigningRequestProfileId] = useState('');
+  const [confirmDeleteMealId, setConfirmDeleteMealId] = useState<string | null>(null);
 
   const mealTitleRef = useRef<HTMLInputElement | null>(null);
   const requestTitleRef = useRef<HTMLInputElement | null>(null);
@@ -111,6 +117,7 @@ export function MealsPage() {
   const assignMealRequestMutation = useAssignMealRequest(weekStart);
   const acceptMealRequestMutation = useAcceptMealRequest(weekStart);
   const updateMealPlanMutation = useUpdateMealPlan(weekStart);
+  const deleteMealPlanMutation = useDeleteMealPlan(weekStart);
 
   const weekDays = useMemo(() => buildWeekDays(weekStart), [weekStart]);
   const canPlanMeals = bootstrapQuery.data?.membership.canPlanMeals ?? true;
@@ -195,6 +202,7 @@ export function MealsPage() {
     setSelectedDate(day);
     setMealFormError('');
     setRequestFormError('');
+    setConfirmDeleteMealId(null);
     focusMealTitle();
   }
 
@@ -204,6 +212,17 @@ export function MealsPage() {
     setSelectedDate(nextSelectedDate);
     setMealFormError('');
     setRequestFormError('');
+    setConfirmDeleteMealId(null);
+  }
+
+  async function handleDeleteMeal(mealId: string) {
+    if (confirmDeleteMealId !== mealId) {
+      setConfirmDeleteMealId(mealId);
+      return;
+    }
+
+    await deleteMealPlanMutation.mutateAsync(mealId);
+    setConfirmDeleteMealId(null);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -472,7 +491,7 @@ export function MealsPage() {
           const owner = bootstrapQuery.data?.profiles.find((profile) => profile.id === meal?.ownerProfileId);
           const requests = requestsByDate.get(day.key) ?? [];
           const className = meal
-            ? day.key === weekDays[4]?.key
+            ? day.key === dashboardQuery.data?.date
               ? 'meal-card meal-card-featured'
               : 'meal-card'
             : 'meal-card meal-card-empty';
@@ -485,7 +504,7 @@ export function MealsPage() {
                   <h3 className="profile-card-title">{day.dayNumber}</h3>
                 </div>
                 <div className="meal-card-chip-stack">
-                  {owner ? <span className="profile-color-chip">{owner.displayName}</span> : null}
+                  {owner ? <span className={getProfileColorChipClass(owner.colorKey)}>{owner.displayName}</span> : null}
                   {requests.length > 0 ? <span className="profile-color-chip">{requests.length} request{requests.length === 1 ? '' : 's'}</span> : null}
                 </div>
               </div>
@@ -505,6 +524,15 @@ export function MealsPage() {
                         onClick={() => handleStartMealEdit(day.key)}
                       >
                         Edit day
+                      </button>
+                      <button
+                        className={confirmDeleteMealId === meal.id ? 'destructive-button meal-card-button' : 'secondary-button meal-card-button'}
+                        type="button"
+                        onClick={() => handleDeleteMeal(meal.id)}
+                        aria-label={confirmDeleteMealId === meal.id ? `Confirm delete ${meal.title}` : `Delete ${meal.title}`}
+                        disabled={deleteMealPlanMutation.isPending}
+                      >
+                        {confirmDeleteMealId === meal.id ? 'Confirm delete' : 'Delete'}
                       </button>
                     </div>
                   ) : null}
@@ -604,7 +632,7 @@ export function MealsPage() {
                   <div className="meal-request-copy">
                     <div className="meal-request-tags">
                       <strong className="meal-request-title">{request.title}</strong>
-                      {requester ? <span className="profile-color-chip">{requester.displayName}</span> : null}
+                      {requester ? <span className={getProfileColorChipClass(requester.colorKey)}>{requester.displayName}</span> : null}
                     </div>
                     {request.notes ? <p className="meal-card-notes">{request.notes}</p> : null}
                     {assignee ? <p className="shopping-meta">Assigned to {assignee.displayName}</p> : null}

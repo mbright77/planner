@@ -33,6 +33,7 @@ Current committed reality:
 - Core first-pass slices are committed for profiles, shopping, calendar, meals, and meal requests
 - The home dashboard, generated API client, IndexedDB-backed offline support, and weekly recurring calendar events are implemented
 - Calendar event cards now support cross-platform add-to-calendar export using Google Calendar links on desktop/Android and `.ics` download on iOS
+- A vibrant Kinship-style UI refresh is now delivered across app shell, auth, home, calendar, meals, shopping, and family pages, including 370px touch-target and accessibility hardening
 - CI/CD and real infra manifests are not implemented yet, but deployment requirements and production inputs are now documented in `DEPLOYMENT.md`
 
 Use the sections below as product direction, but treat the notes marked "Current committed state" as the source of truth for what exists today.
@@ -1227,6 +1228,7 @@ Completed in current implementation pass:
 - `infra/scripts` and `docs/runbooks` now include explicit migration, deploy, and rollback procedures, including a rollout helper that automatically undoes failed API deployments and a migration wrapper that requires an explicit connection string
 - `docs/runbooks/production-release-checklist.md` now captures the current release gate for verification, migration, rollout, rollback, and post-release recording
 - The frontend now hardens narrow-width overflow behavior at `360x780`, converts the dashboard week summary to a swipeable mobile strip, simplifies calendar and meals around selected-day planning, replaces hidden meal assignment cycling with explicit edit and assignment controls, speeds up shopping quick add, and introduces search-param driven mobile sheets plus floating add actions for calendar and shopping
+- Calendar, meals, and shopping now include first-class delete flows end to end (API endpoints, frontend hooks/mutations, and offline queue replay), and the web app includes `src/test/ui-refactor.spec.tsx` to verify vibrant UI behavior, accessibility semantics, 370px layout constraints, and key add/delete regressions
 
 ### Phase 4: Optimization
 

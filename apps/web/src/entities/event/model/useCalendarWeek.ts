@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   type CalendarEventResponse,
   createCalendarEvent,
+  deleteCalendarEvent,
   fetchCalendarWeek,
   updateCalendarEvent,
   type CreateCalendarEventRequest,
@@ -194,6 +195,53 @@ export function useUpdateCalendarEvent(weekStart: string) {
             : remainingEvents,
         };
       });
+      await syncOfflineQueryData<WeeklyCalendarResponse>(queryClient, queryKey);
+    },
+    onSettled: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey }),
+        queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] }),
+      ]);
+    },
+  });
+}
+
+export function useDeleteCalendarEvent(weekStart: string) {
+  const { session } = useAuthSession();
+  const queryClient = useQueryClient();
+  const queryKey = calendarWeekKey(session?.accessToken, weekStart);
+
+  return useMutation({
+    mutationFn: (eventId: string) =>
+      runOrQueueOfflineMutation(
+        {
+          kind: 'calendar.delete',
+          accessToken: session!.accessToken,
+          payload: { eventId },
+          invalidateKeys: [queryKey, ['dashboard-overview']],
+        },
+        () => deleteCalendarEvent(session!.accessToken, eventId),
+      ),
+    onMutate: async (eventId) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previousWeek = queryClient.getQueryData<WeeklyCalendarResponse>(queryKey);
+
+      queryClient.setQueryData<WeeklyCalendarResponse | undefined>(queryKey, (week) => {
+        if (!week) {
+          return week;
+        }
+
+        return {
+          ...week,
+          events: week.events.filter((event) => event.id !== eventId),
+        };
+      });
+      await syncOfflineQueryData<WeeklyCalendarResponse>(queryClient, queryKey);
+
+      return { previousWeek };
+    },
+    onError: async (_error, _eventId, context) => {
+      queryClient.setQueryData(queryKey, context?.previousWeek);
       await syncOfflineQueryData<WeeklyCalendarResponse>(queryClient, queryKey);
     },
     onSettled: async () => {

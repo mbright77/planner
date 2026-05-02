@@ -23,48 +23,24 @@ const routeMeta: Record<string, { eyebrow: string; title: string }> = {
 };
 
 function AppIcon({ name }: { name: (typeof navigation)[number]['icon'] | 'signout' }) {
-  switch (name) {
-    case 'home':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-        </svg>
-      );
-    case 'calendar':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case 'meals':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6 3v8M9 3v8M6 7h3M15 3v18M18 3c1.7 2.2 1.7 5.8 0 8h-3V3z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case 'shopping':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6 7h14l-1.5 8.5a1 1 0 0 1-1 .8H9a1 1 0 0 1-1-.8L6 4H3" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="10" cy="20" r="1.4" fill="currentColor" />
-          <circle cx="17" cy="20" r="1.4" fill="currentColor" />
-        </svg>
-      );
-    case 'family':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="9" cy="8" r="2.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
-          <circle cx="16.5" cy="9.5" r="2" fill="none" stroke="currentColor" strokeWidth="1.8" />
-          <path d="M4.5 18a4.5 4.5 0 0 1 9 0M13 18a3.5 3.5 0 0 1 7 0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-      );
-    case 'signout':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M10 6H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h4M14 8l4 4-4 4M18 12H9" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-  }
+  const glyph =
+    name === 'home'
+      ? 'home'
+      : name === 'calendar'
+        ? 'calendar_month'
+        : name === 'meals'
+          ? 'restaurant'
+          : name === 'shopping'
+            ? 'checklist'
+            : name === 'family'
+              ? 'family_restroom'
+              : 'logout';
+
+  return (
+    <span className="material-symbols-outlined" aria-hidden="true">
+      {glyph}
+    </span>
+  );
 }
 
 export function AppShell() {

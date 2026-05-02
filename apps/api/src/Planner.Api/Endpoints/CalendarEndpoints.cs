@@ -20,6 +20,9 @@ public static class CalendarEndpoints
             .Produces<CalendarEventResponse>(StatusCodes.Status201Created);
         calendar.MapPut("/{eventId:guid}", UpdateEventAsync)
             .Produces<CalendarEventResponse>(StatusCodes.Status200OK);
+        calendar.MapDelete("/{eventId:guid}", DeleteEventAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound);
 
         return app;
     }
@@ -285,6 +288,32 @@ public static class CalendarEndpoints
 
         var eventLocalDate = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(calendarEvent.StartAtUtc.UtcDateTime, familyTimeZone).Date);
         return Results.Ok(ToResponse(calendarEvent, calendarEvent.Series?.RepeatUntil, eventLocalDate));
+    }
+
+    private static async Task<IResult> DeleteEventAsync(
+        HttpContext httpContext,
+        Guid eventId,
+        PlannerDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        var membership = await GetMembershipAsync(httpContext, dbContext, cancellationToken);
+        if (membership is null)
+        {
+            return Results.NotFound();
+        }
+
+        var calendarEvent = await dbContext.CalendarEvents
+            .FirstOrDefaultAsync(x => x.Id == eventId && x.FamilyId == membership.FamilyId, cancellationToken);
+
+        if (calendarEvent is null)
+        {
+            return Results.NotFound();
+        }
+
+        dbContext.CalendarEvents.Remove(calendarEvent);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return Results.NoContent();
     }
 
     private static IResult? ValidateWeeklyRecurrence(bool repeatsWeekly, DateOnly? repeatUntil, DateTimeOffset startAtUtc)

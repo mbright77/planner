@@ -6,6 +6,7 @@ import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 import {
   useCalendarWeek,
   useCreateCalendarEvent,
+  useDeleteCalendarEvent,
   useUpdateCalendarEvent,
 } from '../../entities/event/model/useCalendarWeek';
 import { addToCalendar } from '../../shared/lib/calendar';
@@ -71,7 +72,15 @@ function formatEventTime(startAtUtc: string, endAtUtc: string) {
   const start = new Date(startAtUtc);
   const end = new Date(endAtUtc);
 
-  return `${start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} - ${end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+  return `${start.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', hour12: false })} - ${end.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
+}
+
+function getProfileAccentColor(colorKey: string | null | undefined) {
+  if (colorKey === 'green') return '#84ac8e';
+  if (colorKey === 'blue') return '#5da9e9';
+  if (colorKey === 'pink') return '#fd898a';
+  if (colorKey === 'yellow') return '#f4d35e';
+  return 'var(--primary-container)';
 }
 
 function exportCalendarEvent(calendarEvent: { title: string; notes: string | null; startAtUtc: string; endAtUtc: string }) {
@@ -136,6 +145,7 @@ export function CalendarPage() {
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [formError, setFormError] = useState('');
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [confirmDeleteEventId, setConfirmDeleteEventId] = useState<string | null>(null);
 
   const titleInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -144,6 +154,7 @@ export function CalendarPage() {
   const calendarWeekQuery = useCalendarWeek(weekStart);
   const createCalendarEventMutation = useCreateCalendarEvent(weekStart);
   const updateCalendarEventMutation = useUpdateCalendarEvent(weekStart);
+  const deleteCalendarEventMutation = useDeleteCalendarEvent(weekStart);
   const weekDays = useMemo(() => buildWeekDays(weekStart), [weekStart]);
   const calendarEvents = calendarWeekQuery.data?.events ?? [];
   const sheet = searchParams.get('sheet');
@@ -192,6 +203,10 @@ export function CalendarPage() {
     return groups;
   }, [calendarEvents, weekDays]);
 
+  const eventCountsByDay = useMemo(() => {
+    return new Map(weekDays.map((day) => [day.key, (eventsByDay.get(day.key) ?? []).length]));
+  }, [eventsByDay, weekDays]);
+
   function focusComposeTitle() {
     window.requestAnimationFrame(() => {
       titleInputRef.current?.focus();
@@ -219,6 +234,7 @@ export function CalendarPage() {
     setSearchParams(nextSearchParams, { replace: false });
     setFormError('');
     setEditingEventId(null);
+    setConfirmDeleteEventId(null);
   }
 
   function seedCreateForm(date: string) {
@@ -233,6 +249,7 @@ export function CalendarPage() {
     setEndTime('19:00');
     setShowMoreOptions(false);
     setFormError('');
+    setConfirmDeleteEventId(null);
     openSheet('create-event', date);
   }
 
@@ -254,12 +271,14 @@ export function CalendarPage() {
     setEndTime(formatTimeInput(new Date(calendarEvent.endAtUtc)));
     setShowMoreOptions(Boolean(calendarEvent.notes || calendarEvent.assignedProfileId || calendarEvent.isRecurring));
     setFormError('');
+    setConfirmDeleteEventId(null);
     openSheet('edit-event', eventDate, calendarEvent.id);
   }
 
   function handleSelectDay(day: string) {
     setSelectedDate(day);
     setFormError('');
+    setConfirmDeleteEventId(null);
   }
 
   function handleShiftWeek(direction: -1 | 1) {
@@ -267,6 +286,17 @@ export function CalendarPage() {
     setWeekStart(nextWeekStart);
     setSelectedDate(nextSelectedDate);
     setFormError('');
+    setConfirmDeleteEventId(null);
+  }
+
+  async function handleDeleteEvent(eventId: string) {
+    if (confirmDeleteEventId !== eventId) {
+      setConfirmDeleteEventId(eventId);
+      return;
+    }
+
+    await deleteCalendarEventMutation.mutateAsync(eventId);
+    setConfirmDeleteEventId(null);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -349,6 +379,7 @@ export function CalendarPage() {
         <div className="calendar-week-strip" aria-label="Week days">
           {weekDays.map((day) => {
             const isActive = day.key === selectedDate;
+            const eventCount = eventCountsByDay.get(day.key) ?? 0;
 
             return (
               <button
@@ -359,6 +390,11 @@ export function CalendarPage() {
               >
                 <span className="calendar-week-pill-label">{day.label}</span>
                 <span className="calendar-week-pill-number">{day.dayNumber}</span>
+                {isActive ? (
+                  <span className="calendar-week-pill-dot calendar-week-pill-dot-active" aria-hidden="true" />
+                ) : eventCount > 0 ? (
+                  <span className="calendar-week-pill-dot" aria-hidden="true" />
+                ) : null}
               </button>
             );
           })}
@@ -416,12 +452,13 @@ export function CalendarPage() {
                     );
 
                     return (
-                      <li key={calendarEvent.id} className="calendar-event-item">
-                        <div className="calendar-event-avatar" aria-hidden="true">
-                          {assignedProfile ? assignedProfile.displayName.slice(0, 1).toUpperCase() : 'A'}
-                        </div>
-
+                      <li
+                        key={calendarEvent.id}
+                        className="calendar-event-item"
+                        style={{ borderLeftColor: getProfileAccentColor(assignedProfile?.colorKey) }}
+                      >
                         <div className="calendar-event-content">
+                          <span className="calendar-event-category">Event</span>
                           <strong className="calendar-event-title">{calendarEvent.title}</strong>
                           <p className="calendar-event-time">
                             {formatEventTime(calendarEvent.startAtUtc, calendarEvent.endAtUtc)}
@@ -432,10 +469,21 @@ export function CalendarPage() {
                             </p>
                           ) : null}
                           {calendarEvent.notes ? <p className="calendar-event-notes">{calendarEvent.notes}</p> : null}
+                          {assignedProfile ? (
+                            <div className="calendar-event-avatar-stack" aria-label={`Assigned to ${assignedProfile.displayName}`}>
+                              <span
+                                className="calendar-event-avatar-chip"
+                                style={{ borderColor: getProfileAccentColor(assignedProfile.colorKey) }}
+                                aria-hidden="true"
+                              >
+                                {assignedProfile.displayName.slice(0, 1).toUpperCase()}
+                              </span>
+                              <span className="shopping-meta">{assignedProfile.displayName}</span>
+                            </div>
+                          ) : null}
                         </div>
 
                         <div className="calendar-event-actions">
-                          {assignedProfile ? <span className="shopping-meta">{assignedProfile.displayName}</span> : null}
                           <button
                             className="secondary-button calendar-small-button"
                             type="button"
@@ -449,6 +497,15 @@ export function CalendarPage() {
                             onClick={() => seedEditForm(calendarEvent.id)}
                           >
                             Edit
+                          </button>
+                          <button
+                            className={confirmDeleteEventId === calendarEvent.id ? 'destructive-button calendar-small-button' : 'secondary-button calendar-small-button'}
+                            type="button"
+                            aria-label={confirmDeleteEventId === calendarEvent.id ? `Confirm delete ${calendarEvent.title}` : `Delete ${calendarEvent.title}`}
+                            onClick={() => handleDeleteEvent(calendarEvent.id)}
+                            disabled={deleteCalendarEventMutation.isPending}
+                          >
+                            {confirmDeleteEventId === calendarEvent.id ? 'Confirm delete' : 'Delete'}
                           </button>
                         </div>
                       </li>

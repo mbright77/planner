@@ -4,11 +4,36 @@ import { useSearchParams } from 'react-router-dom';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 import {
   useCreateShoppingItem,
+  useDeleteShoppingItem,
   useShoppingItems,
   useUpdateShoppingItem,
 } from '../../entities/shopping-item/model/useShoppingItems';
 
 const defaultCategories = ['Produce', 'Dairy', 'Pantry', 'Household'];
+
+function getProfileColorChipClass(colorKey: string | null | undefined) {
+  return colorKey ? `profile-color-chip profile-color-chip-${colorKey}` : 'profile-color-chip';
+}
+
+function getCategoryIcon(category: string) {
+  const normalized = category.toLowerCase();
+
+  if (normalized.includes('produce')) return 'local_florist';
+  if (normalized.includes('dairy')) return 'egg_alt';
+  if (normalized.includes('pantry')) return 'kitchen';
+  if (normalized.includes('household')) return 'home';
+  return 'shopping_basket';
+}
+
+function getCategoryAccent(category: string) {
+  const normalized = category.toLowerCase();
+
+  if (normalized.includes('produce')) return '#84ac8e';
+  if (normalized.includes('dairy')) return '#5da9e9';
+  if (normalized.includes('pantry')) return '#fd898a';
+  if (normalized.includes('household')) return '#f4d35e';
+  return 'var(--primary-container)';
+}
 
 export function ShoppingPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -16,6 +41,7 @@ export function ShoppingPage() {
   const shoppingItemsQuery = useShoppingItems();
   const createShoppingItemMutation = useCreateShoppingItem();
   const updateShoppingItemMutation = useUpdateShoppingItem();
+  const deleteShoppingItemMutation = useDeleteShoppingItem();
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [label, setLabel] = useState('');
@@ -100,9 +126,14 @@ export function ShoppingPage() {
         {groupedItems.length > 0 ? (
           groupedItems.map(([group, items]) => (
             <article key={group} className="shopping-group-card">
-              <div className="shopping-group-header shopping-group-header-decorated">
-                <h3 className="profile-card-title shopping-group-title">{group}</h3>
-                <span className="profile-color-chip">{items?.length ?? 0} items</span>
+              <div className="shopping-group-header shopping-group-header-decorated" style={{ borderLeftColor: getCategoryAccent(group) }}>
+                <h3 className="profile-card-title shopping-group-title">
+                  <span className="material-symbols-outlined shopping-group-icon" aria-hidden="true">
+                    {getCategoryIcon(group)}
+                  </span>
+                  {group}
+                </h3>
+                <span className="shopping-group-count-badge">{items?.length ?? 0}</span>
               </div>
 
               <ul className="shopping-list">
@@ -110,8 +141,11 @@ export function ShoppingPage() {
                   const addedBy = bootstrapQuery.data?.profiles.find((profile) => profile.id === item.addedByProfileId);
 
                   return (
-                    <li key={item.id} className="shopping-list-item">
+                    <li key={item.id} className={item.isCompleted ? 'shopping-list-item shopping-list-item-complete' : 'shopping-list-item'}>
                       <label className="shopping-checkbox-row">
+                        <span className="shopping-item-icon" aria-hidden="true">
+                          <span className="material-symbols-outlined" aria-hidden="true">{getCategoryIcon(item.category)}</span>
+                        </span>
                         <input
                           type="checkbox"
                           checked={item.isCompleted}
@@ -127,7 +161,18 @@ export function ShoppingPage() {
                         </span>
                       </label>
 
-                      {addedBy ? <span className="shopping-owner-chip">{addedBy.displayName}</span> : null}
+                      <div className="shopping-item-side">
+                        {addedBy ? <span className={getProfileColorChipClass(addedBy.colorKey)}>{addedBy.displayName}</span> : null}
+                        <button
+                          className="destructive-button calendar-small-button"
+                          type="button"
+                          aria-label={`Remove ${item.label} from list`}
+                          onClick={() => deleteShoppingItemMutation.mutate(item.id)}
+                          disabled={deleteShoppingItemMutation.isPending}
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </li>
                   );
                 })}

@@ -7,6 +7,7 @@ import {
 } from '@planner/api-client';
 
 import { env } from '../config/env';
+import { http } from './http';
 
 export type { CreateShoppingItemRequest, ShoppingItemResponse };
 
@@ -20,4 +21,11 @@ export async function createShoppingItem(accessToken: string, request: CreateSho
 
 export async function updateShoppingItem(accessToken: string, itemId: string, isCompleted: boolean) {
   return updateShoppingItemRequest({ baseUrl: env.apiBaseUrl, accessToken }, itemId, { isCompleted });
+}
+
+export async function deleteShoppingItem(accessToken: string, itemId: string) {
+  return http<void>(`/api/v1/shopping/${itemId}`, {
+    accessToken,
+    method: 'DELETE',
+  });
 }

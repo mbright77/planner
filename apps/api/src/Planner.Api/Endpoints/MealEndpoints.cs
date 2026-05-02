@@ -19,6 +19,9 @@ public static class MealEndpoints
             .Produces<MealPlanResponse>(StatusCodes.Status201Created);
         meals.MapPut("/{mealId:guid}", UpdateMealAsync)
             .Produces<MealPlanResponse>(StatusCodes.Status200OK);
+        meals.MapDelete("/{mealId:guid}", DeleteMealAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound);
         meals.MapGet("/requests", GetRequestsAsync)
             .Produces<IReadOnlyList<MealRequestResponse>>(StatusCodes.Status200OK);
         meals.MapPost("/requests", CreateRequestAsync)
@@ -163,6 +166,37 @@ public static class MealEndpoints
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return Results.Ok(ToResponse(mealPlan));
+    }
+
+    private static async Task<IResult> DeleteMealAsync(
+        HttpContext httpContext,
+        Guid mealId,
+        PlannerDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        var membership = await GetMembershipAsync(httpContext, dbContext, cancellationToken);
+        if (membership is null)
+        {
+            return Results.NotFound();
+        }
+
+        if (!await CanCurrentUserPlanMealsAsync(membership, dbContext, cancellationToken))
+        {
+            return Results.Forbid();
+        }
+
+        var mealPlan = await dbContext.MealPlans
+            .FirstOrDefaultAsync(x => x.Id == mealId && x.FamilyId == membership.FamilyId, cancellationToken);
+
+        if (mealPlan is null)
+        {
+            return Results.NotFound();
+        }
+
+        dbContext.MealPlans.Remove(mealPlan);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return Results.NoContent();
     }
 
     private static async Task<IResult> GetRequestsAsync(

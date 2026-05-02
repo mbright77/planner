@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import {
   createShoppingItem,
+  deleteShoppingItem,
   fetchShoppingItems,
   updateShoppingItem,
   type CreateShoppingItemRequest,
@@ -148,6 +149,46 @@ export function useUpdateShoppingItem() {
       queryClient.setQueryData<ShoppingItemResponse[]>(queryKey, (items = []) =>
         items.map((currentItem) => (currentItem.id === result.data.id ? result.data : currentItem)),
       );
+      await syncOfflineQueryData<ShoppingItemResponse[]>(queryClient, queryKey);
+    },
+    onSettled: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey }),
+        queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] }),
+      ]);
+    },
+  });
+}
+
+export function useDeleteShoppingItem() {
+  const { session } = useAuthSession();
+  const queryClient = useQueryClient();
+  const queryKey = shoppingItemsKey(session?.accessToken);
+
+  return useMutation({
+    mutationFn: (itemId: string) =>
+      runOrQueueOfflineMutation(
+        {
+          kind: 'shopping.delete',
+          accessToken: session!.accessToken,
+          payload: { itemId },
+          invalidateKeys: [queryKey, ['dashboard-overview']],
+        },
+        () => deleteShoppingItem(session!.accessToken, itemId),
+      ),
+    onMutate: async (itemId) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previousItems = queryClient.getQueryData<ShoppingItemResponse[]>(queryKey);
+
+      queryClient.setQueryData<ShoppingItemResponse[]>(queryKey, (items = []) =>
+        items.filter((item) => item.id !== itemId),
+      );
+      await syncOfflineQueryData<ShoppingItemResponse[]>(queryClient, queryKey);
+
+      return { previousItems };
+    },
+    onError: async (_error, _itemId, context) => {
+      queryClient.setQueryData(queryKey, context?.previousItems);
       await syncOfflineQueryData<ShoppingItemResponse[]>(queryClient, queryKey);
     },
     onSettled: async () => {

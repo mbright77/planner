@@ -13,6 +13,7 @@ import { ApiError } from '@planner/api-client';
 import { useAuthSession } from '../../processes/auth-session/AuthSessionContext';
 import {
   createCalendarEvent,
+  deleteCalendarEvent,
   updateCalendarEvent,
   type CreateCalendarEventRequest,
   type UpdateCalendarEventRequest,
@@ -22,6 +23,7 @@ import {
   assignMealRequest,
   createMealPlan,
   createMealRequest,
+  deleteMealPlan,
   updateMealPlan,
   type CreateMealPlanRequest,
   type CreateMealRequestRequest,
@@ -29,6 +31,7 @@ import {
 } from '../api/meals';
 import {
   createShoppingItem,
+  deleteShoppingItem,
   updateShoppingItem,
   type CreateShoppingItemRequest,
 } from '../api/shopping';
@@ -62,6 +65,10 @@ type OfflineMutation = {
       payload: { itemId: string; isCompleted: boolean };
     }
   | {
+      kind: 'shopping.delete';
+      payload: { itemId: string };
+    }
+  | {
       kind: 'calendar.create';
       payload: CreateCalendarEventRequest;
     }
@@ -70,12 +77,20 @@ type OfflineMutation = {
       payload: { eventId: string; request: UpdateCalendarEventRequest };
     }
   | {
+      kind: 'calendar.delete';
+      payload: { eventId: string };
+    }
+  | {
       kind: 'meal.create';
       payload: CreateMealPlanRequest;
     }
   | {
       kind: 'meal.update';
       payload: { mealId: string; request: UpdateMealPlanRequest };
+    }
+  | {
+      kind: 'meal.delete';
+      payload: { mealId: string };
     }
   | {
       kind: 'meal-request.create';
@@ -178,17 +193,26 @@ async function executeQueuedMutation(mutation: OfflineMutation) {
     case 'shopping.update':
       await updateShoppingItem(mutation.accessToken, mutation.payload.itemId, mutation.payload.isCompleted);
       return;
+    case 'shopping.delete':
+      await deleteShoppingItem(mutation.accessToken, mutation.payload.itemId);
+      return;
     case 'calendar.create':
       await createCalendarEvent(mutation.accessToken, mutation.payload);
       return;
     case 'calendar.update':
       await updateCalendarEvent(mutation.accessToken, mutation.payload.eventId, mutation.payload.request);
       return;
+    case 'calendar.delete':
+      await deleteCalendarEvent(mutation.accessToken, mutation.payload.eventId);
+      return;
     case 'meal.create':
       await createMealPlan(mutation.accessToken, mutation.payload);
       return;
     case 'meal.update':
       await updateMealPlan(mutation.accessToken, mutation.payload.mealId, mutation.payload.request);
+      return;
+    case 'meal.delete':
+      await deleteMealPlan(mutation.accessToken, mutation.payload.mealId);
       return;
     case 'meal-request.create':
       await createMealRequest(mutation.accessToken, mutation.payload);

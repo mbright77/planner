@@ -19,6 +19,9 @@ public static class ShoppingEndpoints
             .Produces<ShoppingItemResponse>(StatusCodes.Status201Created);
         shopping.MapPut("/{itemId:guid}", UpdateShoppingItemAsync)
             .Produces<ShoppingItemResponse>(StatusCodes.Status200OK);
+        shopping.MapDelete("/{itemId:guid}", DeleteShoppingItemAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound);
 
         return app;
     }
@@ -135,6 +138,32 @@ public static class ShoppingEndpoints
             item.CreatedAtUtc,
             item.CompletedAtUtc,
             item.AddedByProfileId));
+    }
+
+    private static async Task<IResult> DeleteShoppingItemAsync(
+        HttpContext httpContext,
+        Guid itemId,
+        PlannerDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        var membership = await GetMembershipAsync(httpContext, dbContext, cancellationToken);
+        if (membership is null)
+        {
+            return Results.NotFound();
+        }
+
+        var item = await dbContext.ShoppingItems
+            .FirstOrDefaultAsync(x => x.Id == itemId && x.FamilyId == membership.FamilyId, cancellationToken);
+
+        if (item is null)
+        {
+            return Results.NotFound();
+        }
+
+        dbContext.ShoppingItems.Remove(item);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return Results.NoContent();
     }
 
     private static Task<FamilyMembership?> GetMembershipAsync(

@@ -9,6 +9,7 @@ import {
 } from '@planner/api-client';
 
 import { env } from '../config/env';
+import { http } from './http';
 
 export type {
   CalendarEventResponse,
@@ -31,4 +32,11 @@ export async function updateCalendarEvent(
   request: UpdateCalendarEventRequest,
 ) {
   return updateCalendarEventRequest({ baseUrl: env.apiBaseUrl, accessToken }, eventId, request);
+}
+
+export async function deleteCalendarEvent(accessToken: string, eventId: string) {
+  return http<void>(`/api/v1/calendar/${eventId}`, {
+    accessToken,
+    method: 'DELETE',
+  });
 }

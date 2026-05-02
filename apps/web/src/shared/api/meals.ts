@@ -15,6 +15,7 @@ import {
 } from '@planner/api-client';
 
 import { env } from '../config/env';
+import { http } from './http';
 
 export type {
   CreateMealPlanRequest,
@@ -35,6 +36,13 @@ export async function createMealPlan(accessToken: string, request: CreateMealPla
 
 export async function updateMealPlan(accessToken: string, mealId: string, request: UpdateMealPlanRequest) {
   return updateMealPlanRequest({ baseUrl: env.apiBaseUrl, accessToken }, mealId, request);
+}
+
+export async function deleteMealPlan(accessToken: string, mealId: string) {
+  return http<void>(`/api/v1/meals/${mealId}`, {
+    accessToken,
+    method: 'DELETE',
+  });
 }
 
 export async function fetchMealRequests(accessToken: string, weekStart: string) {

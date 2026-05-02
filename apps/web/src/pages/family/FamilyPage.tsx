@@ -11,6 +11,10 @@ import {
 
 const colorOptions = ['green', 'blue', 'pink', 'yellow'];
 
+function getProfileColorChipClass(colorKey: string | null | undefined) {
+  return colorKey ? `profile-color-chip profile-color-chip-${colorKey}` : 'profile-color-chip';
+}
+
 export function FamilyPage() {
   const bootstrapQuery = useBootstrap();
   const profilesQuery = useProfiles();
@@ -95,17 +99,30 @@ export function FamilyPage() {
 
         <label className="field">
           <span>Color key</span>
-          <select value={colorKey} onChange={(event) => setColorKey(event.target.value)}>
+          <div className="profile-color-picker" role="radiogroup" aria-label="Profile color">
             {colorOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
+              <button
+                key={option}
+                className={
+                  colorKey === option
+                    ? `profile-color-picker-button profile-color-picker-button-${option} profile-color-picker-button-active`
+                    : `profile-color-picker-button profile-color-picker-button-${option}`
+                }
+                type="button"
+                role="radio"
+                aria-checked={colorKey === option}
+                aria-label={`Select ${option} color`}
+                onClick={() => setColorKey(option)}
+              >
+                <span className="profile-color-picker-swatch" aria-hidden="true" />
+                <span>{option}</span>
+              </button>
             ))}
-          </select>
+          </div>
         </label>
 
-        <button className="primary-button" type="submit" disabled={createProfileMutation.isPending}>
-          {createProfileMutation.isPending ? 'Saving...' : 'Add profile'}
+        <button className="secondary-button family-create-submit" type="submit" disabled={createProfileMutation.isPending}>
+          {createProfileMutation.isPending ? 'Saving...' : '+ Add new member'}
         </button>
       </form>
 
@@ -182,19 +199,26 @@ export function FamilyPage() {
       {profilesQuery.isError ? <p className="form-error">Unable to load profiles.</p> : null}
 
       <div className="profile-grid">
-        {profilesQuery.data?.map((profile) => (
-          <article key={profile.id} className={`profile-card profile-card-${profile.colorKey}`}>
-            <div className="profile-card-color-bar" aria-hidden="true" />
+        {profilesQuery.data?.map((profile, index) => (
+          <article
+            key={profile.id}
+            className={
+              index === 0
+                ? `profile-card profile-card-${profile.colorKey} profile-card-active`
+                : `profile-card profile-card-${profile.colorKey}`
+            }
+          >
             <div className="profile-card-header">
               <div className="profile-card-identity">
-                <div className="profile-avatar" aria-hidden="true">{profile.displayName.slice(0, 1).toUpperCase()}</div>
+                <div className={index === 0 ? 'profile-avatar profile-avatar-large' : 'profile-avatar'} aria-hidden="true">{profile.displayName.slice(0, 1).toUpperCase()}</div>
                 <div>
                   <p className="eyebrow">Profile</p>
                   <h3 className="profile-card-title">{profile.displayName}</h3>
                   <span className="profile-role-chip">{profile.isActive ? 'Active member' : 'Inactive member'}</span>
+                  {index === 0 ? <span className="profile-active-badge">Active</span> : null}
                 </div>
               </div>
-              <span className="profile-color-chip">{profile.colorKey}</span>
+              <span className={getProfileColorChipClass(profile.colorKey)}>{profile.colorKey}</span>
             </div>
 
             <div className="profile-card-stats">
