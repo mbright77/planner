@@ -21,7 +21,7 @@
   "dinner": "Middag",
   "noDinner": "Ingen middagsplan ännu",
   "openMealsCta": "Öppna Mat för att planera ikväll.",
-  "groceries": "Livsmedel",
+  "groceries": "Inköpslista",
   "itemsLeft_one": "{{count}} vara kvar",
   "itemsLeft_other": "{{count}} varor kvar",
   "openShoppingItemsAria": "Öppna shoppingvaror",

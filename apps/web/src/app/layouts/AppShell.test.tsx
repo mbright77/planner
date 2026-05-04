@@ -1,10 +1,53 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ApiError } from '@planner/api-client';
 
 import { AppShell } from './AppShell';
 
 const clearSession = vi.fn();
+const networkState = { isOnline: false };
+const bootstrapState: {
+  data:
+    | {
+      familyName: string;
+      membership: { role: string; userId: string };
+      memberships: Array<{ role: string; userId: string; profileId: string; canPlanMeals: boolean }>;
+      profiles: Array<{
+        id: string;
+        displayName: string;
+        colorKey: string;
+        isActive: boolean;
+        hasLogin: boolean;
+        linkedUserId: string;
+        preferredLanguage: string;
+      }>;
+    }
+    | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  error: Error | null;
+} = {
+  data: {
+    familyName: 'Test Family',
+    membership: { role: 'Admin', userId: 'user-1' },
+    memberships: [{ role: 'Admin', userId: 'user-1', profileId: 'profile-1', canPlanMeals: true }],
+    profiles: [
+      {
+        id: 'profile-1',
+        displayName: 'Test User',
+        colorKey: 'blue',
+        isActive: true,
+        hasLogin: true,
+        linkedUserId: 'user-1',
+        preferredLanguage: 'en',
+      },
+    ],
+  },
+  isLoading: false,
+  isError: false,
+  error: null as Error | null,
+};
 const offlineMutationState = {
   pendingCount: 0,
   failedCount: 0,
@@ -18,26 +61,7 @@ vi.mock('../../processes/auth-session/AuthSessionContext', () => ({
 }));
 
 vi.mock('../../processes/family-bootstrap/useBootstrap', () => ({
-  useBootstrap: () => ({
-    data: {
-      familyName: 'Test Family',
-      membership: { role: 'Admin', userId: 'user-1' },
-      memberships: [{ role: 'Admin', userId: 'user-1', profileId: 'profile-1', canPlanMeals: true }],
-      profiles: [
-        {
-          id: 'profile-1',
-          displayName: 'Test User',
-          colorKey: 'blue',
-          isActive: true,
-          hasLogin: true,
-          linkedUserId: 'user-1',
-          preferredLanguage: 'en',
-        },
-      ],
-    },
-    isLoading: false,
-    isError: false,
-  }),
+  useBootstrap: () => bootstrapState,
 }));
 
 vi.mock('../../shared/lib/offlineMutationQueue', () => ({
@@ -45,10 +69,31 @@ vi.mock('../../shared/lib/offlineMutationQueue', () => ({
 }));
 
 vi.mock('../../shared/lib/useNetworkStatus', () => ({
-  useNetworkStatus: () => ({ isOnline: false }),
+  useNetworkStatus: () => networkState,
 }));
 
 afterEach(() => {
+  clearSession.mockReset();
+  networkState.isOnline = false;
+  bootstrapState.data = {
+    familyName: 'Test Family',
+    membership: { role: 'Admin', userId: 'user-1' },
+    memberships: [{ role: 'Admin', userId: 'user-1', profileId: 'profile-1', canPlanMeals: true }],
+    profiles: [
+      {
+        id: 'profile-1',
+        displayName: 'Test User',
+        colorKey: 'blue',
+        isActive: true,
+        hasLogin: true,
+        linkedUserId: 'user-1',
+        preferredLanguage: 'en',
+      },
+    ],
+  };
+  bootstrapState.isLoading = false;
+  bootstrapState.isError = false;
+  bootstrapState.error = null;
   offlineMutationState.pendingCount = 0;
   offlineMutationState.failedCount = 0;
   offlineMutationState.isFlushing = false;
@@ -93,5 +138,20 @@ describe('AppShell', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       'An offline change conflicted with newer planner data and needs review.',
     );
+  });
+
+  it('clears session when bootstrap returns unauthorized while online', async () => {
+    networkState.isOnline = true;
+    bootstrapState.data = undefined;
+    bootstrapState.isError = true;
+    bootstrapState.error = new ApiError(401, 'Unauthorized');
+
+    render(
+      <MemoryRouter>
+        <AppShell />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => expect(clearSession).toHaveBeenCalledTimes(1));
   });
 });

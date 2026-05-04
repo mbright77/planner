@@ -1,8 +1,11 @@
+import { useEffect } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ApiError } from '@planner/api-client';
 
 import { useAuthSession } from '../../processes/auth-session/AuthSessionContext';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
+import { HttpError } from '../../shared/api/http';
 import { useAppLanguage } from '../../shared/i18n/useAppLanguage';
 import { useOfflineMutationState } from '../../shared/lib/offlineMutationQueue';
 import { useNetworkStatus } from '../../shared/lib/useNetworkStatus';
@@ -44,6 +47,19 @@ export function AppShell() {
   useAppLanguage(bootstrapQuery.data);
   const { failedCount, hasBlockingFailure, latestFailureMessage, pendingCount, isFlushing } = useOfflineMutationState();
   const { isOnline } = useNetworkStatus();
+
+  useEffect(() => {
+    if (!isOnline || !bootstrapQuery.isError || !bootstrapQuery.error) {
+      return;
+    }
+
+    const error = bootstrapQuery.error;
+    const status = error instanceof ApiError || error instanceof HttpError ? error.status : null;
+
+    if (status === 401 || status === 403) {
+      clearSession();
+    }
+  }, [bootstrapQuery.error, bootstrapQuery.isError, clearSession, isOnline]);
 
   const routeMeta: Record<string, { eyebrow: string; title: string }> = {
     '/': { eyebrow: t('route.eyebrow.dashboard'), title: t('route.title.home') },

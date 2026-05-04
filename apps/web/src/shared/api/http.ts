@@ -4,6 +4,16 @@ type RequestOptions = RequestInit & {
   accessToken?: string | null;
 };
 
+export class HttpError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'HttpError';
+    this.status = status;
+  }
+}
+
 export async function http<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const headers = new Headers(options.headers);
 
@@ -20,7 +30,7 @@ export async function http<T>(path: string, options: RequestOptions = {}): Promi
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(errorText || 'Request failed');
+    throw new HttpError(response.status, errorText || 'Request failed');
   }
 
   if (response.status === 204) {
