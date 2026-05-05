@@ -423,7 +423,7 @@ describe('Phase 12 - Delete functionality and behavior regressions', () => {
   it('12.3.5, 12.5.3, 12.5.4 adds shopping item, checks off, and removes it', async () => {
     renderShellRoute('/shopping');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add shopping item' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add item' }));
 
     const input = await screen.findByPlaceholderText('Add item (e.g., Milk)');
     fireEvent.change(input, { target: { value: 'Milk' } });
