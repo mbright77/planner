@@ -39,6 +39,7 @@ export function useCalendarWeek(weekStart: string) {
     queryKey: calendarWeekKey(session?.accessToken, weekStart),
     queryFn: () => fetchCalendarWeek(session!.accessToken, weekStart),
     enabled: Boolean(session?.accessToken),
+    refetchOnMount: 'always',
   });
 }
 

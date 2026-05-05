@@ -9,5 +9,6 @@ export function useDashboardOverview(date?: string) {
     queryKey: ['dashboard-overview', session?.accessToken, date],
     queryFn: () => fetchDashboardOverview(session!.accessToken, date),
     enabled: Boolean(session?.accessToken),
+    refetchOnMount: 'always',
   });
 }

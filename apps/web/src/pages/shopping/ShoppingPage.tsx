@@ -197,10 +197,6 @@ export function ShoppingPage() {
         )}
       </div>
 
-      <button className="floating-action-button" type="button" aria-label={t('addShoppingItemAria')} onClick={openSheet}>
-        {t('addItem')}
-      </button>
-
       {isSheetOpen ? (
         <>
           <button className="mobile-sheet-backdrop" type="button" aria-label={t('closeSheetAria')} onClick={closeSheet} />

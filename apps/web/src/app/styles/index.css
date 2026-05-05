@@ -898,7 +898,8 @@ select {
   display: flex;
   gap: 0.75rem;
   overflow-x: auto;
-  padding: 0.1rem 0 0.35rem;
+  margin-top: 0.5rem;
+  padding: 0.1rem 0.3rem 0.35rem;
   scrollbar-width: none;
 }
 
@@ -1432,21 +1433,6 @@ select {
   background: var(--surface-subtle);
 }
 
-.floating-action-button {
-  position: fixed;
-  right: 1.25rem;
-  bottom: 6.5rem;
-  min-height: 3.5rem;
-  padding: 0 1.15rem;
-  border: 0;
-  border-radius: 1.5rem;
-  background: linear-gradient(135deg, var(--primary-container), var(--secondary-container));
-  color: white;
-  font-weight: 700;
-  box-shadow: 0 12px 32px rgba(255, 95, 93, 0.25);
-  z-index: 12;
-}
-
 .mobile-sheet-backdrop {
   position: fixed;
   inset: 0;
@@ -1534,11 +1520,6 @@ select {
 @media (max-width: 480px) {
   .calendar-time-row {
     grid-template-columns: 1fr;
-  }
-
-  .floating-action-button {
-    right: 1rem;
-    bottom: 6rem;
   }
 
   .mobile-sheet-actions {
@@ -2242,10 +2223,6 @@ select {
 
   .app-content {
     padding-bottom: 1.5rem;
-  }
-
-  .floating-action-button {
-    bottom: 2rem;
   }
 
   .mobile-sheet {

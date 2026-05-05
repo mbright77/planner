@@ -9,5 +9,6 @@ export function useBootstrap() {
     queryKey: ['bootstrap', session?.accessToken],
     queryFn: () => fetchBootstrap(session!.accessToken),
     enabled: Boolean(session?.accessToken),
+    refetchOnMount: 'always',
   });
 }

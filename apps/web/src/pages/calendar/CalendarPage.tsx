@@ -150,6 +150,7 @@ export function CalendarPage() {
   const [confirmDeleteEventId, setConfirmDeleteEventId] = useState<string | null>(null);
 
   const titleInputRef = useRef<HTMLInputElement | null>(null);
+  const hasUserNavigatedWeekRef = useRef(false);
 
   const bootstrapQuery = useBootstrap();
   const dashboardQuery = useDashboardOverview();
@@ -171,35 +172,17 @@ export function CalendarPage() {
   }, [isSheetOpen]);
 
   useEffect(() => {
-    if (!dashboardQuery.data) {
+    if (!dashboardQuery.data || hasUserNavigatedWeekRef.current) {
       return;
     }
 
-    setSelectedDate((current) => {
-      if (current !== initialSelectedDate) {
-        return current;
-      }
+    const dashboardDate = dashboardQuery.data.date;
+    const fallbackWeekStart = formatDateOnly(getWeekStart(new Date(`${dashboardDate}T00:00:00`)));
+    const canonicalWeekStart = calendarWeekQuery.data?.weekStart ?? fallbackWeekStart;
 
-      return dashboardQuery.data.date;
-    });
-
-    setWeekStart((current) => {
-      if (current !== initialWeekStart) {
-        return current;
-      }
-
-      // Prefer server-provided weekStart from calendar query if available
-      return calendarWeekQuery.data?.weekStart ?? formatDateOnly(getWeekStart(new Date(`${dashboardQuery.data.date}T00:00:00`)));
-    });
-  }, [dashboardQuery.data, initialSelectedDate, initialWeekStart]);
-
-  useEffect(() => {
-    // If the calendar query returns a canonical weekStart, update local state when unchanged
-    if (!calendarWeekQuery.data) return;
-
-    setWeekStart((current) => (current === initialWeekStart ? calendarWeekQuery.data!.weekStart : current));
-    setSelectedDate((current) => (current === initialSelectedDate ? dashboardQuery.data?.date ?? current : current));
-  }, [calendarWeekQuery.data, initialWeekStart, initialSelectedDate, dashboardQuery.data]);
+    setSelectedDate(dashboardDate);
+    setWeekStart(canonicalWeekStart);
+  }, [calendarWeekQuery.data?.weekStart, dashboardQuery.data]);
 
   const eventsByDay = useMemo(() => {
     const groups = new Map<string, typeof calendarEvents>(weekDays.map((day) => [day.key, []]));
@@ -286,12 +269,14 @@ export function CalendarPage() {
   }
 
   function handleSelectDay(day: string) {
+    hasUserNavigatedWeekRef.current = true;
     setSelectedDate(day);
     setFormError('');
     setConfirmDeleteEventId(null);
   }
 
   function handleShiftWeek(direction: -1 | 1) {
+    hasUserNavigatedWeekRef.current = true;
     const { nextWeekStart, nextSelectedDate } = shiftWeekDate(weekStart, selectedDate, direction);
     setWeekStart(nextWeekStart);
     setSelectedDate(nextSelectedDate);
@@ -531,10 +516,6 @@ export function CalendarPage() {
           );
         })}
       </div>
-
-      <button className="floating-action-button" type="button" aria-label={t('addCalendarEventAria')} onClick={() => seedCreateForm(selectedDate)}>
-        {t('addEvent')}
-      </button>
 
       {isSheetOpen ? (
         <>

@@ -58,6 +58,7 @@ export function useMealsWeek(weekStart: string) {
     queryKey: mealsWeekKey(session?.accessToken, weekStart),
     queryFn: () => fetchMealsWeek(session!.accessToken, weekStart),
     enabled: Boolean(session?.accessToken),
+    refetchOnMount: 'always',
   });
 }
 
@@ -155,6 +156,7 @@ export function useMealRequests(weekStart: string) {
     queryKey: mealRequestsKey(session?.accessToken, weekStart),
     queryFn: () => fetchMealRequests(session!.accessToken, weekStart),
     enabled: Boolean(session?.accessToken),
+    refetchOnMount: 'always',
     refetchInterval: isOnline ? 30_000 : false,
   });
 }

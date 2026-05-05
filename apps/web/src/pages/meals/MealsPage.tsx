@@ -109,6 +109,7 @@ export function MealsPage() {
 
   const mealTitleRef = useRef<HTMLInputElement | null>(null);
   const requestTitleRef = useRef<HTMLInputElement | null>(null);
+  const hasUserNavigatedWeekRef = useRef(false);
 
   const bootstrapQuery = useBootstrap();
   const dashboardQuery = useDashboardOverview();
@@ -142,34 +143,17 @@ export function MealsPage() {
   const selectedRequests = requestsByDate.get(selectedDate) ?? [];
 
   useEffect(() => {
-    if (!dashboardQuery.data) {
+    if (!dashboardQuery.data || hasUserNavigatedWeekRef.current) {
       return;
     }
 
-    setSelectedDate((current) => {
-      if (current !== initialSelectedDate) {
-        return current;
-      }
+    const dashboardDate = dashboardQuery.data.date;
+    const fallbackWeekStart = formatDateOnly(getWeekStart(new Date(`${dashboardDate}T00:00:00`)));
+    const canonicalWeekStart = mealsWeekQuery.data?.weekStart ?? fallbackWeekStart;
 
-      return dashboardQuery.data.date;
-    });
-
-    setWeekStart((current) => {
-      if (current !== initialWeekStart) {
-        return current;
-      }
-
-      // Prefer server-provided weekStart from meals query if available
-      return mealsWeekQuery.data?.weekStart ?? formatDateOnly(getWeekStart(new Date(`${dashboardQuery.data.date}T00:00:00`)));
-    });
-  }, [dashboardQuery.data, initialSelectedDate, initialWeekStart]);
-
-  useEffect(() => {
-    if (!mealsWeekQuery.data) return;
-
-    setWeekStart((current) => (current === initialWeekStart ? mealsWeekQuery.data!.weekStart : current));
-    setSelectedDate((current) => (current === initialSelectedDate ? dashboardQuery.data?.date ?? current : current));
-  }, [mealsWeekQuery.data, initialWeekStart, initialSelectedDate, dashboardQuery.data]);
+    setSelectedDate(dashboardDate);
+    setWeekStart(canonicalWeekStart);
+  }, [dashboardQuery.data, mealsWeekQuery.data?.weekStart]);
 
   useEffect(() => {
     if (selectedMeal) {
@@ -201,6 +185,7 @@ export function MealsPage() {
   }
 
   function handleSelectDay(day: string) {
+    hasUserNavigatedWeekRef.current = true;
     setSelectedDate(day);
     setMealFormError('');
     setRequestFormError('');
@@ -209,6 +194,7 @@ export function MealsPage() {
   }
 
   function handleShiftWeek(direction: -1 | 1) {
+    hasUserNavigatedWeekRef.current = true;
     const { nextWeekStart, nextSelectedDate } = shiftWeekDate(weekStart, selectedDate, direction);
     setWeekStart(nextWeekStart);
     setSelectedDate(nextSelectedDate);
