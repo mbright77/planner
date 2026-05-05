@@ -4,23 +4,23 @@ import { useTranslation } from 'react-i18next';
 import { useDashboardOverview } from '../../entities/dashboard/model/useDashboardOverview';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 
-function formatLongDate(value: string) {
-  return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
+function formatLongDate(value: string, locale: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString(locale, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
   });
 }
 
-function formatDateBadge(value: string) {
-  return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
+function formatDateBadge(value: string, locale: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString(locale, {
     month: 'short',
     day: 'numeric',
   }).toUpperCase();
 }
 
-function formatTimeBlock(value: string) {
-  return new Date(value).toLocaleTimeString('sv-SE', {
+function formatTimeBlock(value: string, locale: string) {
+  return new Date(value).toLocaleTimeString(locale, {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
@@ -66,7 +66,8 @@ function getProfileColorChipClass(colorKey: string | null | undefined) {
 }
 
 export function HomePage() {
-  const { t } = useTranslation('home');
+  const { t, i18n } = useTranslation('home');
+  const locale = i18n.language;
   const bootstrapQuery = useBootstrap();
   const dashboardQuery = useDashboardOverview();
   const familyName = bootstrapQuery.data?.familyName ?? t('fallback.familyName');
@@ -96,7 +97,7 @@ export function HomePage() {
         <div className="home-today-header-copy">
           <p className="eyebrow">{t('eyebrow')}</p>
           <h2 className="page-title">{t(getGreetingKey(), { team: t('team') })}</h2>
-          <p className="page-copy">{dashboardQuery.data ? formatLongDate(dashboardQuery.data.date) : t('loadingOverview')}</p>
+          <p className="page-copy">{dashboardQuery.data ? formatLongDate(dashboardQuery.data.date, locale) : t('loadingOverview')}</p>
         </div>
         <div className="home-today-family-badge">{familyName}</div>
       </div>
@@ -113,14 +114,14 @@ export function HomePage() {
               </span>
               {t('todayTitle')}
             </h3>
-            <span className="home-today-date-badge">{formatDateBadge(dashboardQuery.data.date)}</span>
+            <span className="home-today-date-badge">{formatDateBadge(dashboardQuery.data.date, locale)}</span>
           </div>
 
           {todayEvents.length > 0 ? (
             <ol className="home-today-events">
               {todayEvents.map((event) => {
                 const assignedProfile = event.assignedProfileId ? profilesById.get(event.assignedProfileId) : null;
-                const timeBlock = formatTimeBlock(event.startAtUtc);
+                const timeBlock = formatTimeBlock(event.startAtUtc, locale);
 
                 return (
                   <li key={event.id} className="home-today-event-row">

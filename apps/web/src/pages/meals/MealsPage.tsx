@@ -28,7 +28,7 @@ function formatDateOnly(value: Date) {
   return value.toISOString().slice(0, 10);
 }
 
-function buildWeekDays(weekStart: string) {
+function buildWeekDays(weekStart: string, locale: string) {
   const startDate = new Date(`${weekStart}T00:00:00.000Z`);
 
   return Array.from({ length: 7 }, (_, index) => {
@@ -37,22 +37,22 @@ function buildWeekDays(weekStart: string) {
 
     return {
       key: formatDateOnly(current),
-      label: current.toLocaleDateString(undefined, { weekday: 'short', timeZone: 'UTC' }),
-      dayNumber: current.toLocaleDateString(undefined, { day: 'numeric', timeZone: 'UTC' }),
+      label: current.toLocaleDateString(locale, { weekday: 'short', timeZone: 'UTC' }),
+      dayNumber: current.toLocaleDateString(locale, { day: 'numeric', timeZone: 'UTC' }),
     };
   });
 }
 
-function formatWeekRange(weekStart: string) {
+function formatWeekRange(weekStart: string, locale: string) {
   const start = new Date(`${weekStart}T00:00:00.000Z`);
   const end = new Date(start);
   end.setUTCDate(start.getUTCDate() + 6);
 
-  return `${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })} - ${end.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })}`;
+  return `${start.toLocaleDateString(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' })} - ${end.toLocaleDateString(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' })}`;
 }
 
-function formatLongDate(value: string) {
-  return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
+function formatLongDate(value: string, locale: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString(locale, {
     weekday: 'long',
     month: 'short',
     day: 'numeric',
@@ -82,7 +82,8 @@ function getProfileColorChipClass(colorKey: string | null | undefined) {
 }
 
 export function MealsPage() {
-  const { t } = useTranslation('meals');
+  const { t, i18n } = useTranslation('meals');
+  const locale = i18n.language;
   const today = new Date();
   const initialWeekStart = formatDateOnly(getWeekStart(today));
   const initialSelectedDate = formatDateOnly(today);
@@ -122,7 +123,7 @@ export function MealsPage() {
   const updateMealPlanMutation = useUpdateMealPlan(weekStart);
   const deleteMealPlanMutation = useDeleteMealPlan(weekStart);
 
-  const weekDays = useMemo(() => buildWeekDays(weekStart), [weekStart]);
+  const weekDays = useMemo(() => buildWeekDays(weekStart, locale), [weekStart, locale]);
   const canPlanMeals = bootstrapQuery.data?.membership.canPlanMeals ?? true;
   const mealsByDate = useMemo(() => {
     return new Map((mealsWeekQuery.data?.meals ?? []).map((meal) => [meal.mealDate, meal]));
@@ -322,7 +323,7 @@ export function MealsPage() {
 
       <section className="meals-header-panel">
         <div>
-          <h3 className="meals-range-title">{formatWeekRange(weekStart)}</h3>
+          <h3 className="meals-range-title">{formatWeekRange(weekStart, locale)}</h3>
           <p className="shopping-meta">{t('weekMeta')}</p>
           {!canPlanMeals ? (
             <p className="shopping-meta">{t('readOnlyNote')}</p>
@@ -366,7 +367,7 @@ export function MealsPage() {
           <div className="meals-compose-header meals-field-wide">
             <div>
               <p className="eyebrow">{t('editDinner')}</p>
-              <h3 className="profile-card-title">{formatLongDate(selectedDate)}</h3>
+              <h3 className="profile-card-title">{formatLongDate(selectedDate, locale)}</h3>
             </div>
             <button
               className="secondary-button calendar-small-button"
@@ -411,7 +412,7 @@ export function MealsPage() {
           {mealEditError ? <p className="form-error meals-field-wide">{mealEditError}</p> : null}
 
           <button className="primary-button" type="submit" disabled={updateMealPlanMutation.isPending || !editingMealId}>
-            {updateMealPlanMutation.isPending ? t('saving') : t('saveChangesForDate', { date: formatLongDate(selectedDate) })}
+            {updateMealPlanMutation.isPending ? t('saving') : t('saveChangesForDate', { date: formatLongDate(selectedDate, locale) })}
           </button>
         </form>
       ) : canPlanMeals ? (
@@ -419,7 +420,7 @@ export function MealsPage() {
           <div className="meals-compose-header meals-field-wide">
             <div>
               <p className="eyebrow">{t('planDinner')}</p>
-              <h3 className="profile-card-title">{formatLongDate(selectedDate)}</h3>
+              <h3 className="profile-card-title">{formatLongDate(selectedDate, locale)}</h3>
             </div>
             <button
               className="secondary-button calendar-small-button"
@@ -465,7 +466,7 @@ export function MealsPage() {
           {mealFormError ? <p className="form-error meals-field-wide">{mealFormError}</p> : null}
 
           <button className="primary-button" type="submit" disabled={createMealPlanMutation.isPending}>
-            {createMealPlanMutation.isPending ? t('saving') : t('saveDinnerForDate', { date: formatLongDate(selectedDate) })}
+            {createMealPlanMutation.isPending ? t('saving') : t('saveDinnerForDate', { date: formatLongDate(selectedDate, locale) })}
           </button>
         </form>
       ) : null}
@@ -557,7 +558,7 @@ export function MealsPage() {
         <div className="shopping-group-header meal-requests-header">
           <div>
             <p className="eyebrow">{t('requests')}</p>
-            <h3 className="profile-card-title">{t('mealRequestsForDate', { date: formatLongDate(selectedDate) })}</h3>
+            <h3 className="profile-card-title">{t('mealRequestsForDate', { date: formatLongDate(selectedDate, locale) })}</h3>
           </div>
           <div className="meal-requests-header-actions">
             <span className="profile-color-chip">{t('openCount', { count: selectedRequests.length })}</span>
@@ -597,7 +598,7 @@ export function MealsPage() {
             {requestFormError ? <p className="form-error meal-requests-field-wide">{requestFormError}</p> : null}
 
             <button className="primary-button" type="submit" disabled={createMealRequestMutation.isPending}>
-              {createMealRequestMutation.isPending ? t('saving') : t('addRequestForDate', { date: formatLongDate(selectedDate) })}
+              {createMealRequestMutation.isPending ? t('saving') : t('addRequestForDate', { date: formatLongDate(selectedDate, locale) })}
             </button>
           </form>
         ) : null}

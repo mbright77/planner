@@ -26,27 +26,27 @@ function formatDateOnly(value: Date) {
   return value.toISOString().slice(0, 10);
 }
 
-function formatMonthLabel(value: string) {
-  return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
+function formatMonthLabel(value: string, locale: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString(locale, {
     month: 'long',
   });
 }
 
-function formatWeekRangeLabel(value: string) {
+function formatWeekRangeLabel(value: string, locale: string) {
   const start = new Date(`${value}T00:00:00.000Z`);
   const end = new Date(start);
   end.setUTCDate(start.getUTCDate() + 6);
 
-  return `${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })} - ${end.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })}`;
+  return `${start.toLocaleDateString(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' })} - ${end.toLocaleDateString(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' })}`;
 }
 
-function formatWeekdayShort(value: string) {
-  return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
+function formatWeekdayShort(value: string, locale: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString(locale, {
     weekday: 'short',
   });
 }
 
-function buildWeekDays(weekStart: string) {
+function buildWeekDays(weekStart: string, locale: string) {
   const startDate = new Date(`${weekStart}T00:00:00.000Z`);
 
   return Array.from({ length: 7 }, (_, index) => {
@@ -55,25 +55,25 @@ function buildWeekDays(weekStart: string) {
 
     return {
       key: formatDateOnly(current),
-      label: formatWeekdayShort(formatDateOnly(current)),
-      dayNumber: current.toLocaleDateString(undefined, { day: 'numeric', timeZone: 'UTC' }),
+      label: formatWeekdayShort(formatDateOnly(current), locale),
+      dayNumber: current.toLocaleDateString(locale, { day: 'numeric', timeZone: 'UTC' }),
     };
   });
 }
 
-function formatAgendaHeading(value: string) {
-  return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
+function formatAgendaHeading(value: string, locale: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString(locale, {
     weekday: 'long',
     month: 'short',
     day: 'numeric',
   });
 }
 
-function formatEventTime(startAtUtc: string, endAtUtc: string) {
+function formatEventTime(startAtUtc: string, endAtUtc: string, locale: string) {
   const start = new Date(startAtUtc);
   const end = new Date(endAtUtc);
 
-  return `${start.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', hour12: false })} - ${end.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
+  return `${start.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false })} - ${end.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false })}`;
 }
 
 function getProfileAccentColor(colorKey: string | null | undefined) {
@@ -127,7 +127,8 @@ function shiftWeekDate(weekStart: string, selectedDate: string, direction: -1 | 
 }
 
 export function CalendarPage() {
-  const { t } = useTranslation('calendar');
+  const { t, i18n } = useTranslation('calendar');
+  const locale = i18n.language;
   const today = new Date();
   const initialStart = getWeekStart(today);
   const initialWeekStart = formatDateOnly(initialStart);
@@ -158,7 +159,7 @@ export function CalendarPage() {
   const createCalendarEventMutation = useCreateCalendarEvent(weekStart);
   const updateCalendarEventMutation = useUpdateCalendarEvent(weekStart);
   const deleteCalendarEventMutation = useDeleteCalendarEvent(weekStart);
-  const weekDays = useMemo(() => buildWeekDays(weekStart), [weekStart]);
+  const weekDays = useMemo(() => buildWeekDays(weekStart, locale), [weekStart, locale]);
   const calendarEvents = calendarWeekQuery.data?.events ?? [];
   const sheet = searchParams.get('sheet');
   const isSheetOpen = sheet === 'create-event' || sheet === 'edit-event';
@@ -358,8 +359,8 @@ export function CalendarPage() {
       <section className="calendar-header-panel">
         <div className="calendar-header-row">
           <div>
-            <h3 className="calendar-month-title">{formatMonthLabel(weekStart)}</h3>
-            <p className="shopping-meta">{formatWeekRangeLabel(weekStart)}</p>
+            <h3 className="calendar-month-title">{formatMonthLabel(weekStart, locale)}</h3>
+            <p className="shopping-meta">{formatWeekRangeLabel(weekStart, locale)}</p>
           </div>
           <div className="calendar-header-actions">
             <button className="secondary-button calendar-small-button" type="button" onClick={() => handleShiftWeek(-1)}>
@@ -399,7 +400,7 @@ export function CalendarPage() {
       <section className="calendar-compose-card calendar-action-card">
         <div>
           <p className="eyebrow">{t('selectedDay')}</p>
-          <h3 className="profile-card-title">{formatAgendaHeading(selectedDate)}</h3>
+          <h3 className="profile-card-title">{formatAgendaHeading(selectedDate, locale)}</h3>
           <p className="shopping-meta">{t('selectedDayDescription')}</p>
         </div>
         <button className="primary-button" type="button" onClick={() => seedCreateForm(selectedDate)}>
@@ -425,7 +426,7 @@ export function CalendarPage() {
             <article key={day.key} className={day.key === selectedDate ? 'calendar-day-card calendar-day-card-active' : 'calendar-day-card'}>
               <div className="shopping-group-header calendar-day-header">
                 <div>
-                  <h3 className="profile-card-title">{formatAgendaHeading(day.key)}</h3>
+                  <h3 className="profile-card-title">{formatAgendaHeading(day.key, locale)}</h3>
                   <p className="shopping-meta">
                     {events.length === 0 ? t('noEvents') : t('eventsPlanned', { count: events.length })}
                   </p>
@@ -456,7 +457,7 @@ export function CalendarPage() {
                           <span className="calendar-event-category">{t('event')}</span>
                           <strong className="calendar-event-title">{calendarEvent.title}</strong>
                           <p className="calendar-event-time">
-                            {formatEventTime(calendarEvent.startAtUtc, calendarEvent.endAtUtc)}
+                            {formatEventTime(calendarEvent.startAtUtc, calendarEvent.endAtUtc, locale)}
                           </p>
                           {calendarEvent.isRecurring ? (
                             <p className="calendar-event-recurrence">
@@ -524,7 +525,7 @@ export function CalendarPage() {
             <div className="mobile-sheet-header">
               <div>
                 <p className="eyebrow">{editingEventId ? t('editEvent') : t('addEvent')}</p>
-                <h3 id="calendar-sheet-title" className="profile-card-title">{formatAgendaHeading(selectedDate)}</h3>
+                <h3 id="calendar-sheet-title" className="profile-card-title">{formatAgendaHeading(selectedDate, locale)}</h3>
               </div>
               <button className="secondary-button calendar-small-button" type="button" onClick={closeSheet}>
                 {t('close')}
