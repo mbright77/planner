@@ -24,19 +24,19 @@ export default defineConfig(({ mode }) => ({
         theme_color: '#5da9e9',
         icons: [
           {
-            src: '/icons/pwa-192.png',
+            src: 'icons/pwa-192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any',
           },
           {
-            src: '/icons/pwa-512.png',
+            src: 'icons/pwa-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any',
           },
           {
-            src: '/icons/maskable-512.png',
+            src: 'icons/maskable-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
