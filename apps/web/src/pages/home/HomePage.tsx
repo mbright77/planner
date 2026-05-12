@@ -12,13 +12,6 @@ function formatLongDate(value: string, locale: string) {
   });
 }
 
-function formatDateBadge(value: string, locale: string) {
-  return new Date(`${value}T00:00:00`).toLocaleDateString(locale, {
-    month: 'short',
-    day: 'numeric',
-  }).toUpperCase();
-}
-
 function formatTimeBlock(value: string, locale: string) {
   return new Date(value).toLocaleTimeString(locale, {
     hour: '2-digit',
@@ -70,7 +63,6 @@ export function HomePage() {
   const locale = i18n.language;
   const bootstrapQuery = useBootstrap();
   const dashboardQuery = useDashboardOverview();
-  const familyName = bootstrapQuery.data?.familyName ?? t('fallback.familyName');
 
   const profilesById = useMemo(() => {
     return new Map((bootstrapQuery.data?.profiles ?? []).map((profile) => [profile.id, profile]));
@@ -99,7 +91,6 @@ export function HomePage() {
           <h2 className="page-title">{t(getGreetingKey(), { team: t('team') })}</h2>
           <p className="page-copy">{dashboardQuery.data ? formatLongDate(dashboardQuery.data.date, locale) : t('loadingOverview')}</p>
         </div>
-        <div className="home-today-family-badge">{familyName}</div>
       </div>
 
       {dashboardQuery.isLoading ? <p className="page-copy">{t('loading')}</p> : null}
@@ -114,7 +105,6 @@ export function HomePage() {
               </span>
               {t('todayTitle')}
             </h3>
-            <span className="home-today-date-badge">{formatDateBadge(dashboardQuery.data.date, locale)}</span>
           </div>
 
           {todayEvents.length > 0 ? (

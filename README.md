@@ -1,42 +1,57 @@
-# Planner
+# Family Planner
 
-Family Planner PWA monorepo.
+A mobile-first family planning app. Shared calendar, weekly meals, and shopping list — all in one place.
 
-## Structure
+## Live
 
-```text
-.
-├─ apps/
-│  ├─ api/
-│  └─ web/
-├─ packages/
-│  ├─ api-client/
-│  ├─ design-tokens/
-│  ├─ eslint-config/
-│  └─ tsconfig/
-├─ infra/
-│  ├─ github/
-│  ├─ k8s/
-│  └─ scripts/
-├─ docs/
-├─ IMPLEMENTATION_PLAN.md
-├─ planner.sln
-├─ package.json
-├─ pnpm-workspace.yaml
-└─ justfile
+- App: [https://mbright77.github.io/planner/](https://mbright77.github.io/planner/)
+- API: [https://hub.brightmatter.net/planner-api](https://hub.brightmatter.net/planner-api)
+
+## Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, TypeScript, Vite, TanStack Query |
+| Backend | ASP.NET Core minimal API, .NET 9 |
+| Database | PostgreSQL via EF Core |
+| Auth | ASP.NET Identity + JWT |
+| PWA | Workbox, offline read/write |
+| Hosting | GitHub Pages (frontend) + K3s (backend) |
+
+## Local Development
+
+### Prerequisites
+
+- Node.js 20+ and pnpm
+- .NET 9 SDK
+- Docker (for PostgreSQL)
+
+### Start everything
+
+```bash
+# Start PostgreSQL
+docker compose up -d
+
+# Install JS dependencies
+pnpm install
+
+# Start backend (http://localhost:5254)
+dotnet run --project apps/api/src/Planner.Api
+
+# Start frontend (http://localhost:5173)
+pnpm --filter @planner/web dev
 ```
 
-## Current Status
+### Verify
 
-- Monorepo scaffold is in place
-- Web and API application roots are created
-- Shared package placeholders are created
-- K3s infrastructure folder is created
-- Supporting docs folders are created
+```bash
+pnpm --filter @planner/web build
+dotnet build planner.sln
+dotnet test planner.sln
+```
 
-## Next Steps
+## Documentation
 
-1. Initialize the React app in `apps/web`
-2. Initialize the ASP.NET Core projects in `apps/api/src`
-3. Add EF Core packages and the first generated migration
-4. Add K3s manifests and GitHub Actions workflows
+- [`docs/AGENTS.md`](docs/AGENTS.md) — architecture and conventions for coding agents
+- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — deployment topology and CI/CD
+- [`docs/DESIGN.md`](docs/DESIGN.md) — design tokens and visual language

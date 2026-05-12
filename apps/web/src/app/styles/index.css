@@ -474,41 +474,14 @@ select {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.85rem 1rem;
-  border: 2px solid rgba(255, 180, 180, 0.25);
-  border-radius: 1rem;
-  background: var(--surface-subtle);
 }
 
 .checkbox-field input {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 2rem;
-  height: 2rem;
-  margin: 0;
+  width: 1.25rem;
+  height: 1.25rem;
   flex: none;
-  border: 2px solid var(--tertiary-container);
-  border-radius: 0.75rem;
-  background: var(--surface);
   cursor: pointer;
-  position: relative;
-}
-
-.checkbox-field input:checked {
-  background: var(--tertiary-container);
-  border-color: var(--tertiary-container);
-}
-
-.checkbox-field input:checked::after {
-  content: '';
-  position: absolute;
-  left: 0.56rem;
-  top: 0.22rem;
-  width: 0.45rem;
-  height: 0.95rem;
-  border: solid #ffffff;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+  accent-color: var(--primary);
 }
 
 .auth-actions {
@@ -1240,6 +1213,21 @@ select {
   box-shadow: var(--shadow);
 }
 
+.calendar-day-detail {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  border: 2px solid rgba(255, 180, 180, 0.2);
+  border-radius: 2rem;
+  background: linear-gradient(180deg, #ffffff 0%, #fff7f7 100%);
+  box-shadow: 0 8px 24px rgba(255, 95, 93, 0.12);
+}
+
+.calendar-day-detail-heading {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Public Sans', system-ui, sans-serif;
+  font-size: 1.2rem;
+}
+
 .calendar-action-card {
   display: flex;
   align-items: center;
@@ -1340,9 +1328,9 @@ select {
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.1rem;
-  border: 1px solid rgba(93, 169, 233, 0.18);
+  border: 1px solid var(--border);
   border-radius: 1rem;
-  background: linear-gradient(180deg, rgba(93, 169, 233, 0.08) 0%, rgba(255, 255, 255, 0.94) 100%);
+  background: var(--surface);
   box-shadow: var(--shadow);
 }
 
@@ -1361,13 +1349,13 @@ select {
   appearance: none;
   -webkit-appearance: none;
   position: relative;
-  width: 4.5rem;
-  height: 2.75rem;
+  width: 3.25rem;
+  height: 1.95rem;
   margin: 0;
   flex: none;
-  border: 1px solid rgba(93, 169, 233, 0.24);
+  border: 1px solid var(--border);
   border-radius: 999px;
-  background: rgba(93, 169, 233, 0.14);
+  background: var(--surface-subtle);
   cursor: pointer;
   transition: background-color 160ms ease, border-color 160ms ease;
 }
@@ -1375,10 +1363,10 @@ select {
 .calendar-apply-series-toggle input::after {
   content: '';
   position: absolute;
-  top: 0.26rem;
-  left: 0.28rem;
-  width: 2.2rem;
-  height: 2.2rem;
+  top: 0.18rem;
+  left: 0.2rem;
+  width: 1.35rem;
+  height: 1.35rem;
   border-radius: 999px;
   background: white;
   box-shadow: 0 3px 8px rgba(45, 49, 50, 0.16);
@@ -1391,11 +1379,11 @@ select {
 }
 
 .calendar-apply-series-toggle input:checked::after {
-  transform: translateX(1.72rem);
+  transform: translateX(1.28rem);
 }
 
 .calendar-apply-series-toggle input:focus-visible {
-  outline: 3px solid rgba(93, 169, 233, 0.28);
+  outline: 3px solid rgba(179, 39, 44, 0.28);
   outline-offset: 2px;
 }
 
@@ -1431,6 +1419,11 @@ select {
   padding: 0.9rem 1rem;
   border-radius: 1rem;
   background: var(--surface-subtle);
+}
+
+.calendar-day-detail-empty {
+  border: 1px dashed rgba(255, 180, 180, 0.35);
+  background: rgba(232, 239, 241, 0.55);
 }
 
 .mobile-sheet-backdrop {
@@ -1721,22 +1714,6 @@ select {
   min-width: 0;
 }
 
-.home-today-family-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 3rem;
-  padding: 0.75rem 1rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 95, 93, 0.25);
-  background: rgba(255, 95, 93, 0.12);
-  color: var(--primary);
-  font-weight: 700;
-  max-width: 100%;
-  text-align: center;
-  overflow-wrap: anywhere;
-}
-
 .home-today-section {
   display: grid;
   gap: 1rem;
@@ -1763,20 +1740,6 @@ select {
   color: var(--tertiary);
   font-size: 1.45rem;
   line-height: 1;
-}
-
-.home-today-date-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2rem;
-  padding: 0.2rem 0.65rem;
-  border-radius: 999px;
-  background: rgba(255, 95, 93, 0.12);
-  color: var(--on-surface-variant);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
 }
 
 .home-today-events {

@@ -76,6 +76,10 @@ function formatEventTime(startAtUtc: string, endAtUtc: string, locale: string) {
   return `${start.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false })} - ${end.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false })}`;
 }
 
+function getEventDayKey(calendarEvent: { startAtUtc: string; date?: string | null }) {
+  return calendarEvent.date ?? calendarEvent.startAtUtc.slice(0, 10);
+}
+
 function getProfileAccentColor(colorKey: string | null | undefined) {
   if (colorKey === 'green') return '#84ac8e';
   if (colorKey === 'blue') return '#5da9e9';
@@ -160,7 +164,7 @@ export function CalendarPage() {
   const updateCalendarEventMutation = useUpdateCalendarEvent(weekStart);
   const deleteCalendarEventMutation = useDeleteCalendarEvent(weekStart);
   const weekDays = useMemo(() => buildWeekDays(weekStart, locale), [weekStart, locale]);
-  const calendarEvents = calendarWeekQuery.data?.events ?? [];
+  const calendarEvents = useMemo(() => calendarWeekQuery.data?.events ?? [], [calendarWeekQuery.data?.events]);
   const sheet = searchParams.get('sheet');
   const isSheetOpen = sheet === 'create-event' || sheet === 'edit-event';
 
@@ -189,7 +193,7 @@ export function CalendarPage() {
     const groups = new Map<string, typeof calendarEvents>(weekDays.map((day) => [day.key, []]));
 
     for (const calendarEvent of calendarEvents) {
-      const dayKey = (calendarEvent as any).date ?? calendarEvent.startAtUtc.slice(0, 10);
+      const dayKey = getEventDayKey(calendarEvent);
       const existing = groups.get(dayKey) ?? [];
       groups.set(dayKey, [...existing, calendarEvent]);
     }
@@ -200,6 +204,7 @@ export function CalendarPage() {
   const eventCountsByDay = useMemo(() => {
     return new Map(weekDays.map((day) => [day.key, (eventsByDay.get(day.key) ?? []).length]));
   }, [eventsByDay, weekDays]);
+  const selectedDayEvents = eventsByDay.get(selectedDate) ?? [];
 
   function focusComposeTitle() {
     window.requestAnimationFrame(() => {
@@ -242,6 +247,7 @@ export function CalendarPage() {
     setStartTime('18:00');
     setEndTime('19:00');
     setShowMoreOptions(false);
+    setApplyToSeries(true);
     setFormError('');
     setConfirmDeleteEventId(null);
     openSheet('create-event', date);
@@ -253,7 +259,7 @@ export function CalendarPage() {
       return;
     }
 
-    const eventDate = (calendarEvent as any).date ?? calendarEvent.startAtUtc.slice(0, 10);
+    const eventDate = getEventDayKey(calendarEvent);
     setSelectedDate(eventDate);
     setEditingEventId(calendarEvent.id);
     setTitle(calendarEvent.title);
@@ -264,6 +270,7 @@ export function CalendarPage() {
     setStartTime(formatTimeInput(new Date(calendarEvent.startAtUtc)));
     setEndTime(formatTimeInput(new Date(calendarEvent.endAtUtc)));
     setShowMoreOptions(Boolean(calendarEvent.notes || calendarEvent.assignedProfileId || calendarEvent.isRecurring));
+    setApplyToSeries(true);
     setFormError('');
     setConfirmDeleteEventId(null);
     openSheet('edit-event', eventDate, calendarEvent.id);
@@ -397,126 +404,96 @@ export function CalendarPage() {
         </div>
       </section>
 
-      <section className="calendar-compose-card calendar-action-card">
-        <div>
-          <p className="eyebrow">{t('selectedDay')}</p>
-          <h3 className="profile-card-title">{formatAgendaHeading(selectedDate, locale)}</h3>
-          <p className="shopping-meta">{t('selectedDayDescription')}</p>
-        </div>
-        <button className="primary-button" type="button" onClick={() => seedCreateForm(selectedDate)}>
-          {t('addEvent')}
-        </button>
-      </section>
-
       {calendarWeekQuery.isLoading ? <p className="page-copy">{t('loading')}</p> : null}
       {calendarWeekQuery.isError ? <p className="form-error">{t('error')}</p> : null}
-      <label className="calendar-apply-series-toggle" htmlFor="calendar-apply-series-toggle">
-        <span className="calendar-apply-series-copy">
-          <strong>{t('updateFutureRepeats')}</strong>
-          <span className="shopping-meta">{t('updateFutureRepeatsDescription')}</span>
-        </span>
-        <input checked={applyToSeries} onChange={(event) => setApplyToSeries(event.target.checked)} type="checkbox" />
-      </label>
+      <section className="calendar-day-detail">
+        <div className="shopping-group-header calendar-day-header">
+          <div>
+            <p className="eyebrow">{t('selectedDay')}</p>
+            <h3 className="calendar-day-detail-heading">{formatAgendaHeading(selectedDate, locale)}</h3>
+            <p className="shopping-meta">
+              {selectedDayEvents.length === 0 ? t('noEvents') : t('eventsPlanned', { count: selectedDayEvents.length })}
+            </p>
+          </div>
+          <button className="primary-button calendar-small-button" type="button" onClick={() => seedCreateForm(selectedDate)}>
+            {t('addHere')}
+          </button>
+        </div>
 
-      <div className="calendar-groups">
-        {weekDays.map((day) => {
-          const events = eventsByDay.get(day.key) ?? [];
+        {selectedDayEvents.length > 0 ? (
+          <ul className="calendar-event-list">
+            {selectedDayEvents.map((calendarEvent) => {
+              const assignedProfile = bootstrapQuery.data?.profiles.find(
+                (profile) => profile.id === calendarEvent.assignedProfileId,
+              );
 
-          return (
-            <article key={day.key} className={day.key === selectedDate ? 'calendar-day-card calendar-day-card-active' : 'calendar-day-card'}>
-              <div className="shopping-group-header calendar-day-header">
-                <div>
-                  <h3 className="profile-card-title">{formatAgendaHeading(day.key, locale)}</h3>
-                  <p className="shopping-meta">
-                    {events.length === 0 ? t('noEvents') : t('eventsPlanned', { count: events.length })}
-                  </p>
-                </div>
-                <button
-                  className={day.key === selectedDate ? 'primary-button calendar-small-button' : 'secondary-button calendar-small-button'}
-                  type="button"
-                  onClick={() => seedCreateForm(day.key)}
+              return (
+                <li
+                  key={calendarEvent.id}
+                  className="calendar-event-item"
+                  style={{ borderLeftColor: getProfileAccentColor(assignedProfile?.colorKey) }}
                 >
-                  {t('addHere')}
-                </button>
-              </div>
+                  <div className="calendar-event-content">
+                    <span className="calendar-event-category">{t('event')}</span>
+                    <strong className="calendar-event-title">{calendarEvent.title}</strong>
+                    <p className="calendar-event-time">
+                      {formatEventTime(calendarEvent.startAtUtc, calendarEvent.endAtUtc, locale)}
+                    </p>
+                    {calendarEvent.isRecurring ? (
+                      <p className="calendar-event-recurrence">
+                        {t('repeatsWeeklyThrough', { date: calendarEvent.repeatUntil })}
+                      </p>
+                    ) : null}
+                    {calendarEvent.notes ? <p className="calendar-event-notes">{calendarEvent.notes}</p> : null}
+                    {assignedProfile ? (
+                      <div className="calendar-event-avatar-stack" aria-label={t('assignedTo', { name: assignedProfile.displayName })}>
+                        <span
+                          className="calendar-event-avatar-chip"
+                          style={{ borderColor: getProfileAccentColor(assignedProfile.colorKey) }}
+                          aria-hidden="true"
+                        >
+                          {assignedProfile.displayName.slice(0, 1).toUpperCase()}
+                        </span>
+                        <span className="shopping-meta">{assignedProfile.displayName}</span>
+                      </div>
+                    ) : null}
+                  </div>
 
-              {events.length > 0 ? (
-                <ul className="calendar-event-list">
-                  {events.map((calendarEvent) => {
-                    const assignedProfile = bootstrapQuery.data?.profiles.find(
-                      (profile) => profile.id === calendarEvent.assignedProfileId,
-                    );
-
-                    return (
-                      <li
-                        key={calendarEvent.id}
-                        className="calendar-event-item"
-                        style={{ borderLeftColor: getProfileAccentColor(assignedProfile?.colorKey) }}
-                      >
-                        <div className="calendar-event-content">
-                          <span className="calendar-event-category">{t('event')}</span>
-                          <strong className="calendar-event-title">{calendarEvent.title}</strong>
-                          <p className="calendar-event-time">
-                            {formatEventTime(calendarEvent.startAtUtc, calendarEvent.endAtUtc, locale)}
-                          </p>
-                          {calendarEvent.isRecurring ? (
-                            <p className="calendar-event-recurrence">
-                              {t('repeatsWeeklyThrough', { date: calendarEvent.repeatUntil })}
-                            </p>
-                          ) : null}
-                          {calendarEvent.notes ? <p className="calendar-event-notes">{calendarEvent.notes}</p> : null}
-                          {assignedProfile ? (
-                            <div className="calendar-event-avatar-stack" aria-label={t('assignedTo', { name: assignedProfile.displayName })}>
-                              <span
-                                className="calendar-event-avatar-chip"
-                                style={{ borderColor: getProfileAccentColor(assignedProfile.colorKey) }}
-                                aria-hidden="true"
-                              >
-                                {assignedProfile.displayName.slice(0, 1).toUpperCase()}
-                              </span>
-                              <span className="shopping-meta">{assignedProfile.displayName}</span>
-                            </div>
-                          ) : null}
-                        </div>
-
-                        <div className="calendar-event-actions">
-                          <button
-                            className="secondary-button calendar-small-button"
-                            type="button"
-                            onClick={() => exportCalendarEvent(calendarEvent)}
-                          >
-                            {t('addToCalendar')}
-                          </button>
-                          <button
-                            className="secondary-button calendar-small-button"
-                            type="button"
-                            onClick={() => seedEditForm(calendarEvent.id)}
-                          >
-                            {t('edit')}
-                          </button>
-                          <button
-                            className={confirmDeleteEventId === calendarEvent.id ? 'destructive-button calendar-small-button' : 'secondary-button calendar-small-button'}
-                            type="button"
-                            aria-label={confirmDeleteEventId === calendarEvent.id ? t('confirmDeleteEventAria', { title: calendarEvent.title }) : t('deleteEventAria', { title: calendarEvent.title })}
-                            onClick={() => handleDeleteEvent(calendarEvent.id)}
-                            disabled={deleteCalendarEventMutation.isPending}
-                          >
-                            {confirmDeleteEventId === calendarEvent.id ? t('confirmDelete') : t('delete')}
-                          </button>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <div className="calendar-empty-day">
-                  <p className="shopping-meta">{t('emptyDayHint')}</p>
-                </div>
-              )}
-            </article>
-          );
-        })}
-      </div>
+                  <div className="calendar-event-actions">
+                    <button
+                      className="secondary-button calendar-small-button"
+                      type="button"
+                      onClick={() => exportCalendarEvent(calendarEvent)}
+                    >
+                      {t('addToCalendar')}
+                    </button>
+                    <button
+                      className="secondary-button calendar-small-button"
+                      type="button"
+                      onClick={() => seedEditForm(calendarEvent.id)}
+                    >
+                      {t('edit')}
+                    </button>
+                    <button
+                      className={confirmDeleteEventId === calendarEvent.id ? 'destructive-button calendar-small-button' : 'secondary-button calendar-small-button'}
+                      type="button"
+                      aria-label={confirmDeleteEventId === calendarEvent.id ? t('confirmDeleteEventAria', { title: calendarEvent.title }) : t('deleteEventAria', { title: calendarEvent.title })}
+                      onClick={() => handleDeleteEvent(calendarEvent.id)}
+                      disabled={deleteCalendarEventMutation.isPending}
+                    >
+                      {confirmDeleteEventId === calendarEvent.id ? t('confirmDelete') : t('delete')}
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <div className="calendar-empty-day calendar-day-detail-empty">
+            <p className="shopping-meta">{t('emptyDayHint')}</p>
+          </div>
+        )}
+      </section>
 
       {isSheetOpen ? (
         <>
@@ -566,7 +543,7 @@ export function CalendarPage() {
 
               {showMoreOptions ? (
                 <>
-                  <label className="field">
+                  <label className="field calendar-field-wide">
                     <span>{t('fields.assignedProfile')}</span>
                     <select value={assignedProfileId} onChange={(event) => setAssignedProfileId(event.target.value)}>
                       <option value="">{t('unassigned')}</option>
@@ -578,8 +555,11 @@ export function CalendarPage() {
                     </select>
                   </label>
 
-                  <label className="field checkbox-field">
-                    <span>{t('fields.repeatWeekly')}</span>
+                  <label className="toggle-row profile-toggle-row calendar-field-wide">
+                    <span className="profile-toggle-copy">
+                      <strong>{t('fields.repeatWeekly')}</strong>
+                      <span className="shopping-meta">{t('fields.repeatWeeklyHint')}</span>
+                    </span>
                     <input
                       checked={repeatsWeekly}
                       onChange={(event) => setRepeatsWeekly(event.target.checked)}
@@ -591,6 +571,21 @@ export function CalendarPage() {
                     <label className="field">
                       <span>{t('fields.repeatUntil')}</span>
                       <input value={repeatUntil} onChange={(event) => setRepeatUntil(event.target.value)} type="date" />
+                    </label>
+                  ) : null}
+
+                  {editingEventId && repeatsWeekly ? (
+                    <label className="calendar-apply-series-toggle" htmlFor="calendar-apply-series-toggle">
+                      <span className="calendar-apply-series-copy">
+                        <strong>{t('updateFutureRepeats')}</strong>
+                        <span className="shopping-meta">{t('updateFutureRepeatsDescription')}</span>
+                      </span>
+                      <input
+                        id="calendar-apply-series-toggle"
+                        checked={applyToSeries}
+                        onChange={(event) => setApplyToSeries(event.target.checked)}
+                        type="checkbox"
+                      />
                     </label>
                   ) : null}
 

@@ -43,6 +43,7 @@
     "endTime": "Sluttid",
     "assignedProfile": "Tilldelad profil",
     "repeatWeekly": "Upprepa varje vecka",
+    "repeatWeeklyHint": "Lägg till denna händelse varje vecka.",
     "repeatUntil": "Upprepa till",
     "notes": "Anteckningar"
   },

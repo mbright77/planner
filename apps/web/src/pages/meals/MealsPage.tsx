@@ -142,6 +142,7 @@ export function MealsPage() {
 
   const selectedMeal = mealsByDate.get(selectedDate);
   const selectedRequests = requestsByDate.get(selectedDate) ?? [];
+  const selectedMealOwner = bootstrapQuery.data?.profiles.find((profile) => profile.id === selectedMeal?.ownerProfileId);
 
   useEffect(() => {
     if (!dashboardQuery.data || hasUserNavigatedWeekRef.current) {
@@ -293,21 +294,6 @@ export function MealsPage() {
     setAssigningRequestProfileId('');
   }
 
-  function handleStartMealEdit(day: string) {
-    const meal = mealsByDate.get(day);
-    if (!meal) {
-      return;
-    }
-
-    setSelectedDate(day);
-    setEditingMealId(meal.id);
-    setEditingMealTitle(meal.title);
-    setEditingMealNotes(meal.notes ?? '');
-    setEditingMealOwnerProfileId(meal.ownerProfileId ?? '');
-    setMealEditError('');
-    focusMealTitle();
-  }
-
   function handleStartRequestAssignment(requestId: string, currentAssigneeProfileId: string | null) {
     setAssigningRequestId(requestId);
     setAssigningRequestProfileId(currentAssigneeProfileId ?? '');
@@ -362,7 +348,37 @@ export function MealsPage() {
         })}
       </div>
 
-      {selectedMeal && canPlanMeals ? (
+      {!canPlanMeals ? (
+        <section className="meals-compose-card">
+          <p className="eyebrow">{selectedMeal ? t('mealSet') : t('open')}</p>
+          <h3 className="profile-card-title">{formatLongDate(selectedDate, locale)}</h3>
+          {selectedMeal ? (
+            <>
+              <p className="meal-card-title">{selectedMeal.title}</p>
+              {selectedMeal.notes ? <p className="meal-card-notes">{selectedMeal.notes}</p> : null}
+              {selectedMealOwner ? (
+                <div className="meal-card-chip-stack">
+                  <span className={getProfileColorChipClass(selectedMealOwner.colorKey)}>{selectedMealOwner.displayName}</span>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <p className="shopping-meta">{t('noMealPlanned')}</p>
+          )}
+          <div className="meal-card-actions">
+            <button
+              className="secondary-button meal-card-button"
+              type="button"
+              onClick={() => {
+                setShowRequestForm(true);
+                focusRequestTitle();
+              }}
+            >
+              {t('requestMeal')}
+            </button>
+          </div>
+        </section>
+      ) : selectedMeal ? (
         <form className="meals-form meals-compose-card meals-edit-card" onSubmit={handleSaveMealEdit}>
           <div className="meals-compose-header meals-field-wide">
             <div>
@@ -411,11 +427,22 @@ export function MealsPage() {
 
           {mealEditError ? <p className="form-error meals-field-wide">{mealEditError}</p> : null}
 
-          <button className="primary-button" type="submit" disabled={updateMealPlanMutation.isPending || !editingMealId}>
-            {updateMealPlanMutation.isPending ? t('saving') : t('saveChangesForDate', { date: formatLongDate(selectedDate, locale) })}
-          </button>
+          <div className="meal-card-actions meals-field-wide">
+            <button className="primary-button" type="submit" disabled={updateMealPlanMutation.isPending || !editingMealId}>
+              {updateMealPlanMutation.isPending ? t('saving') : t('saveChangesForDate', { date: formatLongDate(selectedDate, locale) })}
+            </button>
+            <button
+              className={confirmDeleteMealId === selectedMeal.id ? 'destructive-button meal-card-button' : 'secondary-button meal-card-button'}
+              type="button"
+              onClick={() => handleDeleteMeal(selectedMeal.id)}
+              aria-label={confirmDeleteMealId === selectedMeal.id ? t('confirmDeleteMealAria', { title: selectedMeal.title }) : t('deleteMealAria', { title: selectedMeal.title })}
+              disabled={deleteMealPlanMutation.isPending}
+            >
+              {confirmDeleteMealId === selectedMeal.id ? t('confirmDelete') : t('delete')}
+            </button>
+          </div>
         </form>
-      ) : canPlanMeals ? (
+      ) : (
         <form className="meals-form meals-compose-card" onSubmit={handleSubmit}>
           <div className="meals-compose-header meals-field-wide">
             <div>
@@ -465,94 +492,26 @@ export function MealsPage() {
 
           {mealFormError ? <p className="form-error meals-field-wide">{mealFormError}</p> : null}
 
-          <button className="primary-button" type="submit" disabled={createMealPlanMutation.isPending}>
-            {createMealPlanMutation.isPending ? t('saving') : t('saveDinnerForDate', { date: formatLongDate(selectedDate, locale) })}
-          </button>
+          <div className="meal-card-actions meals-field-wide">
+            <button className="primary-button" type="submit" disabled={createMealPlanMutation.isPending}>
+              {createMealPlanMutation.isPending ? t('saving') : t('saveDinnerForDate', { date: formatLongDate(selectedDate, locale) })}
+            </button>
+            <button
+              className="secondary-button meal-card-button"
+              type="button"
+              onClick={() => {
+                setShowRequestForm(true);
+                focusRequestTitle();
+              }}
+            >
+              {t('requestMeal')}
+            </button>
+          </div>
         </form>
-      ) : null}
+      )}
 
       {mealsWeekQuery.isLoading ? <p className="page-copy">{t('loading')}</p> : null}
       {mealsWeekQuery.isError ? <p className="form-error">{t('error')}</p> : null}
-
-      <div className="meals-grid">
-        {weekDays.map((day) => {
-          const meal = mealsByDate.get(day.key);
-          const owner = bootstrapQuery.data?.profiles.find((profile) => profile.id === meal?.ownerProfileId);
-          const requests = requestsByDate.get(day.key) ?? [];
-          const className = meal
-            ? day.key === dashboardQuery.data?.date
-              ? 'meal-card meal-card-featured'
-              : 'meal-card'
-            : 'meal-card meal-card-empty';
-
-          return (
-            <article key={day.key} className={day.key === selectedDate ? `${className} meal-card-active` : className}>
-              <div className="meal-card-header">
-                <div>
-                  <p className="eyebrow">{day.label}</p>
-                  <h3 className="profile-card-title">{day.dayNumber}</h3>
-                </div>
-                <div className="meal-card-chip-stack">
-                  {owner ? <span className={getProfileColorChipClass(owner.colorKey)}>{owner.displayName}</span> : null}
-                  {requests.length > 0 ? <span className="profile-color-chip">{t('requestsCount', { count: requests.length })}</span> : null}
-                </div>
-              </div>
-
-              {meal ? (
-                <>
-                  <div className="meal-card-body">
-                    <strong className="meal-card-title">{meal.title}</strong>
-                    {meal.notes ? <p className="meal-card-notes">{meal.notes}</p> : null}
-                  </div>
-
-                  {canPlanMeals ? (
-                    <div className="meal-card-actions">
-                      <button
-                        className="secondary-button meal-card-button"
-                        type="button"
-                        onClick={() => handleStartMealEdit(day.key)}
-                      >
-                        {t('editDay')}
-                      </button>
-                      <button
-                        className={confirmDeleteMealId === meal.id ? 'destructive-button meal-card-button' : 'secondary-button meal-card-button'}
-                        type="button"
-                        onClick={() => handleDeleteMeal(meal.id)}
-                        aria-label={confirmDeleteMealId === meal.id ? t('confirmDeleteMealAria', { title: meal.title }) : t('deleteMealAria', { title: meal.title })}
-                        disabled={deleteMealPlanMutation.isPending}
-                      >
-                        {confirmDeleteMealId === meal.id ? t('confirmDelete') : t('delete')}
-                      </button>
-                    </div>
-                  ) : null}
-                </>
-              ) : (
-                <div className="meal-card-empty-state">
-                  <p className="shopping-meta">{t('noMealPlanned')}</p>
-                  <div className="meal-card-actions">
-                    {canPlanMeals ? (
-                      <button className="secondary-button meal-card-button" type="button" onClick={() => handleSelectDay(day.key)}>
-                        {t('planThisDay')}
-                      </button>
-                    ) : null}
-                    <button
-                      className="secondary-button meal-card-button"
-                      type="button"
-                      onClick={() => {
-                        handleSelectDay(day.key);
-                        setShowRequestForm(true);
-                        focusRequestTitle();
-                      }}
-                    >
-                      {t('requestMeal')}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </article>
-          );
-        })}
-      </div>
 
       <section className="meal-requests-section">
         <div className="shopping-group-header meal-requests-header">

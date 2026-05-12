@@ -43,6 +43,7 @@
     "endTime": "End time",
     "assignedProfile": "Assigned profile",
     "repeatWeekly": "Repeat weekly",
+    "repeatWeeklyHint": "Add this event to every week.",
     "repeatUntil": "Repeat until",
     "notes": "Notes"
   },

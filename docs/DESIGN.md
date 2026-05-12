@@ -1,53 +1,23 @@
 ---
 name: Kinship UI
 colors:
-  surface: '#f7f9ff'
-  surface-dim: '#d8dadf'
-  surface-bright: '#f7f9ff'
-  surface-container-lowest: '#ffffff'
-  surface-container-low: '#f1f3f9'
-  surface-container: '#eceef3'
-  surface-container-high: '#e6e8ee'
-  surface-container-highest: '#e0e2e8'
-  on-surface: '#181c20'
-  on-surface-variant: '#404750'
-  inverse-surface: '#2d3135'
-  inverse-on-surface: '#eff1f6'
-  outline: '#707881'
-  outline-variant: '#c0c7d1'
-  surface-tint: '#00639a'
-  primary: '#00639a'
-  on-primary: '#ffffff'
-  primary-container: '#5da9e9'
-  on-primary-container: '#003c61'
-  inverse-primary: '#96ccff'
-  secondary: '#9e4042'
-  on-secondary: '#ffffff'
-  secondary-container: '#fd898a'
-  on-secondary-container: '#752126'
-  tertiary: '#41664c'
-  on-tertiary: '#ffffff'
-  tertiary-container: '#84ac8e'
-  on-tertiary-container: '#1c4029'
-  error: '#ba1a1a'
-  on-error: '#ffffff'
-  error-container: '#ffdad6'
-  on-error-container: '#93000a'
-  primary-fixed: '#cee5ff'
-  primary-fixed-dim: '#96ccff'
-  on-primary-fixed: '#001d32'
-  on-primary-fixed-variant: '#004a76'
-  secondary-fixed: '#ffdad8'
-  secondary-fixed-dim: '#ffb3b1'
-  on-secondary-fixed: '#410008'
-  on-secondary-fixed-variant: '#7f282c'
-  tertiary-fixed: '#c3edcb'
-  tertiary-fixed-dim: '#a7d0b0'
-  on-tertiary-fixed: '#00210e'
-  on-tertiary-fixed-variant: '#2a4e36'
-  background: '#f7f9ff'
-  on-background: '#181c20'
-  surface-variant: '#e0e2e8'
+  background: '#f4fafd'
+  surface: '#ffffff'
+  surface-subtle: '#e8eff1'
+  text: '#161d1f'
+  text-muted: '#8d706e'
+  border: '#ffd4d2'
+  primary: '#b3272c'
+  primary-strong: '#b3272c'
+  primary-container: '#ff5f5d'
+  secondary: '#735c00'
+  secondary-container: '#fdd022'
+  tertiary: '#006a65'
+  tertiary-container: '#0da79f'
+  on-surface-variant: '#5a413f'
+  outline: '#8d706e'
+  shadow: '0 4px 12px rgba(255, 95, 93, 0.08)'
+  shadow-floating: '0 8px 24px rgba(255, 95, 93, 0.25)'
 typography:
   display:
     fontFamily: Plus Jakarta Sans
@@ -105,12 +75,12 @@ The style is **Modern Minimalist with Tactile Softness**. It avoids the clinical
 
 The palette is designed for high-speed recognition through color-coding. The primary colors act as "Family Member Tags," allowing users to identify whose schedule or task they are viewing at a glance.
 
-- **Sky Blue (#5DA9E9):** Trustworthy and calm; used for primary actions and "Member A."
-- **Coral Pink (#FF8B8B):** Energetic and warm; used for alerts and "Member B."
-- **Sage Green (#8DB596):** Natural and soothing; used for success states and "Member C."
-- **Golden Yellow (#F4D35E):** Cheerful and bright; used for highlights and "Member D."
-- **Neutral Surface (#F9F9F7):** An off-white "linen" base that reduces eye strain compared to pure white.
-- **Deep Charcoal (#2D3132):** High-contrast text for maximum legibility without the harshness of pure black.
+- **Crimson Red (#B3272C / #FF5F5D):** Primary action color; used for buttons, active states, and interactive highlights.
+- **Warm Gold (#FDD022):** Secondary accent; used for secondary actions and highlights.
+- **Teal (#006A65 / #0DA79F):** Tertiary accent; used for complementary UI elements.
+- **Light Blue Surface (#F4FAFD):** Airy background that keeps the layout calm without pure white flatness.
+- **Deep Charcoal (#161D1F):** High-contrast text for maximum legibility without the harshness of pure black.
+- **Muted Mauve (#8D706E):** Secondary text and inactive labels; warm neutral to complement the red primary.
 
 ## Typography
 
@@ -148,7 +118,7 @@ The shape language is defined by **large, friendly radii**. Sharp corners are no
 ## Components
 
 - **Cards:** The primary organizational unit. Cards should have a white background, 20px corners, and a 1px soft gray border (#F0F0F0) to define edges against the off-white background.
-- **Buttons:** High-affordance with 12px corners. Primary buttons use Sky Blue with white text. Secondary buttons use a ghost style with a 2px Sky Blue border.
+- **Buttons:** High-affordance with 12px corners. Primary buttons use Crimson Red with white text. Secondary buttons use a ghost style with a 2px Crimson Red border.
 - **Profile Chips:** Small pill-shaped badges used within cards. They should use the member's specific profile color as a background with 10% opacity and a darker version of that color for the text.
 - **Inputs:** Fields should be 56px tall with a light gray fill (#F2F2F0) and 12px corners. The label should float or sit clearly above the input in `label-sm`.
 - **Navigation:** A persistent bottom navigation bar with large, Material-inspired rounded icons. Use the active member's color to highlight the selected state.
