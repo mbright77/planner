@@ -179,7 +179,7 @@ vi.mock('../entities/event/model/useCalendarWeek', () => ({
 vi.mock('../entities/meal/model/useMealsWeek', () => ({
   useMealsWeek: () => ({ data: { weekStart: '2026-04-27', meals }, isLoading: false, isError: false }),
   useMealRequests: () => ({ data: mealRequests, isLoading: false, isError: false }),
-  useCreateMealPlan: () => ({
+  useCreateMealPlan: (_weekStart: string) => ({
     isPending: false,
     mutateAsync: async (request: { mealDate: string; title: string; notes: string | null; ownerProfileId: string | null }) => {
       meals = [
@@ -391,11 +391,11 @@ describe('Phase 12 - Delete functionality and behavior regressions', () => {
   it('12.3.2, 12.3.3, 12.5.2 adds and deletes a calendar event', async () => {
     renderShellRoute('/calendar');
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Add event' })[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Add here' }));
 
     const titleInput = await screen.findByPlaceholderText('Add event title');
     fireEvent.change(titleInput, { target: { value: 'Dentist Appointment' } });
-    fireEvent.click(screen.getByText('Add event', { selector: 'button[type="submit"]' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add event' }));
 
     await waitFor(() => expect(screen.getByText('Dentist Appointment')).toBeInTheDocument());
 
@@ -412,12 +412,13 @@ describe('Phase 12 - Delete functionality and behavior regressions', () => {
     fireEvent.change(mealTitle, { target: { value: 'Taco Night' } });
     fireEvent.click(screen.getByRole('button', { name: /Save dinner for/i }));
 
-    await waitFor(() => expect(screen.getByText('Taco Night')).toBeInTheDocument());
+    // After save the page switches to the edit form; the title is in the input value and the delete button aria-label
+    await waitFor(() => expect(screen.getByRole('button', { name: /Delete Taco Night/i })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'Delete Taco Night' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm delete Taco Night' }));
+    fireEvent.click(screen.getByRole('button', { name: /Delete Taco Night/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Confirm delete Taco Night/i }));
 
-    await waitFor(() => expect(screen.queryByText('Taco Night')).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByRole('button', { name: /Delete Taco Night/i })).not.toBeInTheDocument());
   });
 
   it('12.3.5, 12.5.3, 12.5.4 adds shopping item, checks off, and removes it', async () => {
