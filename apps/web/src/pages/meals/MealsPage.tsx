@@ -1,8 +1,30 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { HugeiconsIcon } from '@hugeicons/react';
+import {
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  Delete02Icon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
 import { useDashboardOverview } from '../../entities/dashboard/model/useDashboardOverview';
-import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 import {
   useAcceptMealRequest,
   useAssignMealRequest,
@@ -13,6 +35,7 @@ import {
   useMealsWeek,
   useUpdateMealPlan,
 } from '../../entities/meal/model/useMealsWeek';
+import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 
 function getWeekStart(date: Date) {
   const utcDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
@@ -107,10 +130,7 @@ export function MealsPage() {
   const [assigningRequestId, setAssigningRequestId] = useState<string | null>(null);
   const [assigningRequestProfileId, setAssigningRequestProfileId] = useState('');
   const [confirmDeleteMealId, setConfirmDeleteMealId] = useState<string | null>(null);
-
-  const mealTitleRef = useRef<HTMLInputElement | null>(null);
-  const requestTitleRef = useRef<HTMLInputElement | null>(null);
-  const hasUserNavigatedWeekRef = useRef(false);
+  const [hasUserNavigatedWeek, setHasUserNavigatedWeek] = useState(false);
 
   const bootstrapQuery = useBootstrap();
   const dashboardQuery = useDashboardOverview();
@@ -145,7 +165,7 @@ export function MealsPage() {
   const selectedMealOwner = bootstrapQuery.data?.profiles.find((profile) => profile.id === selectedMeal?.ownerProfileId);
 
   useEffect(() => {
-    if (!dashboardQuery.data || hasUserNavigatedWeekRef.current) {
+    if (!dashboardQuery.data || hasUserNavigatedWeek) {
       return;
     }
 
@@ -155,7 +175,7 @@ export function MealsPage() {
 
     setSelectedDate(dashboardDate);
     setWeekStart(canonicalWeekStart);
-  }, [dashboardQuery.data, mealsWeekQuery.data?.weekStart]);
+  }, [dashboardQuery.data, mealsWeekQuery.data?.weekStart, hasUserNavigatedWeek]);
 
   useEffect(() => {
     if (selectedMeal) {
@@ -174,29 +194,16 @@ export function MealsPage() {
     setMealEditError('');
   }, [selectedMeal]);
 
-  function focusMealTitle() {
-    window.requestAnimationFrame(() => {
-      mealTitleRef.current?.focus();
-    });
-  }
-
-  function focusRequestTitle() {
-    window.requestAnimationFrame(() => {
-      requestTitleRef.current?.focus();
-    });
-  }
-
   function handleSelectDay(day: string) {
-    hasUserNavigatedWeekRef.current = true;
+    setHasUserNavigatedWeek(true);
     setSelectedDate(day);
     setMealFormError('');
     setRequestFormError('');
     setConfirmDeleteMealId(null);
-    focusMealTitle();
   }
 
   function handleShiftWeek(direction: -1 | 1) {
-    hasUserNavigatedWeekRef.current = true;
+    setHasUserNavigatedWeek(true);
     const { nextWeekStart, nextSelectedDate } = shiftWeekDate(weekStart, selectedDate, direction);
     setWeekStart(nextWeekStart);
     setSelectedDate(nextSelectedDate);
@@ -300,346 +307,418 @@ export function MealsPage() {
   }
 
   return (
-    <section className="page meals-page">
-      <p className="eyebrow">{t('eyebrow')}</p>
-      <h2 className="page-title">{t('title')}</h2>
-      <p className="page-copy">
-        {t('description')}
-      </p>
+    <section className="flex flex-col gap-4 py-4 md:gap-6">
+      <Card>
+        <CardHeader>
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('eyebrow')}</p>
+          <CardTitle className="text-2xl md:text-3xl">{t('title')}</CardTitle>
+          <CardDescription>{t('description')}</CardDescription>
+        </CardHeader>
+      </Card>
 
-      <section className="meals-header-panel">
-        <div>
-          <h3 className="meals-range-title">{formatWeekRange(weekStart, locale)}</h3>
-          <p className="shopping-meta">{t('weekMeta')}</p>
-          {!canPlanMeals ? (
-            <p className="shopping-meta">{t('readOnlyNote')}</p>
-          ) : null}
+      <Card>
+        <CardHeader className="flex-row items-end justify-between gap-3">
+          <div>
+            <CardTitle className="text-xl md:text-2xl">{formatWeekRange(weekStart, locale)}</CardTitle>
+            <CardDescription>{t('weekMeta')}</CardDescription>
+            {!canPlanMeals ? <CardDescription>{t('readOnlyNote')}</CardDescription> : null}
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" type="button" onClick={() => handleShiftWeek(-1)}>
+              <HugeiconsIcon icon={ArrowLeft01Icon} data-icon="inline-start" aria-hidden="true" />
+              {t('previous')}
+            </Button>
+            <Button variant="outline" type="button" onClick={() => handleShiftWeek(1)}>
+              {t('next')}
+              <HugeiconsIcon icon={ArrowRight01Icon} data-icon="inline-end" aria-hidden="true" />
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent>
+          <div className="grid grid-cols-7 gap-2" aria-label={t('planningDaysAria')}>
+            {weekDays.map((day) => {
+              const isSelected = day.key === selectedDate;
+              const meal = mealsByDate.get(day.key);
+              const requests = requestsByDate.get(day.key) ?? [];
+
+              return (
+                <Button
+                  key={day.key}
+                  type="button"
+                  variant={isSelected ? 'default' : 'outline'}
+                  className="h-auto flex-col gap-0.5 py-2"
+                  onClick={() => handleSelectDay(day.key)}
+                >
+                  <span className="text-[11px] uppercase opacity-80">{day.label}</span>
+                  <span className="text-sm font-semibold">{day.dayNumber}</span>
+                  <span className="text-[10px]">
+                    {meal ? t('mealSet') : requests.length > 0 ? t('requestsCount', { count: requests.length }) : t('open')}
+                  </span>
+                </Button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {mealsWeekQuery.isLoading ? (
+        <div className="grid gap-3">
+          <Skeleton className="h-28 rounded-2xl" />
+          <Skeleton className="h-28 rounded-2xl" />
         </div>
-        <div className="meals-header-actions">
-          <button className="secondary-button calendar-small-button" type="button" onClick={() => handleShiftWeek(-1)}>
-            {t('previous')}
-          </button>
-          <button className="secondary-button calendar-small-button" type="button" onClick={() => handleShiftWeek(1)}>
-            {t('next')}
-          </button>
-        </div>
-      </section>
-
-      <div className="meals-week-strip" aria-label={t('planningDaysAria')}>
-        {weekDays.map((day) => {
-          const isSelected = day.key === selectedDate;
-          const meal = mealsByDate.get(day.key);
-          const requests = requestsByDate.get(day.key) ?? [];
-
-          return (
-            <button
-              key={day.key}
-              className={isSelected ? 'calendar-week-pill calendar-week-pill-active' : 'calendar-week-pill'}
-              type="button"
-              onClick={() => handleSelectDay(day.key)}
-            >
-              <span className="calendar-week-pill-label">{day.label}</span>
-              <span className="calendar-week-pill-number">{day.dayNumber}</span>
-              <span className="meal-day-summary">
-                {meal ? t('mealSet') : requests.length > 0 ? t('requestsCount', { count: requests.length }) : t('open')}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      ) : null}
+      {mealsWeekQuery.isError ? (
+        <Alert variant="destructive">
+          <AlertDescription>{t('error')}</AlertDescription>
+        </Alert>
+      ) : null}
 
       {!canPlanMeals ? (
-        <section className="meals-compose-card">
-          <p className="eyebrow">{selectedMeal ? t('mealSet') : t('open')}</p>
-          <h3 className="profile-card-title">{formatLongDate(selectedDate, locale)}</h3>
-          {selectedMeal ? (
-            <>
-              <p className="meal-card-title">{selectedMeal.title}</p>
-              {selectedMeal.notes ? <p className="meal-card-notes">{selectedMeal.notes}</p> : null}
-              {selectedMealOwner ? (
-                <div className="meal-card-chip-stack">
+        <Card>
+          <CardHeader>
+            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              {selectedMeal ? t('mealSet') : t('open')}
+            </p>
+            <CardTitle className="text-lg">{formatLongDate(selectedDate, locale)}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {selectedMeal ? (
+              <>
+                <p className="text-base font-semibold">{selectedMeal.title}</p>
+                {selectedMeal.notes ? <p className="text-sm text-muted-foreground">{selectedMeal.notes}</p> : null}
+                {selectedMealOwner ? (
                   <span className={getProfileColorChipClass(selectedMealOwner.colorKey)}>{selectedMealOwner.displayName}</span>
-                </div>
-              ) : null}
-            </>
-          ) : (
-            <p className="shopping-meta">{t('noMealPlanned')}</p>
-          )}
-          <div className="meal-card-actions">
-            <button
-              className="secondary-button meal-card-button"
+                ) : null}
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">{t('noMealPlanned')}</p>
+            )}
+            <Button
+              variant="outline"
               type="button"
               onClick={() => {
                 setShowRequestForm(true);
-                focusRequestTitle();
               }}
             >
               {t('requestMeal')}
-            </button>
-          </div>
-        </section>
+            </Button>
+          </CardContent>
+        </Card>
       ) : selectedMeal ? (
-        <form className="meals-form meals-compose-card meals-edit-card" onSubmit={handleSaveMealEdit}>
-          <div className="meals-compose-header meals-field-wide">
+        <Card>
+          <CardHeader className="flex-row items-start justify-between gap-3">
             <div>
-              <p className="eyebrow">{t('editDinner')}</p>
-              <h3 className="profile-card-title">{formatLongDate(selectedDate, locale)}</h3>
+              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('editDinner')}</p>
+              <CardTitle className="text-lg">{formatLongDate(selectedDate, locale)}</CardTitle>
             </div>
-            <button
-              className="secondary-button calendar-small-button"
-              type="button"
-              onClick={() => setShowMealOptions((current) => !current)}
-            >
+            <Button variant="outline" type="button" onClick={() => setShowMealOptions((current) => !current)}>
               {showMealOptions ? t('fewerFields') : t('moreOptions')}
-            </button>
-          </div>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-4" onSubmit={handleSaveMealEdit}>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="meal-edit-title">{t('fields.mealTitle')}</Label>
+                <Input
+                  id="meal-edit-title"
+                  value={editingMealTitle}
+                  onChange={(event) => setEditingMealTitle(event.target.value)}
+                  type="text"
+                />
+              </div>
 
-          <label className="field meals-field-wide">
-            <span>{t('fields.mealTitle')}</span>
-            <input
-              ref={mealTitleRef}
-              value={editingMealTitle}
-              onChange={(event) => setEditingMealTitle(event.target.value)}
-              type="text"
-            />
-          </label>
+              {showMealOptions ? (
+                <>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="meal-edit-owner">{t('fields.owner')}</Label>
+                    <Select
+                      value={editingMealOwnerProfileId || '__none'}
+                      onValueChange={(value) => setEditingMealOwnerProfileId(value === '__none' ? '' : value)}
+                    >
+                      <SelectTrigger id="meal-edit-owner" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="__none">{t('unassigned')}</SelectItem>
+                          {bootstrapQuery.data?.profiles.map((profile) => (
+                            <SelectItem key={profile.id} value={profile.id}>
+                              {profile.displayName}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-          {showMealOptions ? (
-            <>
-              <label className="field">
-                <span>{t('fields.owner')}</span>
-                <select value={editingMealOwnerProfileId} onChange={(event) => setEditingMealOwnerProfileId(event.target.value)}>
-                  <option value="">{t('unassigned')}</option>
-                  {bootstrapQuery.data?.profiles.map((profile) => (
-                    <option key={profile.id} value={profile.id}>
-                      {profile.displayName}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="meal-edit-notes">{t('fields.notes')}</Label>
+                    <Textarea
+                      id="meal-edit-notes"
+                      value={editingMealNotes}
+                      onChange={(event) => setEditingMealNotes(event.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                </>
+              ) : null}
 
-              <label className="field meals-field-wide">
-                <span>{t('fields.notes')}</span>
-                <textarea value={editingMealNotes} onChange={(event) => setEditingMealNotes(event.target.value)} rows={3} />
-              </label>
-            </>
-          ) : null}
+              {mealEditError ? (
+                <Alert variant="destructive">
+                  <AlertDescription>{mealEditError}</AlertDescription>
+                </Alert>
+              ) : null}
 
-          {mealEditError ? <p className="form-error meals-field-wide">{mealEditError}</p> : null}
-
-          <div className="meal-card-actions meals-field-wide">
-            <button className="primary-button" type="submit" disabled={updateMealPlanMutation.isPending || !editingMealId}>
-              {updateMealPlanMutation.isPending ? t('saving') : t('saveChangesForDate', { date: formatLongDate(selectedDate, locale) })}
-            </button>
-            <button
-              className={confirmDeleteMealId === selectedMeal.id ? 'destructive-button meal-card-button' : 'secondary-button meal-card-button'}
-              type="button"
-              onClick={() => handleDeleteMeal(selectedMeal.id)}
-              aria-label={confirmDeleteMealId === selectedMeal.id ? t('confirmDeleteMealAria', { title: selectedMeal.title }) : t('deleteMealAria', { title: selectedMeal.title })}
-              disabled={deleteMealPlanMutation.isPending}
-            >
-              {confirmDeleteMealId === selectedMeal.id ? t('confirmDelete') : t('delete')}
-            </button>
-          </div>
-        </form>
+              <div className="flex flex-wrap gap-2">
+                <Button type="submit" disabled={updateMealPlanMutation.isPending || !editingMealId}>
+                  {updateMealPlanMutation.isPending
+                    ? t('saving')
+                    : t('saveChangesForDate', { date: formatLongDate(selectedDate, locale) })}
+                </Button>
+                <Button
+                  variant={confirmDeleteMealId === selectedMeal.id ? 'destructive' : 'outline'}
+                  type="button"
+                  onClick={() => handleDeleteMeal(selectedMeal.id)}
+                  aria-label={
+                    confirmDeleteMealId === selectedMeal.id
+                      ? t('confirmDeleteMealAria', { title: selectedMeal.title })
+                      : t('deleteMealAria', { title: selectedMeal.title })
+                  }
+                  disabled={deleteMealPlanMutation.isPending}
+                >
+                  <HugeiconsIcon icon={Delete02Icon} data-icon="inline-start" aria-hidden="true" />
+                  {confirmDeleteMealId === selectedMeal.id ? t('confirmDelete') : t('delete')}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       ) : (
-        <form className="meals-form meals-compose-card" onSubmit={handleSubmit}>
-          <div className="meals-compose-header meals-field-wide">
+        <Card>
+          <CardHeader className="flex-row items-start justify-between gap-3">
             <div>
-              <p className="eyebrow">{t('planDinner')}</p>
-              <h3 className="profile-card-title">{formatLongDate(selectedDate, locale)}</h3>
+              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('planDinner')}</p>
+              <CardTitle className="text-lg">{formatLongDate(selectedDate, locale)}</CardTitle>
             </div>
-            <button
-              className="secondary-button calendar-small-button"
-              type="button"
-              onClick={() => setShowMealOptions((current) => !current)}
-            >
+            <Button variant="outline" type="button" onClick={() => setShowMealOptions((current) => !current)}>
               {showMealOptions ? t('fewerFields') : t('moreOptions')}
-            </button>
-          </div>
+            </Button>
+          </CardHeader>
 
-          <label className="field meals-field-wide">
-            <span>{t('fields.mealTitle')}</span>
-            <input
-              ref={mealTitleRef}
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder={t('fields.mealTitlePlaceholder')}
-              type="text"
-            />
-          </label>
+          <CardContent>
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="meal-title">{t('fields.mealTitle')}</Label>
+                <Input
+                  id="meal-title"
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  placeholder={t('fields.mealTitlePlaceholder')}
+                  type="text"
+                />
+              </div>
 
-          {showMealOptions ? (
-            <>
-              <label className="field">
-                <span>{t('fields.owner')}</span>
-                <select value={ownerProfileId} onChange={(event) => setOwnerProfileId(event.target.value)}>
-                  <option value="">{t('unassigned')}</option>
-                  {bootstrapQuery.data?.profiles.map((profile) => (
-                    <option key={profile.id} value={profile.id}>
-                      {profile.displayName}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              {showMealOptions ? (
+                <>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="meal-owner">{t('fields.owner')}</Label>
+                    <Select
+                      value={ownerProfileId || '__none'}
+                      onValueChange={(value) => setOwnerProfileId(value === '__none' ? '' : value)}
+                    >
+                      <SelectTrigger id="meal-owner" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="__none">{t('unassigned')}</SelectItem>
+                          {bootstrapQuery.data?.profiles.map((profile) => (
+                            <SelectItem key={profile.id} value={profile.id}>
+                              {profile.displayName}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <label className="field meals-field-wide">
-                <span>{t('fields.notes')}</span>
-                <textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
-              </label>
-            </>
-          ) : null}
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="meal-notes">{t('fields.notes')}</Label>
+                    <Textarea id="meal-notes" value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
+                  </div>
+                </>
+              ) : null}
 
-          {mealFormError ? <p className="form-error meals-field-wide">{mealFormError}</p> : null}
+              {mealFormError ? (
+                <Alert variant="destructive">
+                  <AlertDescription>{mealFormError}</AlertDescription>
+                </Alert>
+              ) : null}
 
-          <div className="meal-card-actions meals-field-wide">
-            <button className="primary-button" type="submit" disabled={createMealPlanMutation.isPending}>
-              {createMealPlanMutation.isPending ? t('saving') : t('saveDinnerForDate', { date: formatLongDate(selectedDate, locale) })}
-            </button>
-            <button
-              className="secondary-button meal-card-button"
-              type="button"
-              onClick={() => {
-                setShowRequestForm(true);
-                focusRequestTitle();
-              }}
-            >
-              {t('requestMeal')}
-            </button>
-          </div>
-        </form>
+              <div className="flex flex-wrap gap-2">
+                <Button type="submit" disabled={createMealPlanMutation.isPending}>
+                  {createMealPlanMutation.isPending
+                    ? t('saving')
+                    : t('saveDinnerForDate', { date: formatLongDate(selectedDate, locale) })}
+                </Button>
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => {
+                    setShowRequestForm(true);
+                  }}
+                >
+                  {t('requestMeal')}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       )}
 
-      {mealsWeekQuery.isLoading ? <p className="page-copy">{t('loading')}</p> : null}
-      {mealsWeekQuery.isError ? <p className="form-error">{t('error')}</p> : null}
-
-      <section className="meal-requests-section">
-        <div className="shopping-group-header meal-requests-header">
+      <Card>
+        <CardHeader className="flex-row items-start justify-between gap-3">
           <div>
-            <p className="eyebrow">{t('requests')}</p>
-            <h3 className="profile-card-title">{t('mealRequestsForDate', { date: formatLongDate(selectedDate, locale) })}</h3>
+            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('requests')}</p>
+            <CardTitle className="text-lg">{t('mealRequestsForDate', { date: formatLongDate(selectedDate, locale) })}</CardTitle>
           </div>
-          <div className="meal-requests-header-actions">
-            <span className="profile-color-chip">{t('openCount', { count: selectedRequests.length })}</span>
-            <button
-              className="secondary-button calendar-small-button"
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary">{t('openCount', { count: selectedRequests.length })}</Badge>
+            <Button
+              variant="outline"
               type="button"
               onClick={() => {
                 setShowRequestForm((current) => !current);
-                if (!showRequestForm) {
-                  focusRequestTitle();
-                }
               }}
             >
               {showRequestForm ? t('hideRequestForm') : t('requestMeal')}
-            </button>
+            </Button>
           </div>
-        </div>
+        </CardHeader>
 
-        {showRequestForm ? (
-          <form className="meal-requests-form" onSubmit={handleRequestSubmit}>
-              <label className="field meal-requests-field-wide">
-                <span>{t('fields.requestTitle')}</span>
-                <input
-                ref={requestTitleRef}
-                value={requestTitle}
-                onChange={(event) => setRequestTitle(event.target.value)}
-                placeholder={t('fields.requestTitlePlaceholder')}
-                type="text"
-              />
-            </label>
+        <CardContent className="space-y-4">
+          {showRequestForm ? (
+            <form className="space-y-4" onSubmit={handleRequestSubmit}>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="request-title">{t('fields.requestTitle')}</Label>
+                <Input
+                  id="request-title"
+                  value={requestTitle}
+                  onChange={(event) => setRequestTitle(event.target.value)}
+                  placeholder={t('fields.requestTitlePlaceholder')}
+                  type="text"
+                />
+              </div>
 
-            <label className="field meal-requests-field-wide">
-              <span>{t('fields.notes')}</span>
-              <textarea value={requestNotes} onChange={(event) => setRequestNotes(event.target.value)} rows={2} />
-            </label>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="request-notes">{t('fields.notes')}</Label>
+                <Textarea id="request-notes" value={requestNotes} onChange={(event) => setRequestNotes(event.target.value)} rows={2} />
+              </div>
 
-            {requestFormError ? <p className="form-error meal-requests-field-wide">{requestFormError}</p> : null}
+              {requestFormError ? (
+                <Alert variant="destructive">
+                  <AlertDescription>{requestFormError}</AlertDescription>
+                </Alert>
+              ) : null}
 
-            <button className="primary-button" type="submit" disabled={createMealRequestMutation.isPending}>
-              {createMealRequestMutation.isPending ? t('saving') : t('addRequestForDate', { date: formatLongDate(selectedDate, locale) })}
-            </button>
-          </form>
-        ) : null}
+              <Button type="submit" disabled={createMealRequestMutation.isPending}>
+                {createMealRequestMutation.isPending
+                  ? t('saving')
+                  : t('addRequestForDate', { date: formatLongDate(selectedDate, locale) })}
+              </Button>
+            </form>
+          ) : null}
 
-        {mealRequestsQuery.isLoading ? <p className="page-copy">{t('loadingRequests')}</p> : null}
-        {mealRequestsQuery.isError ? <p className="form-error">{t('errorRequests')}</p> : null}
+          {mealRequestsQuery.isLoading ? <Skeleton className="h-24 rounded-2xl" /> : null}
+          {mealRequestsQuery.isError ? (
+            <Alert variant="destructive">
+              <AlertDescription>{t('errorRequests')}</AlertDescription>
+            </Alert>
+          ) : null}
 
-        <div className="meal-request-list">
-          {selectedRequests.length > 0 ? (
-            selectedRequests.map((request) => {
-              const requester = bootstrapQuery.data?.profiles.find((profile) => profile.id === request.requesterProfileId);
-              const assignee = bootstrapQuery.data?.profiles.find((profile) => profile.id === request.assigneeProfileId);
+          <div className="space-y-3">
+            {selectedRequests.length > 0 ? (
+              selectedRequests.map((request) => {
+                const requester = bootstrapQuery.data?.profiles.find((profile) => profile.id === request.requesterProfileId);
+                const assignee = bootstrapQuery.data?.profiles.find((profile) => profile.id === request.assigneeProfileId);
 
-              return (
-                <article key={request.id} className="meal-request-card">
-                  <div className="meal-request-avatar" aria-hidden="true">
-                    {requester ? requester.displayName.slice(0, 1).toUpperCase() : 'R'}
-                  </div>
-
-                  <div className="meal-request-copy">
-                    <div className="meal-request-tags">
-                      <strong className="meal-request-title">{request.title}</strong>
-                      {requester ? <span className={getProfileColorChipClass(requester.colorKey)}>{requester.displayName}</span> : null}
+                return (
+                  <article key={request.id} className="rounded-xl border border-border bg-muted/20 p-3">
+                    <div className="mb-3 space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-semibold md:text-base">{request.title}</p>
+                        {requester ? <span className={getProfileColorChipClass(requester.colorKey)}>{requester.displayName}</span> : null}
+                      </div>
+                      {request.notes ? <p className="text-sm text-muted-foreground">{request.notes}</p> : null}
+                      {assignee ? <p className="text-sm text-muted-foreground">{t('assignedTo', { name: assignee.displayName })}</p> : null}
                     </div>
-                    {request.notes ? <p className="meal-card-notes">{request.notes}</p> : null}
-                    {assignee ? <p className="shopping-meta">{t('assignedTo', { name: assignee.displayName })}</p> : null}
-                  </div>
 
-                  <div className="meal-request-actions">
-                    {assigningRequestId === request.id ? (
-                      <>
-                        <label className="field meal-request-assign-field">
-                          <span>{t('fields.assignPerson')}</span>
-                          <select value={assigningRequestProfileId} onChange={(event) => setAssigningRequestProfileId(event.target.value)}>
-                            <option value="">{t('unassigned')}</option>
-                            {bootstrapQuery.data?.profiles.map((profile) => (
-                              <option key={profile.id} value={profile.id}>
-                                {profile.displayName}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <button
-                          className="secondary-button meal-request-button"
+                    <div className="flex flex-wrap gap-2">
+                      {assigningRequestId === request.id ? (
+                        <>
+                          <div className="min-w-[12rem] flex-1">
+                            <Select
+                              value={assigningRequestProfileId || '__none'}
+                              onValueChange={(value) => setAssigningRequestProfileId(value === '__none' ? '' : value)}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder={t('unassigned')} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectGroup>
+                                  <SelectItem value="__none">{t('unassigned')}</SelectItem>
+                                  {bootstrapQuery.data?.profiles.map((profile) => (
+                                    <SelectItem key={profile.id} value={profile.id}>
+                                      {profile.displayName}
+                                    </SelectItem>
+                                  ))}
+                                </SelectGroup>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Button
+                            variant="outline"
+                            type="button"
+                            onClick={() => handleAssignRequest(request.id)}
+                            disabled={assignMealRequestMutation.isPending}
+                          >
+                            {t('saveAssignment')}
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          variant="outline"
                           type="button"
-                          onClick={() => handleAssignRequest(request.id)}
+                          onClick={() => handleStartRequestAssignment(request.id, request.assigneeProfileId)}
                           disabled={assignMealRequestMutation.isPending}
                         >
-                          {t('saveAssignment')}
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        className="secondary-button meal-request-button"
-                        type="button"
-                        onClick={() => handleStartRequestAssignment(request.id, request.assigneeProfileId)}
-                        disabled={assignMealRequestMutation.isPending}
-                      >
-                        {t('assignPerson')}
-                      </button>
-                    )}
-                    {canPlanMeals ? (
-                      <button
-                        className="primary-button meal-request-button"
-                        type="button"
-                        onClick={() => acceptMealRequestMutation.mutate(request.id)}
-                        disabled={acceptMealRequestMutation.isPending}
-                      >
-                        {t('accept')}
-                      </button>
-                    ) : null}
-                  </div>
-                </article>
-              );
-            })
-          ) : (
-            <div className="dashboard-empty-card dashboard-empty-card-compact">
-              <p className="shopping-meta">{t('noRequestsWaiting')}</p>
-            </div>
-          )}
-        </div>
-      </section>
+                          {t('assignPerson')}
+                        </Button>
+                      )}
+
+                      {canPlanMeals ? (
+                        <Button
+                          type="button"
+                          onClick={() => acceptMealRequestMutation.mutate(request.id)}
+                          disabled={acceptMealRequestMutation.isPending}
+                        >
+                          <HugeiconsIcon icon={Tick02Icon} data-icon="inline-start" aria-hidden="true" />
+                          {t('accept')}
+                        </Button>
+                      ) : null}
+                    </div>
+                  </article>
+                );
+              })
+            ) : (
+              <div className="rounded-xl border border-dashed border-border bg-muted/20 p-4">
+                <p className="text-sm text-muted-foreground">{t('noRequestsWaiting')}</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </section>
   );
 }

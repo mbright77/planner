@@ -1,14 +1,31 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { LanguageCircleIcon, LinkSquare01Icon, Mail01Icon, UserIcon } from '@hugeicons/core-free-icons';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { useCreateFamilyInvite, useFamilyInvites } from '../../entities/invite/model/useFamilyInvites';
-import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 import {
   useCreateProfile,
   useProfiles,
   useUpdateProfile,
 } from '../../entities/profile/model/useProfiles';
+import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 
 const colorOptions = ['green', 'blue', 'pink', 'yellow'];
 const languageOptions = ['en', 'sv'] as const;
@@ -100,215 +117,248 @@ export function FamilyPage() {
   }
 
   return (
-    <section className="page">
-      <p className="eyebrow">{t('eyebrow')}</p>
-      <h2 className="page-title">{t('title')}</h2>
-      <p className="page-copy">
-        {t('description')}
-      </p>
-      <p className="page-copy">
-        <Link className="inline-action-link" to="/settings/privacy">{t('privacyLink')}</Link>
-      </p>
-
-      <form className="profile-form family-create-card" onSubmit={handleCreate}>
-        <label className="field">
-          <span>{t('fields.displayName')}</span>
-          <input
-            value={displayName}
-            onChange={(event) => setDisplayName(event.target.value)}
-            placeholder={t('fields.displayNamePlaceholder')}
-            type="text"
-          />
-        </label>
-
-        <label className="field">
-          <span>{t('fields.colorKey')}</span>
-          <div className="profile-color-picker" role="radiogroup" aria-label={t('fields.profileColorAria')}>
-            {colorOptions.map((option) => (
-              <button
-                key={option}
-                className={
-                  colorKey === option
-                    ? `profile-color-picker-button profile-color-picker-button-${option} profile-color-picker-button-active`
-                    : `profile-color-picker-button profile-color-picker-button-${option}`
-                }
-                type="button"
-                role="radio"
-                aria-checked={colorKey === option}
-                aria-label={t('fields.selectColorAria', { color: t(`colors.${option}`) })}
-                onClick={() => setColorKey(option)}
-              >
-                <span className="profile-color-picker-swatch" aria-hidden="true" />
-                <span>{t(`colors.${option}`)}</span>
-              </button>
-            ))}
+    <section className="flex flex-col gap-4 py-4 md:gap-6">
+      <Card>
+        <CardHeader>
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('eyebrow')}</p>
+          <CardTitle className="text-2xl md:text-3xl">{t('title')}</CardTitle>
+          <CardDescription>{t('description')}</CardDescription>
+          <div>
+            <Link className="text-sm font-medium text-primary underline-offset-4 hover:underline" to="/settings/privacy">
+              {t('privacyLink')}
+            </Link>
           </div>
-        </label>
+        </CardHeader>
+      </Card>
 
-        <button className="secondary-button family-create-submit" type="submit" disabled={createProfileMutation.isPending}>
-          {createProfileMutation.isPending ? t('saving') : t('addMember')}
-        </button>
-      </form>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <HugeiconsIcon icon={UserIcon} aria-hidden="true" />
+            {t('addMember')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form className="space-y-4" onSubmit={handleCreate}>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="family-display-name">{t('fields.displayName')}</Label>
+              <Input
+                id="family-display-name"
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+                placeholder={t('fields.displayNamePlaceholder')}
+                type="text"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="family-color">{t('fields.colorKey')}</Label>
+              <Select value={colorKey} onValueChange={setColorKey}>
+                <SelectTrigger id="family-color" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {colorOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {t(`colors.${option}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button type="submit" variant="outline" disabled={createProfileMutation.isPending}>
+              {createProfileMutation.isPending ? t('saving') : t('addMember')}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {isAdmin ? (
-        <section className="invite-panel">
-          <div className="profile-card-header family-section-header">
-            <div>
-              <p className="eyebrow">{t('invites.eyebrow')}</p>
-              <h3 className="profile-card-title">{t('invites.title')}</h3>
-              <p className="page-copy">
-                {t('invites.description')}
-              </p>
+        <Card>
+          <CardHeader>
+            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('invites.eyebrow')}</p>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <HugeiconsIcon icon={LinkSquare01Icon} aria-hidden="true" />
+              {t('invites.title')}
+            </CardTitle>
+            <CardDescription>{t('invites.description')}</CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            <form className="space-y-4" onSubmit={handleInvite}>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="invite-email">{t('invites.email')}</Label>
+                <Input
+                  id="invite-email"
+                  value={inviteEmail}
+                  onChange={(event) => setInviteEmail(event.target.value)}
+                  placeholder={t('invites.emailPlaceholder')}
+                  type="email"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="invite-profile">{t('invites.linkProfileOptional')}</Label>
+                <Select
+                  value={inviteProfileId || '__none'}
+                  onValueChange={(value) => setInviteProfileId(value === '__none' ? '' : value)}
+                >
+                  <SelectTrigger id="invite-profile" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="__none">{t('invites.newProfile')}</SelectItem>
+                      {inviteableProfiles.map((profile) => (
+                        <SelectItem key={profile.id} value={profile.id}>
+                          {profile.displayName}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button type="submit" variant="outline" disabled={createFamilyInviteMutation.isPending}>
+                <HugeiconsIcon icon={Mail01Icon} data-icon="inline-start" aria-hidden="true" />
+                {createFamilyInviteMutation.isPending ? t('invites.creating') : t('invites.createLink')}
+              </Button>
+            </form>
+
+            <p className="text-sm text-muted-foreground">{t('invites.helper')}</p>
+
+            {familyInvitesQuery.isLoading ? <p className="text-sm text-muted-foreground">{t('invites.loading')}</p> : null}
+            {familyInvitesQuery.isError ? (
+              <Alert variant="destructive">
+                <AlertDescription>{t('invites.error')}</AlertDescription>
+              </Alert>
+            ) : null}
+
+            <div className="space-y-3">
+              {familyInvitesQuery.data?.map((invite) => {
+                const inviteUrl = `${window.location.origin}/invite/${invite.token}`;
+
+                return (
+                  <article key={invite.id} className="rounded-xl border border-border bg-muted/20 p-3">
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold text-foreground">{invite.email}</p>
+                      {invite.profileDisplayName ? (
+                        <p className="text-sm text-muted-foreground">{t('invites.linkedTo', { name: invite.profileDisplayName })}</p>
+                      ) : null}
+                      <p className="text-sm text-muted-foreground">
+                        {t('invites.expires', { date: new Date(invite.expiresAtUtc).toLocaleString() })}
+                      </p>
+                      <p className="break-all text-sm text-muted-foreground">{inviteUrl}</p>
+                    </div>
+                    <div className="mt-2">
+                      <Badge variant={invite.isAccepted ? 'default' : 'secondary'}>
+                        {invite.isAccepted ? t('invites.accepted') : t('invites.pending')}
+                      </Badge>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
-          </div>
-
-          <form className="profile-form" onSubmit={handleInvite}>
-            <label className="field">
-              <span>{t('invites.email')}</span>
-              <input
-                value={inviteEmail}
-                onChange={(event) => setInviteEmail(event.target.value)}
-                placeholder={t('invites.emailPlaceholder')}
-                type="email"
-              />
-            </label>
-
-            <label className="field">
-              <span>{t('invites.linkProfileOptional')}</span>
-              <select value={inviteProfileId} onChange={(event) => setInviteProfileId(event.target.value)}>
-                <option value="">{t('invites.newProfile')}</option>
-                {inviteableProfiles.map((profile) => (
-                  <option key={profile.id} value={profile.id}>
-                    {profile.displayName}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <button className="secondary-button" type="submit" disabled={createFamilyInviteMutation.isPending}>
-              {createFamilyInviteMutation.isPending ? t('invites.creating') : t('invites.createLink')}
-            </button>
-          </form>
-
-          <p className="page-copy family-invite-helper">
-            {t('invites.helper')}
-          </p>
-
-          {familyInvitesQuery.isLoading ? <p className="page-copy">{t('invites.loading')}</p> : null}
-          {familyInvitesQuery.isError ? <p className="form-error">{t('invites.error')}</p> : null}
-
-          <div className="invite-list">
-            {familyInvitesQuery.data?.map((invite) => {
-              const inviteUrl = `${window.location.origin}/invite/${invite.token}`;
-
-              return (
-                <article key={invite.id} className="invite-card">
-                  <div>
-                    <strong>{invite.email}</strong>
-                    {invite.profileDisplayName ? (
-                      <p className="shopping-meta">{t('invites.linkedTo', { name: invite.profileDisplayName })}</p>
-                    ) : null}
-                    <p className="shopping-meta">{t('invites.expires', { date: new Date(invite.expiresAtUtc).toLocaleString() })}</p>
-                    <p className="invite-link">{inviteUrl}</p>
-                  </div>
-                  <span className="profile-color-chip">{invite.isAccepted ? t('invites.accepted') : t('invites.pending')}</span>
-                </article>
-              );
-            })}
-          </div>
-        </section>
+          </CardContent>
+        </Card>
       ) : null}
 
-      {profilesQuery.isLoading ? <p className="page-copy">{t('loading')}</p> : null}
-      {profilesQuery.isError ? <p className="form-error">{t('error')}</p> : null}
+      {profilesQuery.isLoading ? <p className="text-sm text-muted-foreground">{t('loading')}</p> : null}
+      {profilesQuery.isError ? (
+        <Alert variant="destructive">
+          <AlertDescription>{t('error')}</AlertDescription>
+        </Alert>
+      ) : null}
 
-      <div className="profile-grid">
+      <div className="grid gap-4 md:grid-cols-2">
         {profilesQuery.data?.map((profile, index) => (
-          <article
-            key={profile.id}
-            className={
-              index === 0
-                ? `profile-card profile-card-${profile.colorKey} profile-card-active`
-                : `profile-card profile-card-${profile.colorKey}`
-            }
-          >
-            <div className="profile-card-header">
-              <div className="profile-card-identity">
-                <div className={index === 0 ? 'profile-avatar profile-avatar-large' : 'profile-avatar'} aria-hidden="true">{profile.displayName.slice(0, 1).toUpperCase()}</div>
-                <div>
-                  <p className="eyebrow">{t('profile.eyebrow')}</p>
-                  <h3 className="profile-card-title">{profile.displayName}</h3>
-                  <span className="profile-role-chip">{profile.isActive ? t('profile.activeMember') : t('profile.inactiveMember')}</span>
-                  {index === 0 ? <span className="profile-active-badge">{t('profile.activeBadge')}</span> : null}
+          <Card key={profile.id} className={index === 0 ? 'ring-2 ring-primary/20' : undefined}>
+            <CardHeader className="gap-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('profile.eyebrow')}</p>
+                  <CardTitle className="text-lg">{profile.displayName}</CardTitle>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="secondary">{profile.isActive ? t('profile.activeMember') : t('profile.inactiveMember')}</Badge>
+                    {index === 0 ? <Badge>{t('profile.activeBadge')}</Badge> : null}
+                    <span className={getProfileColorChipClass(profile.colorKey)}>{t(`colors.${profile.colorKey}`)}</span>
+                  </div>
                 </div>
               </div>
-              <span className={getProfileColorChipClass(profile.colorKey)}>{t(`colors.${profile.colorKey}`)}</span>
-            </div>
+            </CardHeader>
 
-            <div className="profile-card-stats">
-              <div className="profile-stat-card">
-                <span className="profile-stat-label">{t('stats.status')}</span>
-                <span className="profile-stat-value">{profile.isActive ? t('stats.active') : t('stats.inactive')}</span>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <div className="rounded-lg border border-border p-2">
+                  <p className="text-xs text-muted-foreground uppercase">{t('stats.status')}</p>
+                  <p className="text-sm font-medium">{profile.isActive ? t('stats.active') : t('stats.inactive')}</p>
+                </div>
+                <div className="rounded-lg border border-border p-2">
+                  <p className="text-xs text-muted-foreground uppercase">{t('stats.colorIdentity')}</p>
+                  <p className="text-sm font-medium">{t(`colors.${profile.colorKey}`)}</p>
+                </div>
+                <div className="rounded-lg border border-border p-2">
+                  <p className="text-xs text-muted-foreground uppercase">{t('stats.signInAccess')}</p>
+                  <p className="text-sm font-medium">{profile.hasLogin ? t('stats.hasLogin') : t('stats.profileOnly')}</p>
+                </div>
               </div>
-              <div className="profile-stat-card">
-                <span className="profile-stat-label">{t('stats.colorIdentity')}</span>
-                <span className="profile-stat-value">{t(`colors.${profile.colorKey}`)}</span>
-              </div>
-              <div className="profile-stat-card">
-                <span className="profile-stat-label">{t('stats.signInAccess')}</span>
-                <span className="profile-stat-value">{profile.hasLogin ? t('stats.hasLogin') : t('stats.profileOnly')}</span>
-              </div>
-            </div>
 
-            <label className="toggle-row profile-toggle-row">
-              <span className="profile-toggle-copy">
-                <strong>{profile.isActive ? t('toggle.included') : t('toggle.hidden')}</strong>
-                <span className="shopping-meta">
-                  {profile.isActive
-                    ? t('toggle.includedHint')
-                    : t('toggle.hiddenHint')}
-                </span>
-              </span>
-              <input
-                type="checkbox"
-                checked={profile.isActive}
-                onChange={(event) =>
-                  handleToggle(
-                    profile.id,
-                    event.target.checked,
-                    profile.displayName,
-                    profile.colorKey,
-                    profile.preferredLanguage,
-                  )
-                }
-              />
-            </label>
-
-            {profile.linkedUserId === currentUserId ? (
-              <label className="field">
-                <span>{t('preferredLanguage')}</span>
-                <select
-                  value={profile.preferredLanguage ?? 'en'}
-                  onChange={(event) =>
-                    handleLanguageChange(
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-border p-3">
+                <div>
+                  <p className="text-sm font-medium">{profile.isActive ? t('toggle.included') : t('toggle.hidden')}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {profile.isActive ? t('toggle.includedHint') : t('toggle.hiddenHint')}
+                  </p>
+                </div>
+                <Switch
+                  checked={profile.isActive}
+                  onCheckedChange={(nextChecked) =>
+                    handleToggle(
                       profile.id,
-                      event.target.value,
+                      nextChecked,
                       profile.displayName,
                       profile.colorKey,
-                      profile.isActive,
+                      profile.preferredLanguage,
                     )
                   }
-                  disabled={updateProfileMutation.isPending}
-                >
-                  {languageOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {t(`languages.${option}`)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ) : null}
-          </article>
+                />
+              </div>
+
+              {profile.linkedUserId === currentUserId ? (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor={`language-${profile.id}`}>
+                    <span className="inline-flex items-center gap-1">
+                      <HugeiconsIcon icon={LanguageCircleIcon} aria-hidden="true" />
+                      {t('preferredLanguage')}
+                    </span>
+                  </Label>
+                  <Select
+                    value={profile.preferredLanguage ?? 'en'}
+                    onValueChange={(value) =>
+                      handleLanguageChange(profile.id, value, profile.displayName, profile.colorKey, profile.isActive)
+                    }
+                    disabled={updateProfileMutation.isPending}
+                  >
+                    <SelectTrigger id={`language-${profile.id}`} className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {languageOptions.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {t(`languages.${option}`)}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
         ))}
       </div>
     </section>

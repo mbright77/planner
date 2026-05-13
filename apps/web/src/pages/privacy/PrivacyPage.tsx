@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { UserIcon } from '@hugeicons/core-free-icons';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 import { useAuthSession } from '../../processes/auth-session/AuthSessionContext';
 import { deleteAccount, deleteFamily } from '../../shared/api/privacy';
@@ -62,52 +69,82 @@ export function PrivacyPage() {
   }
 
   return (
-    <section className="page standalone-page">
-      <p className="eyebrow">{t('privacy.eyebrow')}</p>
-      <h2 className="page-title">{t('privacy.title')}</h2>
-      <p className="page-copy">
-        {t('privacy.description')}
-      </p>
-
-      {error ? <p className="form-error">{error}</p> : null}
-
-      <form className="profile-form privacy-card" onSubmit={handleDeleteAccount}>
-        <div>
-          <h3 className="profile-card-title">{t('privacy.deleteAccount.title')}</h3>
-          <p className="page-copy">{t('privacy.deleteAccount.description')}</p>
-        </div>
-
-        <label className="field">
-          <span>{t('privacy.password')}</span>
-          <input value={accountPassword} onChange={(event) => setAccountPassword(event.target.value)} type="password" />
-        </label>
-
-        <button className="secondary-button destructive-button" type="submit" disabled={isDeletingAccount}>
-          {isDeletingAccount ? t('privacy.deleting') : t('privacy.deleteAccount.action')}
-        </button>
-      </form>
-
-      {isAdmin ? (
-        <form className="profile-form privacy-card" onSubmit={handleDeleteFamily}>
+    <section className="flex flex-col gap-4 py-4 md:gap-6">
+      <Card>
+        <CardHeader>
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('privacy.eyebrow')}</p>
+          <CardTitle className="text-2xl md:text-3xl">{t('privacy.title')}</CardTitle>
+          <CardDescription>{t('privacy.description')}</CardDescription>
           <div>
-            <h3 className="profile-card-title">{t('privacy.deleteFamily.title')}</h3>
-            <p className="page-copy">{t('privacy.deleteFamily.description')}</p>
+            <Link className="text-sm font-medium text-primary underline-offset-4 hover:underline" to="/family">
+              {t('privacy.backToFamilySettings')}
+            </Link>
           </div>
+        </CardHeader>
+      </Card>
 
-          <label className="field">
-            <span>{t('privacy.password')}</span>
-            <input value={familyPassword} onChange={(event) => setFamilyPassword(event.target.value)} type="password" />
-          </label>
-
-          <button className="secondary-button destructive-button" type="submit" disabled={isDeletingFamily}>
-            {isDeletingFamily ? t('privacy.deleting') : t('privacy.deleteFamily.action')}
-          </button>
-        </form>
+      {error ? (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       ) : null}
 
-      <p className="page-copy">
-        <Link className="inline-action-link" to="/family">{t('privacy.backToFamilySettings')}</Link>
-      </p>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <HugeiconsIcon icon={UserIcon} aria-hidden="true" />
+            {t('privacy.deleteAccount.title')}
+          </CardTitle>
+          <CardDescription>{t('privacy.deleteAccount.description')}</CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <form className="space-y-4" onSubmit={handleDeleteAccount}>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="account-password">{t('privacy.password')}</Label>
+              <Input
+                id="account-password"
+                value={accountPassword}
+                onChange={(event) => setAccountPassword(event.target.value)}
+                type="password"
+                autoComplete="current-password"
+              />
+            </div>
+
+            <Button type="submit" variant="destructive" disabled={isDeletingAccount || !accountPassword.trim()}>
+              {isDeletingAccount ? t('privacy.deleting') : t('privacy.deleteAccount.action')}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {isAdmin ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">{t('privacy.deleteFamily.title')}</CardTitle>
+            <CardDescription>{t('privacy.deleteFamily.description')}</CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <form className="space-y-4" onSubmit={handleDeleteFamily}>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="family-password">{t('privacy.password')}</Label>
+                <Input
+                  id="family-password"
+                  value={familyPassword}
+                  onChange={(event) => setFamilyPassword(event.target.value)}
+                  type="password"
+                  autoComplete="current-password"
+                />
+              </div>
+
+              <Button type="submit" variant="destructive" disabled={isDeletingFamily || !familyPassword.trim()}>
+                {isDeletingFamily ? t('privacy.deleting') : t('privacy.deleteFamily.action')}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      ) : null}
     </section>
   );
 }

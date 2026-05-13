@@ -2,6 +2,20 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { login, register } from '../../shared/api/auth';
 import { useAuthSession } from '../../processes/auth-session/AuthSessionContext';
 
@@ -90,93 +104,129 @@ export function LoginPage() {
   }
 
   return (
-    <main className="auth-page" aria-labelledby="auth-title">
-      <section className="page standalone-page auth-panel">
-        <div className="auth-hero">
-          <p className="eyebrow">{t('eyebrow')}</p>
-          <h1 id="auth-title" className="page-title">{t('tagline')}</h1>
-          <p className="page-copy">
-            {t('subtext')}
-          </p>
-        </div>
-
-        <div className="auth-toggle" role="tablist" aria-label={t('authModeAria')}>
-          <button
-            className={mode === 'signin' ? 'auth-toggle-button auth-toggle-button-active' : 'auth-toggle-button'}
-            type="button"
-            role="tab"
-            aria-selected={mode === 'signin'}
-            onClick={() => setMode('signin')}
+    <main
+      className="flex min-h-[calc(100dvh-7rem)] items-center justify-center bg-gradient-to-b from-muted/50 to-background px-4 py-8"
+      aria-labelledby="auth-title"
+    >
+      <Card className="w-full max-w-xl">
+        <CardHeader className="gap-3">
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('eyebrow')}</p>
+          <CardTitle id="auth-title" className="text-2xl md:text-3xl">
+            {t('tagline')}
+          </CardTitle>
+          <CardDescription>{t('subtext')}</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-6">
+          <Tabs
+            value={mode}
+            onValueChange={(value) => setMode(value as 'signin' | 'register')}
+            aria-label={t('authModeAria')}
           >
-            {t('tabs.signIn')}
-          </button>
-          <button
-            className={mode === 'register' ? 'auth-toggle-button auth-toggle-button-active' : 'auth-toggle-button'}
-            type="button"
-            role="tab"
-            aria-selected={mode === 'register'}
-            onClick={() => setMode('register')}
-          >
-            {t('tabs.createFamily')}
-          </button>
-        </div>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signin">{t('tabs.signIn')}</TabsTrigger>
+              <TabsTrigger value="register">{t('tabs.createFamily')}</TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-        {error ? <p className="form-error" role="alert">{error}</p> : null}
-
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <label className="field">
-            <span>{t('fields.email')}</span>
-            <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" required />
-          </label>
-
-          <label className="field">
-            <span>{t('fields.password')}</span>
-            <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} required />
-          </label>
-
-          {mode === 'register' ? (
-            <>
-              <label className="field">
-                <span>{t('fields.familyName')}</span>
-                <input value={familyName} onChange={(event) => setFamilyName(event.target.value)} type="text" required />
-              </label>
-
-              <label className="field">
-                <span>{t('fields.displayName')}</span>
-                <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} type="text" required />
-              </label>
-
-              <label className="field">
-                <span>{t('fields.timezone')}</span>
-                <select value={timezone} onChange={(event) => setTimezone(event.target.value)} required>
-                  {availableTimezones.map((option) => (
-                    <option key={option} value={option}>
-                      {formatTimezoneLabel(option)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="field">
-                <span>{t('fields.profileColor')}</span>
-                <select value={colorKey} onChange={(event) => setColorKey(event.target.value)}>
-                  {colorOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {t(`colors.${option}`)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </>
+          {error ? (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           ) : null}
 
-          <div className="auth-actions">
-            <button className="primary-button" type="submit" disabled={isSubmitting}>
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="email">{t('fields.email')}</Label>
+              <Input
+                id="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                type="email"
+                autoComplete="email"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="password">{t('fields.password')}</Label>
+              <Input
+                id="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                type="password"
+                autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                required
+              />
+            </div>
+
+            {mode === 'register' ? (
+              <>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="family-name">{t('fields.familyName')}</Label>
+                  <Input
+                    id="family-name"
+                    value={familyName}
+                    onChange={(event) => setFamilyName(event.target.value)}
+                    type="text"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="display-name">{t('fields.displayName')}</Label>
+                  <Input
+                    id="display-name"
+                    value={displayName}
+                    onChange={(event) => setDisplayName(event.target.value)}
+                    type="text"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="timezone">{t('fields.timezone')}</Label>
+                  <Select value={timezone} onValueChange={setTimezone}>
+                    <SelectTrigger id="timezone" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {availableTimezones.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {formatTimezoneLabel(option)}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="profile-color">{t('fields.profileColor')}</Label>
+                  <Select value={colorKey} onValueChange={setColorKey}>
+                    <SelectTrigger id="profile-color" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {colorOptions.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {t(`colors.${option}`)}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            ) : null}
+
+            <Button className="w-full" type="submit" disabled={isSubmitting}>
               {isSubmitting ? t('submit.saving') : mode === 'signin' ? t('submit.signIn') : t('submit.createFamily')}
-            </button>
-          </div>
-        </form>
-      </section>
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </main>
   );
 }

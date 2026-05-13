@@ -2,6 +2,19 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { fetchFamilyInvite, acceptFamilyInvite } from '../../shared/api/invites';
 import { useAuthSession } from '../../processes/auth-session/AuthSessionContext';
 
@@ -65,70 +78,117 @@ export function InvitePage() {
   }
 
   return (
-    <section className="page standalone-page">
-      <p className="eyebrow">{t('invite.eyebrow')}</p>
-      <h2 className="page-title">{t('invite.heading')}</h2>
+    <main className="flex min-h-[calc(100dvh-7rem)] items-center justify-center bg-gradient-to-b from-muted/50 to-background px-4 py-8">
+      <Card className="w-full max-w-xl">
+        <CardHeader className="gap-3">
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('invite.eyebrow')}</p>
+          <CardTitle className="text-2xl md:text-3xl">{t('invite.heading')}</CardTitle>
+          {inviteDetails ? (
+            <CardDescription>
+              {t('invite.join', {
+                familyName: inviteDetails.familyName,
+                email: inviteDetails.email,
+              })}
+            </CardDescription>
+          ) : null}
+        </CardHeader>
 
-      {loading ? <p className="page-copy">{t('invite.loading')}</p> : null}
-      {error ? <p className="form-error">{error}</p> : null}
-
-      {inviteDetails ? (
-        <>
-          <p className="page-copy">
-            {t('invite.join', {
-              familyName: inviteDetails.familyName,
-              email: inviteDetails.email,
-            })}
-          </p>
-
-          {isLinkedInvite ? (
-            <p className="page-copy invite-profile-copy">
-              {t('invite.linkedProfile', { name: inviteDetails.profileDisplayName ?? '' })}
-            </p>
+        <CardContent className="flex flex-col gap-4">
+          {loading ? (
+            <Alert>
+              <AlertDescription>{t('invite.loading')}</AlertDescription>
+            </Alert>
           ) : null}
 
-          {inviteDetails.isExpired ? <p className="form-error">{t('invite.expired')}</p> : null}
-          {inviteDetails.isAccepted ? <p className="form-error">{t('invite.alreadyAccepted')}</p> : null}
-
-          {!inviteDetails.isExpired && !inviteDetails.isAccepted ? (
-            <form className="auth-form" onSubmit={handleAccept}>
-              <label className="field">
-                <span>{t('fields.email')}</span>
-                <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" />
-              </label>
-
-              {isLinkedInvite ? null : (
-                <label className="field">
-                  <span>{t('fields.displayName')}</span>
-                  <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} type="text" />
-                </label>
-              )}
-
-              <label className="field">
-                <span>{t('fields.password')}</span>
-                <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" />
-              </label>
-
-              {isLinkedInvite ? null : (
-                <label className="field">
-                  <span>{t('fields.profileColor')}</span>
-                  <select value={colorKey} onChange={(event) => setColorKey(event.target.value)}>
-                    {colorOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {t(`colors.${option}`)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
-
-              <button className="primary-button" type="submit" disabled={submitting}>
-                {submitting ? t('invite.submitting') : t('invite.submit')}
-              </button>
-            </form>
+          {error ? (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           ) : null}
-        </>
-      ) : null}
-    </section>
+
+          {inviteDetails ? (
+            <>
+              {isLinkedInvite ? (
+                <p className="text-sm text-muted-foreground">
+                  {t('invite.linkedProfile', { name: inviteDetails.profileDisplayName ?? '' })}
+                </p>
+              ) : null}
+
+              {inviteDetails.isExpired ? (
+                <Alert variant="destructive">
+                  <AlertDescription>{t('invite.expired')}</AlertDescription>
+                </Alert>
+              ) : null}
+
+              {inviteDetails.isAccepted ? (
+                <Alert variant="destructive">
+                  <AlertDescription>{t('invite.alreadyAccepted')}</AlertDescription>
+                </Alert>
+              ) : null}
+
+              {!inviteDetails.isExpired && !inviteDetails.isAccepted ? (
+                <form className="flex flex-col gap-4" onSubmit={handleAccept}>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="invite-email">{t('fields.email')}</Label>
+                    <Input
+                      id="invite-email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      type="email"
+                    />
+                  </div>
+
+                  {isLinkedInvite ? null : (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="invite-display-name">{t('fields.displayName')}</Label>
+                      <Input
+                        id="invite-display-name"
+                        value={displayName}
+                        onChange={(event) => setDisplayName(event.target.value)}
+                        type="text"
+                      />
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="invite-password">{t('fields.password')}</Label>
+                    <Input
+                      id="invite-password"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      type="password"
+                    />
+                  </div>
+
+                  {isLinkedInvite ? null : (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="invite-profile-color">{t('fields.profileColor')}</Label>
+                      <Select value={colorKey} onValueChange={setColorKey}>
+                        <SelectTrigger id="invite-profile-color" className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {colorOptions.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {t(`colors.${option}`)}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  <Button type="submit" disabled={submitting}>
+                    {submitting ? t('invite.submitting') : t('invite.submit')}
+                  </Button>
+                </form>
+              ) : null}
+            </>
+          ) : null}
+        </CardContent>
+      </Card>
+    </main>
   );
 }

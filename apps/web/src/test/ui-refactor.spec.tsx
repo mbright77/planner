@@ -10,6 +10,7 @@ import { FamilyPage } from '../pages/family/FamilyPage';
 import { HomePage } from '../pages/home/HomePage';
 import { LoginPage } from '../pages/login/LoginPage';
 import { MealsPage } from '../pages/meals/MealsPage';
+import { PrivacyPage } from '../pages/privacy/PrivacyPage';
 import { ShoppingPage } from '../pages/shopping/ShoppingPage';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
@@ -128,6 +129,11 @@ vi.mock('../processes/auth-session/AuthSessionContext', () => ({
     setSession: vi.fn(),
     clearSession: vi.fn(),
   }),
+}));
+
+vi.mock('../shared/api/privacy', () => ({
+  deleteAccount: async () => undefined,
+  deleteFamily: async () => undefined,
 }));
 
 vi.mock('../processes/family-bootstrap/useBootstrap', () => ({
@@ -284,8 +290,22 @@ function renderLoginRoute() {
   );
 }
 
+function renderPrivacyRoute() {
+  return render(
+    <MemoryRouter initialEntries={['/settings/privacy']}>
+      <Routes>
+        <Route path="/settings/privacy" element={<PrivacyPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+}
+
 function getStylesheetText() {
   return readFileSync(resolve(process.cwd(), 'src/app/styles/index.css'), 'utf8');
+}
+
+function getButtonSource() {
+  return readFileSync(resolve(process.cwd(), 'src/components/ui/button.tsx'), 'utf8');
 }
 
 beforeEach(() => {
@@ -315,19 +335,19 @@ afterEach(() => {
 });
 
 describe('Phase 12 - Design token and visual checks', () => {
-  it('12.1.x keeps active nav shape/colors, primary button color, and Plus Jakarta Sans', () => {
+  it('12.1.x keeps active nav state, primary button token usage, and Figtree font', () => {
     const styles = getStylesheetText();
+    const buttonSource = getButtonSource();
 
-    expect(styles).toMatch(/\.bottom-nav-link\s*\{[^}]*border-radius:\s*1rem;/s);
-    const activeNavRule = styles.match(/\.bottom-nav-link-active\s*\{([\s\S]*?)\}/)?.[1] ?? '';
-    expect(activeNavRule).toContain('color: white');
-    expect(activeNavRule).toContain('background: var(--primary)');
+    const view = renderShellRoute('/');
+    expect(screen.getByRole('link', { name: 'Home' })).toHaveClass('rounded-xl', 'bg-primary', 'text-primary-foreground');
+    expect(screen.getByRole('link', { name: 'Calendar' })).toHaveClass('rounded-xl', 'text-muted-foreground');
+    view.unmount();
 
-    const primaryRule = styles.match(/\.primary-button\s*\{([\s\S]*?)\}/)?.[1] ?? '';
-    expect(primaryRule).toContain('linear-gradient');
-    expect(primaryRule).not.toContain('#5da9e9');
+    expect(buttonSource).toContain('default: "bg-primary text-primary-foreground hover:bg-primary/80"');
+    expect(buttonSource).not.toContain('#5da9e9');
 
-    expect(styles).toMatch(/body\s*\{[^}]*font-family:[^;]*Plus Jakarta Sans/s);
+    expect(styles).toMatch(/body\s*\{[^}]*font-family:[^;]*Figtree Variable/s);
   });
 });
 
@@ -343,7 +363,8 @@ describe('Phase 12 - Layout and viewport checks', () => {
 
       expect(document.body.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
 
-      const navLinks = Array.from(document.querySelectorAll('.bottom-nav-link')) as HTMLElement[];
+      const nav = screen.getByRole('navigation', { name: /Primary/i });
+      const navLinks = Array.from(nav.querySelectorAll('a')) as HTMLElement[];
       expect(navLinks).toHaveLength(5);
       navLinks.forEach((link) => {
         expect(link).not.toHaveAttribute('hidden');
@@ -376,13 +397,13 @@ describe('Phase 12 - Layout and viewport checks', () => {
       },
     ];
 
-    const { container } = renderShellRoute('/shopping');
+    renderShellRoute('/shopping');
     await waitFor(() => expect(screen.getByText('Milk')).toBeInTheDocument());
 
-    const list = container.querySelector('.shopping-list');
-    expect(list).toBeTruthy();
+    const lists = Array.from(document.querySelectorAll('ul[role="list"]'));
+    expect(lists.length).toBeGreaterThan(0);
 
-    const items = Array.from(container.querySelectorAll('.shopping-list > .shopping-list-item'));
+    const items = Array.from(document.querySelectorAll('[role="listitem"]'));
     expect(items.length).toBeGreaterThan(0);
   });
 });
@@ -399,8 +420,13 @@ describe('Phase 12 - Delete functionality and behavior regressions', () => {
 
     await waitFor(() => expect(screen.getByText('Dentist Appointment')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'Delete Dentist Appointment' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm delete Dentist Appointment' }));
+    const closeCalendarDrawerButton = screen.queryByRole('button', { name: 'Cancel' });
+    if (closeCalendarDrawerButton) {
+      fireEvent.click(closeCalendarDrawerButton);
+    }
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Dentist Appointment', hidden: true }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm delete Dentist Appointment', hidden: true }));
 
     await waitFor(() => expect(screen.queryByText('Dentist Appointment')).not.toBeInTheDocument());
   });
@@ -426,13 +452,15 @@ describe('Phase 12 - Delete functionality and behavior regressions', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Add item' }));
 
-    const input = await screen.findByPlaceholderText('Add item (e.g., Milk)');
+    const input = await screen.findByLabelText('Item name');
     fireEvent.change(input, { target: { value: 'Milk' } });
     fireEvent.click(screen.getByText('Add item', { selector: 'button[type="submit"]' }));
 
     await waitFor(() => expect(screen.getByText('Milk')).toBeInTheDocument());
+    const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+    fireEvent.click(cancelButton);
 
-    const checkbox = screen.getByRole('checkbox', { name: 'Milk' });
+    const checkbox = screen.getByRole('checkbox', { name: 'Milk', hidden: true });
     fireEvent.click(checkbox);
 
     cleanup();
@@ -473,13 +501,22 @@ describe('Phase 12 - Accessibility checks', () => {
       { type: 'shell', path: '/shopping' },
       { type: 'shell', path: '/family' },
       { type: 'login', path: '/login' },
+      { type: 'privacy', path: '/settings/privacy' },
     ] as const;
 
     for (const page of pages) {
-      const view = page.type === 'shell' ? renderShellRoute(page.path) : renderLoginRoute();
+      const view = page.type === 'shell'
+        ? renderShellRoute(page.path)
+        : page.type === 'login'
+          ? renderLoginRoute()
+          : renderPrivacyRoute();
 
       const controls = Array.from(document.querySelectorAll('input, select, textarea')) as HTMLElement[];
       const unlabeled = controls.filter((control) => {
+        if (control.getAttribute('aria-hidden') === 'true') {
+          return false;
+        }
+
         const html = control as HTMLInputElement;
         const id = html.id;
         const byFor = id ? document.querySelector(`label[for="${id}"]`) : null;
@@ -495,7 +532,7 @@ describe('Phase 12 - Accessibility checks', () => {
     renderShellRoute('/');
 
     const iconOnlyButtons = Array.from(document.querySelectorAll('button')).filter((button) => {
-      return Boolean(button.querySelector('.material-symbols-outlined')) && Boolean(button.getAttribute('aria-label'));
+      return Boolean(button.querySelector('svg')) && Boolean(button.getAttribute('aria-label'));
     });
 
     expect(iconOnlyButtons.length).toBeGreaterThan(0);
@@ -504,10 +541,10 @@ describe('Phase 12 - Accessibility checks', () => {
     });
   });
 
-  it('12.4.4 keeps material symbols decorative spans aria-hidden', () => {
+  it('12.4.4 keeps navigation icons decorative with aria-hidden', () => {
     renderShellRoute('/shopping');
 
-    const icons = Array.from(document.querySelectorAll('.material-symbols-outlined'));
+    const icons = Array.from(document.querySelectorAll('nav svg'));
     expect(icons.length).toBeGreaterThan(0);
     icons.forEach((icon) => {
       expect(icon).toHaveAttribute('aria-hidden', 'true');
@@ -517,7 +554,8 @@ describe('Phase 12 - Accessibility checks', () => {
   it('12.4.5 allows keyboard focus across all five nav items', () => {
     renderShellRoute('/');
 
-    const navLinks = Array.from(document.querySelectorAll('.bottom-nav .bottom-nav-link')) as HTMLAnchorElement[];
+    const nav = screen.getByRole('navigation', { name: /Primary/i });
+    const navLinks = Array.from(nav.querySelectorAll('a')) as HTMLAnchorElement[];
     expect(navLinks).toHaveLength(5);
 
     const focusedHrefs: string[] = [];

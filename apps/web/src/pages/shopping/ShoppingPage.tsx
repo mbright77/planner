@@ -1,7 +1,42 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { HugeiconsIcon } from '@hugeicons/react';
+import {
+  Add01Icon,
+  Delete02Icon,
+  Home01Icon,
+  KitchenUtensilsIcon,
+  MilkCartonIcon,
+  NaturalFoodIcon,
+  ShoppingBasket01Icon,
+} from '@hugeicons/core-free-icons';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 import {
   useCreateShoppingItem,
@@ -21,36 +56,27 @@ function getProfileColorChipClass(colorKey: string | null | undefined) {
 }
 
 function getCategoryIcon(key: string) {
-  if (key === 'produce') return 'local_florist';
-  if (key === 'dairy') return 'egg_alt';
-  if (key === 'pantry') return 'kitchen';
-  if (key === 'household') return 'home';
-  return 'shopping_basket';
-}
-
-function getCategoryAccent(key: string) {
-  if (key === 'produce') return '#84ac8e';
-  if (key === 'dairy') return '#5da9e9';
-  if (key === 'pantry') return '#fd898a';
-  if (key === 'household') return '#f4d35e';
-  return 'var(--primary-container)';
+  if (key === 'produce') return NaturalFoodIcon;
+  if (key === 'dairy') return MilkCartonIcon;
+  if (key === 'pantry') return KitchenUtensilsIcon;
+  if (key === 'household') return Home01Icon;
+  return ShoppingBasket01Icon;
 }
 
 export function ShoppingPage() {
   const { t } = useTranslation('shopping');
-  const [searchParams, setSearchParams] = useSearchParams();
   const bootstrapQuery = useBootstrap();
   const shoppingItemsQuery = useShoppingItems();
   const createShoppingItemMutation = useCreateShoppingItem();
   const updateShoppingItemMutation = useUpdateShoppingItem();
   const deleteShoppingItemMutation = useDeleteShoppingItem();
 
-  const inputRef = useRef<HTMLInputElement | null>(null);
   const [label, setLabel] = useState('');
   const [category, setCategory] = useState(defaultCategories[0]);
   const [addedByProfileId, setAddedByProfileId] = useState<string>('');
   const [showDetails, setShowDetails] = useState(false);
   const [formError, setFormError] = useState('');
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const groupedItems = useMemo(() => {
     const groups = new Map<string, typeof shoppingItemsQuery.data>();
@@ -64,29 +90,16 @@ export function ShoppingPage() {
     return [...groups.entries()];
   }, [shoppingItemsQuery.data]);
 
-  const isSheetOpen = searchParams.get('sheet') === 'add-item';
-
-  useEffect(() => {
-    document.body.classList.toggle('body-modal-open', isSheetOpen);
-
-    return () => {
-      document.body.classList.remove('body-modal-open');
-    };
-  }, [isSheetOpen]);
-
-  function openSheet() {
-    const nextSearchParams = new URLSearchParams(searchParams);
-    nextSearchParams.set('sheet', 'add-item');
-    setSearchParams(nextSearchParams, { replace: false });
-    window.requestAnimationFrame(() => {
-      inputRef.current?.focus();
-    });
+  function resetDrawerForm() {
+    setLabel('');
+    setCategory(defaultCategories[0]);
+    setAddedByProfileId('');
+    setShowDetails(false);
+    setFormError('');
   }
 
-  function closeSheet() {
-    const nextSearchParams = new URLSearchParams(searchParams);
-    nextSearchParams.delete('sheet');
-    setSearchParams(nextSearchParams, { replace: false });
+  function closeDrawer() {
+    setIsDrawerOpen(false);
     setFormError('');
   }
 
@@ -106,170 +119,214 @@ export function ShoppingPage() {
       addedByProfileId: addedByProfileId || null,
     });
 
-    setLabel('');
-    setAddedByProfileId('');
-    closeSheet();
+    resetDrawerForm();
+    closeDrawer();
   }
 
   return (
-    <section className="page shopping-page">
-      <p className="eyebrow">{t('eyebrow')}</p>
-      <h2 className="page-title">{t('title')}</h2>
-      <p className="page-copy">
-        {t('description')}
-      </p>
+    <section className="flex flex-col gap-4 py-4 md:gap-6">
+      <Card>
+        <CardHeader>
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('eyebrow')}</p>
+          <CardTitle className="text-2xl md:text-3xl">{t('title')}</CardTitle>
+          <CardDescription>{t('description')}</CardDescription>
+        </CardHeader>
+      </Card>
 
-      <section className="shopping-quick-add-card calendar-action-card">
-        <div>
-          <p className="eyebrow">{t('quickAdd.eyebrow')}</p>
-          <h3 className="profile-card-title">{t('quickAdd.title')}</h3>
-          <p className="shopping-meta">{t('quickAdd.description')}</p>
+      <Card>
+        <CardHeader className="flex-row items-start justify-between gap-3">
+          <div className="space-y-1">
+            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('quickAdd.eyebrow')}</p>
+            <CardTitle className="text-lg">{t('quickAdd.title')}</CardTitle>
+            <CardDescription>{t('quickAdd.description')}</CardDescription>
+          </div>
+
+          <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+            <DrawerTrigger asChild>
+              <Button type="button">
+                <HugeiconsIcon icon={Add01Icon} data-icon="inline-start" aria-hidden="true" />
+                {t('addItem')}
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader className="text-left">
+                <DrawerTitle>{t('sheet.title')}</DrawerTitle>
+                <DrawerDescription>{t('quickAdd.description')}</DrawerDescription>
+              </DrawerHeader>
+
+              <form className="px-4 pb-2" onSubmit={handleSubmit}>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="shopping-label">{t('fields.itemName')}</Label>
+                    <Input
+                      id="shopping-label"
+                      value={label}
+                      onChange={(event) => setLabel(event.target.value)}
+                      placeholder={t('fields.itemNamePlaceholder')}
+                      type="text"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="shopping-category">{t('fields.category')}</Label>
+                    <Select value={category} onValueChange={setCategory}>
+                      <SelectTrigger id="shopping-category" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {defaultCategories.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {t(`categories.${option}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => setShowDetails((current) => !current)}
+                  >
+                    {showDetails ? t('hideExtraDetails') : t('showExtraDetails')}
+                  </Button>
+
+                  {showDetails ? (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="shopping-added-by">{t('fields.addedBy')}</Label>
+                      <Select value={addedByProfileId} onValueChange={setAddedByProfileId}>
+                        <SelectTrigger id="shopping-added-by" className="w-full">
+                          <SelectValue placeholder={t('noProfile')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="">{t('noProfile')}</SelectItem>
+                            {bootstrapQuery.data?.profiles.map((profile) => (
+                              <SelectItem key={profile.id} value={profile.id}>
+                                {profile.displayName}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : null}
+
+                  {formError ? (
+                    <Alert variant="destructive">
+                      <AlertDescription>{formError}</AlertDescription>
+                    </Alert>
+                  ) : null}
+                </div>
+
+                <DrawerFooter className="px-0">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <DrawerClose asChild>
+                      <Button variant="outline" type="button" onClick={closeDrawer}>
+                        {t('cancel')}
+                      </Button>
+                    </DrawerClose>
+                    <Button type="submit" disabled={createShoppingItemMutation.isPending}>
+                      {createShoppingItemMutation.isPending ? t('adding') : t('addItem')}
+                    </Button>
+                  </div>
+                </DrawerFooter>
+              </form>
+            </DrawerContent>
+          </Drawer>
+        </CardHeader>
+      </Card>
+
+      {shoppingItemsQuery.isLoading ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-44 w-full rounded-2xl" />
+          <Skeleton className="h-44 w-full rounded-2xl" />
         </div>
-        <button className="primary-button" type="button" onClick={openSheet}>
-          {t('addItem')}
-        </button>
-      </section>
+      ) : null}
 
-      {shoppingItemsQuery.isLoading ? <p className="page-copy">{t('loading')}</p> : null}
-      {shoppingItemsQuery.isError ? <p className="form-error">{t('error')}</p> : null}
+      {shoppingItemsQuery.isError ? (
+        <Alert variant="destructive">
+          <AlertDescription>{t('error')}</AlertDescription>
+        </Alert>
+      ) : null}
 
-      <div className="shopping-groups">
+      <div className="grid gap-4 md:grid-cols-2">
         {groupedItems.length > 0 ? (
           groupedItems.map(([group, items]) => (
-            <article key={group} className="shopping-group-card">
-              <div className="shopping-group-header shopping-group-header-decorated" style={{ borderLeftColor: getCategoryAccent(group) }}>
-                <h3 className="profile-card-title shopping-group-title">
-                  <span className="material-symbols-outlined shopping-group-icon" aria-hidden="true">
-                    {getCategoryIcon(group)}
-                  </span>
+            <Card key={group} className="overflow-hidden">
+              <CardHeader className="flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <HugeiconsIcon icon={getCategoryIcon(group)} aria-hidden="true" />
                   {t(`categories.${group}`, { defaultValue: group })}
-                </h3>
-                <span className="shopping-group-count-badge">{items?.length ?? 0}</span>
-              </div>
+                </CardTitle>
+                <Badge variant="secondary">{items?.length ?? 0}</Badge>
+              </CardHeader>
 
-              <ul className="shopping-list">
-                {items?.map((item) => {
-                  const addedBy = bootstrapQuery.data?.profiles.find((profile) => profile.id === item.addedByProfileId);
+              <CardContent>
+                <ul className="flex flex-col gap-2" role="list">
+                  {items?.map((item) => {
+                    const addedBy = bootstrapQuery.data?.profiles.find((profile) => profile.id === item.addedByProfileId);
 
-                  return (
-                    <li key={item.id} className={item.isCompleted ? 'shopping-list-item shopping-list-item-complete' : 'shopping-list-item'}>
-                      <label className="shopping-checkbox-row">
-                        <span className="shopping-item-icon" aria-hidden="true">
-                          <span className="material-symbols-outlined" aria-hidden="true">{getCategoryIcon(normalizeCategoryKey(item.category))}</span>
-                        </span>
-                        <input
-                          type="checkbox"
-                          checked={item.isCompleted}
-                          onChange={(event) =>
-                            updateShoppingItemMutation.mutate({
-                              itemId: item.id,
-                              isCompleted: event.target.checked,
-                            })
-                          }
-                        />
-                        <span className={item.isCompleted ? 'shopping-item-label shopping-item-label-complete' : 'shopping-item-label'}>
-                          {item.label}
-                        </span>
-                      </label>
+                    return (
+                      <li
+                        key={item.id}
+                        role="listitem"
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-3"
+                      >
+                        <label className="flex min-w-0 flex-1 items-center gap-3">
+                          <Checkbox
+                            checked={item.isCompleted}
+                            onCheckedChange={(checked) =>
+                              updateShoppingItemMutation.mutate({
+                                itemId: item.id,
+                                isCompleted: checked === true,
+                              })
+                            }
+                            aria-label={item.label}
+                          />
+                          <span
+                            className={
+                              item.isCompleted
+                                ? 'shopping-item-label-complete text-sm text-muted-foreground'
+                                : 'text-sm font-medium text-foreground'
+                            }
+                          >
+                            {item.label}
+                          </span>
+                        </label>
 
-                      <div className="shopping-item-side">
-                        {addedBy ? <span className={getProfileColorChipClass(addedBy.colorKey)}>{addedBy.displayName}</span> : null}
-                        <button
-                          className="destructive-button calendar-small-button"
-                          type="button"
-                          aria-label={t('removeItemAria', { label: item.label })}
-                          onClick={() => deleteShoppingItemMutation.mutate(item.id)}
-                          disabled={deleteShoppingItemMutation.isPending}
-                        >
-                          {t('remove')}
-                        </button>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </article>
+                        <div className="flex items-center gap-2">
+                          {addedBy ? (
+                            <span className={getProfileColorChipClass(addedBy.colorKey)}>{addedBy.displayName}</span>
+                          ) : null}
+                          <Button
+                            variant="destructive"
+                            size="icon-sm"
+                            type="button"
+                            aria-label={t('removeItemAria', { label: item.label })}
+                            onClick={() => deleteShoppingItemMutation.mutate(item.id)}
+                            disabled={deleteShoppingItemMutation.isPending}
+                          >
+                            <HugeiconsIcon icon={Delete02Icon} aria-hidden="true" />
+                          </Button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </CardContent>
+            </Card>
           ))
         ) : (
-          <div className="dashboard-empty-card">
-            <p className="shopping-meta">{t('empty')}</p>
-          </div>
+          <Card className="md:col-span-2">
+            <CardContent>
+              <p className="text-sm text-muted-foreground">{t('empty')}</p>
+            </CardContent>
+          </Card>
         )}
       </div>
-
-      {isSheetOpen ? (
-        <>
-          <button className="mobile-sheet-backdrop" type="button" aria-label={t('closeSheetAria')} onClick={closeSheet} />
-          <section className="mobile-sheet" role="dialog" aria-modal="true" aria-labelledby="shopping-sheet-title">
-            <div className="mobile-sheet-header">
-              <div>
-                <p className="eyebrow">{t('quickAdd.eyebrow')}</p>
-                <h3 id="shopping-sheet-title" className="profile-card-title">{t('sheet.title')}</h3>
-              </div>
-              <button className="secondary-button calendar-small-button" type="button" onClick={closeSheet}>
-                {t('close')}
-              </button>
-            </div>
-
-            <form className="shopping-form mobile-sheet-content" onSubmit={handleSubmit}>
-              <label className="field shopping-field-wide">
-                <span>{t('fields.itemName')}</span>
-                <input
-                  ref={inputRef}
-                  value={label}
-                  onChange={(event) => setLabel(event.target.value)}
-                  placeholder={t('fields.itemNamePlaceholder')}
-                  type="text"
-                />
-              </label>
-
-              <label className="field">
-                <span>{t('fields.category')}</span>
-                <select value={category} onChange={(event) => setCategory(event.target.value)}>
-                  {defaultCategories.map((option) => (
-                    <option key={option} value={option}>
-                      {t(`categories.${option}`)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <button
-                className="secondary-button calendar-small-button shopping-field-wide"
-                type="button"
-                onClick={() => setShowDetails((current) => !current)}
-              >
-                {showDetails ? t('hideExtraDetails') : t('showExtraDetails')}
-              </button>
-
-              {showDetails ? (
-                <label className="field">
-                  <span>{t('fields.addedBy')}</span>
-                  <select value={addedByProfileId} onChange={(event) => setAddedByProfileId(event.target.value)}>
-                    <option value="">{t('noProfile')}</option>
-                    {bootstrapQuery.data?.profiles.map((profile) => (
-                      <option key={profile.id} value={profile.id}>
-                        {profile.displayName}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : null}
-
-              {formError ? <p className="form-error shopping-field-wide">{formError}</p> : null}
-
-              <div className="mobile-sheet-actions shopping-field-wide">
-                <button className="secondary-button" type="button" onClick={closeSheet}>
-                  {t('cancel')}
-                </button>
-                <button className="primary-button" type="submit" disabled={createShoppingItemMutation.isPending}>
-                  {createShoppingItemMutation.isPending ? t('adding') : t('addItem')}
-                </button>
-              </div>
-            </form>
-          </section>
-        </>
-      ) : null}
     </section>
   );
 }

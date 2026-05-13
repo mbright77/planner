@@ -1,6 +1,13 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Calendar01Icon, Restaurant01Icon, ShoppingCart01Icon } from '@hugeicons/core-free-icons';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useDashboardOverview } from '../../entities/dashboard/model/useDashboardOverview';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 
@@ -34,26 +41,6 @@ function getGreetingKey() {
   return 'greeting.evening';
 }
 
-function getProfileAccentColor(colorKey: string | null | undefined) {
-  if (colorKey === 'green') {
-    return '#84ac8e';
-  }
-
-  if (colorKey === 'blue') {
-    return '#5da9e9';
-  }
-
-  if (colorKey === 'pink') {
-    return '#fd898a';
-  }
-
-  if (colorKey === 'yellow') {
-    return '#f4d35e';
-  }
-
-  return 'var(--primary-container)';
-}
-
 function getProfileColorChipClass(colorKey: string | null | undefined) {
   return colorKey ? `profile-color-chip profile-color-chip-${colorKey}` : 'profile-color-chip';
 }
@@ -84,131 +71,129 @@ export function HomePage() {
   }, [dashboardQuery.data?.tonightMeal?.ownerProfileId, profilesById]);
 
   return (
-    <section className="page dashboard-page">
-      <div className="home-today-header">
-        <div className="home-today-header-copy">
-          <p className="eyebrow">{t('eyebrow')}</p>
-          <h2 className="page-title">{t(getGreetingKey(), { team: t('team') })}</h2>
-          <p className="page-copy">{dashboardQuery.data ? formatLongDate(dashboardQuery.data.date, locale) : t('loadingOverview')}</p>
+    <section className="flex flex-col gap-4 py-4 md:gap-6" aria-label={t('eyebrow')}>
+      <Card>
+        <CardHeader className="gap-1">
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('eyebrow')}</p>
+          <h2 className="font-heading text-2xl font-medium md:text-3xl">{t(getGreetingKey(), { team: t('team') })}</h2>
+          <CardDescription>
+            {dashboardQuery.data ? formatLongDate(dashboardQuery.data.date, locale) : t('loadingOverview')}
+          </CardDescription>
+        </CardHeader>
+      </Card>
+
+      {dashboardQuery.isLoading ? (
+        <div className="grid gap-4 md:grid-cols-2" aria-hidden="true">
+          <Skeleton className="h-56 w-full rounded-2xl" />
+          <Skeleton className="h-56 w-full rounded-2xl" />
         </div>
-      </div>
+      ) : null}
 
-      {dashboardQuery.isLoading ? <p className="page-copy">{t('loading')}</p> : null}
-      {dashboardQuery.isError ? <p className="form-error">{t('error')}</p> : null}
-
-      {dashboardQuery.data ? (
-        <section className="home-today-section" aria-label={t('todayEventsAria')}>
-          <div className="home-today-section-header">
-            <h3 className="home-today-title">
-              <span className="material-symbols-outlined home-today-title-icon" aria-hidden="true">
-                calendar_month
-              </span>
-              {t('todayTitle')}
-            </h3>
-          </div>
-
-          {todayEvents.length > 0 ? (
-            <ol className="home-today-events">
-              {todayEvents.map((event) => {
-                const assignedProfile = event.assignedProfileId ? profilesById.get(event.assignedProfileId) : null;
-                const timeBlock = formatTimeBlock(event.startAtUtc, locale);
-
-                return (
-                  <li key={event.id} className="home-today-event-row">
-                    <div className="home-today-event-time" aria-label={t('startsAt', { time: timeBlock })}>
-                      <span className="home-today-event-time-clock">{timeBlock}</span>
-                    </div>
-
-                    <article
-                      className="home-today-event-card"
-                      style={{ borderLeftColor: getProfileAccentColor(assignedProfile?.colorKey) }}
-                    >
-                      <strong className="home-today-event-title">{event.title}</strong>
-                      <p className="home-today-event-subtitle">
-                        {assignedProfile
-                          ? assignedProfile.displayName
-                          : t('assignedFallback')}
-                      </p>
-                      {event.notes ? <p className="home-today-event-notes">{event.notes}</p> : null}
-                    </article>
-                  </li>
-                );
-              })}
-            </ol>
-          ) : (
-            <div className="home-today-empty-state">
-              <p className="shopping-meta">{t('emptyToday')}</p>
-            </div>
-          )}
-        </section>
+      {dashboardQuery.isError ? (
+        <Alert variant="destructive">
+          <AlertDescription>{t('error')}</AlertDescription>
+        </Alert>
       ) : null}
 
       {dashboardQuery.data ? (
-        <section className="home-bento-grid" aria-label={t('snapshotAria')}>
-          <article className="home-bento-card home-bento-card-meal">
-            <div>
-              <span className="home-bento-icon" aria-hidden="true">
-                <span className="material-symbols-outlined" aria-hidden="true">
-                  restaurant
-                </span>
-              </span>
-              <h3 className="home-bento-title">{t('dinner')}</h3>
-              <p className="home-bento-copy">
-                {dashboardQuery.data.tonightMeal
-                  ? dashboardQuery.data.tonightMeal.title
-                  : t('noDinner')}
-              </p>
-              {dashboardQuery.data.tonightMeal?.notes ? (
-                <p className="shopping-meta home-bento-note">{dashboardQuery.data.tonightMeal.notes}</p>
-              ) : null}
-            </div>
+        <Card aria-label={t('todayEventsAria')}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <HugeiconsIcon icon={Calendar01Icon} aria-hidden="true" />
+              {t('todayTitle')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {todayEvents.length > 0 ? (
+              <ol className="flex flex-col gap-3">
+                {todayEvents.map((event) => {
+                  const assignedProfile = event.assignedProfileId ? profilesById.get(event.assignedProfileId) : null;
+                  const timeBlock = formatTimeBlock(event.startAtUtc, locale);
 
-            {dashboardQuery.data.tonightMeal ? (
-              <div className="home-bento-foot">
-                {tonightMealOwner ? <span className={getProfileColorChipClass(tonightMealOwner.colorKey)}>{tonightMealOwner.displayName}</span> : null}
-              </div>
+                  return (
+                    <li key={event.id} className="grid gap-2 rounded-xl border border-border bg-muted/20 p-3 md:grid-cols-[5rem_1fr] md:items-start">
+                      <div className="text-sm font-medium text-muted-foreground" aria-label={t('startsAt', { time: timeBlock })}>
+                        {timeBlock}
+                      </div>
+                      <article className="flex min-w-0 flex-col gap-2">
+                        <strong className="text-sm font-semibold text-foreground md:text-base">{event.title}</strong>
+                        <p className="text-sm text-muted-foreground">
+                          {assignedProfile ? assignedProfile.displayName : t('assignedFallback')}
+                        </p>
+                        {event.notes ? <p className="text-sm text-muted-foreground">{event.notes}</p> : null}
+                      </article>
+                    </li>
+                  );
+                })}
+              </ol>
             ) : (
-              <div className="home-bento-foot">
-                <span className="shopping-meta">{t('openMealsCta')}</span>
+              <div className="rounded-xl border border-dashed border-border bg-muted/20 p-4">
+                <p className="text-sm text-muted-foreground">{t('emptyToday')}</p>
               </div>
             )}
-          </article>
+          </CardContent>
+        </Card>
+      ) : null}
 
-          <article className="home-bento-card home-bento-card-shopping">
-            <div>
-              <span className="home-bento-icon" aria-hidden="true">
-                <span className="material-symbols-outlined" aria-hidden="true">
-                  checklist
-                </span>
-              </span>
-              <h3 className="home-bento-title">{t('groceries')}</h3>
-              <p className="home-bento-copy">
-                {t('itemsLeft', { count: dashboardQuery.data.shopping.openItemsCount })}
-              </p>
-            </div>
+      {dashboardQuery.data ? (
+        <section className="grid gap-4 md:grid-cols-2" aria-label={t('snapshotAria')}>
+          <Card className="bg-secondary/35">
+            <CardHeader className="gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <HugeiconsIcon icon={Restaurant01Icon} aria-hidden="true" />
+                {t('dinner')}
+              </CardTitle>
+              <CardDescription>
+                {dashboardQuery.data.tonightMeal ? dashboardQuery.data.tonightMeal.title : t('noDinner')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              {dashboardQuery.data.tonightMeal?.notes ? (
+                <p className="text-sm text-muted-foreground">{dashboardQuery.data.tonightMeal.notes}</p>
+              ) : null}
+              {dashboardQuery.data.tonightMeal ? (
+                tonightMealOwner ? (
+                  <div>
+                    <span className={getProfileColorChipClass(tonightMealOwner.colorKey)}>{tonightMealOwner.displayName}</span>
+                  </div>
+                ) : null
+              ) : (
+                <p className="text-sm text-muted-foreground">{t('openMealsCta')}</p>
+              )}
+            </CardContent>
+          </Card>
 
-            <div className="home-bento-foot">
-              <div className="home-bento-progress" aria-hidden="true">
+          <Card className="bg-muted/40">
+            <CardHeader className="gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <HugeiconsIcon icon={ShoppingCart01Icon} aria-hidden="true" />
+                {t('groceries')}
+              </CardTitle>
+              <CardDescription>{t('itemsLeft', { count: dashboardQuery.data.shopping.openItemsCount })}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <div className="h-2 overflow-hidden rounded-full bg-muted" aria-hidden="true">
                 <span
-                  className="home-bento-progress-value"
+                  className="block h-full rounded-full bg-primary"
                   style={{
                     width: `${Math.max(8, Math.min(100, (dashboardQuery.data.shopping.openItemsCount / Math.max(dashboardQuery.data.shopping.openItemsCount + 8, 1)) * 100))}%`,
                   }}
                 />
               </div>
+              <Separator />
               {dashboardQuery.data.shopping.previewLabels.length > 0 ? (
-                <ul className="home-bento-shopping-list" aria-label={t('openShoppingItemsAria')}>
+                <ul className="flex flex-wrap gap-2" aria-label={t('openShoppingItemsAria')}>
                   {dashboardQuery.data.shopping.previewLabels.map((label, index) => (
-                    <li key={`${label}-${index}`} className="home-bento-shopping-item">
-                      {label}
+                    <li key={`${label}-${index}`}>
+                      <Badge variant="secondary">{label}</Badge>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="shopping-meta home-bento-preview">{t('emptyList')}</p>
+                <p className="text-sm text-muted-foreground">{t('emptyList')}</p>
               )}
-            </div>
-          </article>
+            </CardContent>
+          </Card>
         </section>
       ) : null}
     </section>

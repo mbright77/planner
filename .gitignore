@@ -64,3 +64,6 @@ coverage/
 .playwright-mcp/
 audit-*.png
 audit-*.md
+
+# Agent skills
+apps/web/.agents/
