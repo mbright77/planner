@@ -26,9 +26,11 @@ import {
   useUpdateProfile,
 } from '../../entities/profile/model/useProfiles';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
+import { getStoredTheme, setTheme, type AppTheme } from '../../shared/lib/theme';
 
 const colorOptions = ['green', 'blue', 'pink', 'yellow'];
 const languageOptions = ['en', 'sv'] as const;
+const themeOptions: AppTheme[] = ['dark', 'light', 'system'];
 
 function getProfileColorChipClass(colorKey: string | null | undefined) {
   return colorKey ? `profile-color-chip profile-color-chip-${colorKey}` : 'profile-color-chip';
@@ -47,6 +49,7 @@ export function FamilyPage() {
   const [colorKey, setColorKey] = useState(colorOptions[0]);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteProfileId, setInviteProfileId] = useState('');
+  const [themePreference, setThemePreference] = useState<AppTheme>(() => getStoredTheme() ?? 'dark');
   const isAdmin = bootstrapQuery.data?.membership.role === 'Admin';
   const currentUserId = bootstrapQuery.data?.membership.userId;
   const inviteableProfiles = (profilesQuery.data ?? []).filter((profile) => profile.isActive && !profile.hasLogin);
@@ -114,6 +117,12 @@ export function FamilyPage() {
 
     setInviteEmail('');
     setInviteProfileId('');
+  }
+
+  function handleThemeChange(nextTheme: string) {
+    const value = nextTheme as AppTheme;
+    setThemePreference(value);
+    setTheme(value);
   }
 
   return (
@@ -328,33 +337,53 @@ export function FamilyPage() {
               </div>
 
               {profile.linkedUserId === currentUserId ? (
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor={`language-${profile.id}`}>
-                    <span className="inline-flex items-center gap-1">
-                      <HugeiconsIcon icon={LanguageCircleIcon} aria-hidden="true" />
-                      {t('preferredLanguage')}
-                    </span>
-                  </Label>
-                  <Select
-                    value={profile.preferredLanguage ?? 'en'}
-                    onValueChange={(value) =>
-                      handleLanguageChange(profile.id, value, profile.displayName, profile.colorKey, profile.isActive)
-                    }
-                    disabled={updateProfileMutation.isPending}
-                  >
-                    <SelectTrigger id={`language-${profile.id}`} className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {languageOptions.map((option) => (
-                          <SelectItem key={option} value={option}>
-                            {t(`languages.${option}`)}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor={`language-${profile.id}`}>
+                      <span className="inline-flex items-center gap-1">
+                        <HugeiconsIcon icon={LanguageCircleIcon} aria-hidden="true" />
+                        {t('preferredLanguage')}
+                      </span>
+                    </Label>
+                    <Select
+                      value={profile.preferredLanguage ?? 'en'}
+                      onValueChange={(value) =>
+                        handleLanguageChange(profile.id, value, profile.displayName, profile.colorKey, profile.isActive)
+                      }
+                      disabled={updateProfileMutation.isPending}
+                    >
+                      <SelectTrigger id={`language-${profile.id}`} className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {languageOptions.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {t(`languages.${option}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor={`theme-${profile.id}`}>{t('theme.label')}</Label>
+                    <Select value={themePreference} onValueChange={handleThemeChange}>
+                      <SelectTrigger id={`theme-${profile.id}`} className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {themeOptions.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {t(`theme.options.${option}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               ) : null}
             </CardContent>

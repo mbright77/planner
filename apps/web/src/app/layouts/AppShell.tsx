@@ -42,7 +42,7 @@ function AppIcon({ name }: { name: (typeof navigation)[number]['icon'] | 'signou
               ? UserGroupIcon
               : Logout02Icon;
 
-  return <HugeiconsIcon icon={icon} aria-hidden="true" />;
+  return <HugeiconsIcon icon={icon} aria-hidden="true" color="currentColor" strokeWidth={2} className="size-5 text-current" />;
 }
 
 export function AppShell() {
@@ -107,7 +107,14 @@ export function AppShell() {
             </p>
           </div>
         </div>
-        <Button variant="outline" size="icon" type="button" aria-label={t('signOut')} onClick={clearSession}>
+        <Button
+          variant="outline"
+          size="icon"
+          type="button"
+          aria-label={t('signOut')}
+          className="text-foreground hover:text-foreground"
+          onClick={clearSession}
+        >
           <AppIcon name="signout" />
         </Button>
       </header>
@@ -144,7 +151,7 @@ export function AppShell() {
       </main>
 
       <nav
-        className="fixed right-0 bottom-0 left-0 z-10 mx-auto grid w-full max-w-6xl grid-cols-5 border-t border-border bg-background/95 px-2 py-2 backdrop-blur md:static md:mt-4 md:mb-6 md:rounded-2xl md:border md:shadow-sm"
+        className="fixed right-0 bottom-0 left-0 z-10 mx-auto grid w-full max-w-6xl grid-cols-5 border-t border-border bg-card/95 dark:bg-background/90 px-2 py-2 backdrop-blur md:static md:mt-4 md:mb-6 md:rounded-2xl md:border md:shadow-sm"
         aria-label={t('nav.primaryAria')}
       >
         {navigation.map((item) => (

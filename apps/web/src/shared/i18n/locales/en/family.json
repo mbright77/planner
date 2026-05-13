@@ -25,6 +25,14 @@
     "en": "English",
     "sv": "Svenska"
   },
+  "theme": {
+    "label": "Theme",
+    "options": {
+      "dark": "Dark",
+      "light": "Light",
+      "system": "System"
+    }
+  },
   "invites": {
     "eyebrow": "Invites",
     "title": "Invite a family member",

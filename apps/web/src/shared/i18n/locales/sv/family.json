@@ -25,6 +25,14 @@
     "en": "English",
     "sv": "Svenska"
   },
+  "theme": {
+    "label": "Tema",
+    "options": {
+      "dark": "Mörk",
+      "light": "Ljust",
+      "system": "System"
+    }
+  },
   "invites": {
     "eyebrow": "Inbjudningar",
     "title": "Bjud in en familjemedlem",
