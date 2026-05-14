@@ -76,7 +76,7 @@ Always preserve these product rules:
 - Profile color must never be the only signal.
 - Favor quick, screen-oriented CRUD flows over abstract infrastructure.
 
-Do not redesign the UI away from the Kinship-style examples in `docs/` unless explicitly asked.
+Do not redesign the UI away from established product patterns unless explicitly asked.
 
 ## Backend Conventions
 
@@ -409,4 +409,4 @@ If you add a new slice today, the default should look like this:
 - Do not introduce Tailwind-based patterns into the existing plain-CSS pages unless the task is a styling migration.
 - Do not trust client-supplied family scope.
 - Do not skip `bootstrap` invalidation when mutations affect bootstrap-visible data.
-- Do not redesign the Kinship-inspired UI into a generic admin dashboard.
+- Do not redesign the current planner UI into a generic admin dashboard.
