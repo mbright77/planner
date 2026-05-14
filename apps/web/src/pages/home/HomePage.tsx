@@ -45,6 +45,21 @@ function getProfileColorChipClass(colorKey: string | null | undefined) {
   return colorKey ? `profile-color-chip profile-color-chip-${colorKey}` : 'profile-color-chip';
 }
 
+function getProfileAccentColor(colorKey: string | null | undefined) {
+  switch (colorKey) {
+    case 'green':
+      return '#84ac8e';
+    case 'blue':
+      return '#5da9e9';
+    case 'pink':
+      return '#fd898a';
+    case 'yellow':
+      return '#f4d35e';
+    default:
+      return 'var(--border)';
+  }
+}
+
 export function HomePage() {
   const { t, i18n } = useTranslation('home');
   const locale = i18n.language;
@@ -109,17 +124,26 @@ export function HomePage() {
                 {todayEvents.map((event) => {
                   const assignedProfile = event.assignedProfileId ? profilesById.get(event.assignedProfileId) : null;
                   const timeBlock = formatTimeBlock(event.startAtUtc, locale);
+                  const accentColor = getProfileAccentColor(assignedProfile?.colorKey);
 
                   return (
-                    <li key={event.id} className="grid gap-2 rounded-xl border border-border bg-muted/20 p-3 md:grid-cols-[5rem_1fr] md:items-start">
+                    <li
+                      key={event.id}
+                      className="grid gap-2 rounded-xl border border-border bg-muted/20 p-3 md:grid-cols-[5rem_1fr] md:items-start"
+                      style={{ borderLeftWidth: '6px', borderLeftColor: accentColor }}
+                    >
                       <div className="text-sm font-medium text-muted-foreground" aria-label={t('startsAt', { time: timeBlock })}>
                         {timeBlock}
                       </div>
                       <article className="flex min-w-0 flex-col gap-2">
                         <strong className="text-sm font-semibold text-foreground md:text-base">{event.title}</strong>
-                        <p className="text-sm text-muted-foreground">
-                          {assignedProfile ? assignedProfile.displayName : t('assignedFallback')}
-                        </p>
+                        {assignedProfile ? (
+                          <div>
+                            <span className={getProfileColorChipClass(assignedProfile.colorKey)}>{assignedProfile.displayName}</span>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">{t('assignedFallback')}</p>
+                        )}
                         {event.notes ? <p className="text-sm text-muted-foreground">{event.notes}</p> : null}
                       </article>
                     </li>

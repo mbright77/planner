@@ -47,6 +47,10 @@ import {
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 import { addToCalendar } from '../../shared/lib/calendar';
 
+function getProfileColorChipClass(colorKey: string | null | undefined) {
+  return colorKey ? `profile-color-chip profile-color-chip-${colorKey}` : 'profile-color-chip';
+}
+
 function getWeekStart(date: Date) {
   const utcDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
   const day = utcDate.getUTCDay();
@@ -456,7 +460,7 @@ export function CalendarPage() {
                         {calendarEvent.notes ? <p className="text-sm text-muted-foreground">{calendarEvent.notes}</p> : null}
                         {assignedProfile ? (
                           <div aria-label={t('assignedTo', { name: assignedProfile.displayName })}>
-                            <span className="profile-color-chip">{assignedProfile.displayName}</span>
+                            <span className={getProfileColorChipClass(assignedProfile.colorKey)}>{assignedProfile.displayName}</span>
                           </div>
                         ) : null}
                       </div>
