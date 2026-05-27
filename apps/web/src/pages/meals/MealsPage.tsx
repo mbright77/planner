@@ -341,6 +341,11 @@ export function MealsPage() {
               const isSelected = day.key === selectedDate;
               const meal = mealsByDate.get(day.key);
               const requests = requestsByDate.get(day.key) ?? [];
+              const statusLabel = meal
+                ? t('mealSet')
+                : requests.length > 0
+                  ? t('requestsCount', { count: requests.length })
+                  : t('open');
 
               return (
                 <Button
@@ -348,13 +353,20 @@ export function MealsPage() {
                   type="button"
                   variant={isSelected ? 'default' : 'outline'}
                   className="h-auto flex-col gap-0.5 py-2"
+                  aria-label={`${day.label} ${day.dayNumber}, ${statusLabel}`}
                   onClick={() => handleSelectDay(day.key)}
                 >
                   <span className="text-[11px] uppercase opacity-80">{day.label}</span>
                   <span className="text-sm font-semibold">{day.dayNumber}</span>
-                  <span className="text-[10px]">
-                    {meal ? t('mealSet') : requests.length > 0 ? t('requestsCount', { count: requests.length }) : t('open')}
-                  </span>
+                  {meal ? (
+                    <HugeiconsIcon icon={Tick02Icon} size={14} aria-hidden="true" />
+                  ) : requests.length > 0 ? (
+                    <span className="text-[10px] font-medium" aria-hidden="true">
+                      {requests.length}
+                    </span>
+                  ) : (
+                    <span className="h-3.5" aria-hidden="true" />
+                  )}
                 </Button>
               );
             })}
