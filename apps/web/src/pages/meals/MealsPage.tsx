@@ -30,6 +30,7 @@ import {
   useAssignMealRequest,
   useCreateMealPlan,
   useCreateMealRequest,
+  useDeleteMealRequest,
   useDeleteMealPlan,
   useMealRequests,
   useMealsWeek,
@@ -140,6 +141,7 @@ export function MealsPage() {
   const createMealRequestMutation = useCreateMealRequest(weekStart);
   const assignMealRequestMutation = useAssignMealRequest(weekStart);
   const acceptMealRequestMutation = useAcceptMealRequest(weekStart);
+  const deleteMealRequestMutation = useDeleteMealRequest(weekStart);
   const updateMealPlanMutation = useUpdateMealPlan(weekStart);
   const deleteMealPlanMutation = useDeleteMealPlan(weekStart);
 
@@ -163,6 +165,9 @@ export function MealsPage() {
   const selectedMeal = mealsByDate.get(selectedDate);
   const selectedRequests = requestsByDate.get(selectedDate) ?? [];
   const selectedMealOwner = bootstrapQuery.data?.profiles.find((profile) => profile.id === selectedMeal?.ownerProfileId);
+  const currentUserProfileId = bootstrapQuery.data?.profiles.find((profile) =>
+    profile.linkedUserId === bootstrapQuery.data?.membership.userId,
+  )?.id;
 
   useEffect(() => {
     if (!dashboardQuery.data || hasUserNavigatedWeek) {
@@ -299,6 +304,10 @@ export function MealsPage() {
 
     setAssigningRequestId(null);
     setAssigningRequestProfileId('');
+  }
+
+  async function handleDeleteRequest(requestId: string) {
+    await deleteMealRequestMutation.mutateAsync(requestId);
   }
 
   function handleStartRequestAssignment(requestId: string, currentAssigneeProfileId: string | null) {
@@ -486,7 +495,7 @@ export function MealsPage() {
                 <Button type="submit" disabled={updateMealPlanMutation.isPending || !editingMealId}>
                   {updateMealPlanMutation.isPending
                     ? t('saving')
-                    : t('saveChangesForDate', { date: formatLongDate(selectedDate, locale) })}
+                    : t('saveChangesForDate')}
                 </Button>
                 <Button
                   variant={confirmDeleteMealId === selectedMeal.id ? 'destructive' : 'outline'}
@@ -572,7 +581,7 @@ export function MealsPage() {
                 <Button type="submit" disabled={createMealPlanMutation.isPending}>
                   {createMealPlanMutation.isPending
                     ? t('saving')
-                    : t('saveDinnerForDate', { date: formatLongDate(selectedDate, locale) })}
+                    : t('saveDinnerForDate')}
                 </Button>
                 <Button
                   variant="outline"
@@ -717,6 +726,18 @@ export function MealsPage() {
                         >
                           <HugeiconsIcon icon={Tick02Icon} data-icon="inline-start" aria-hidden="true" />
                           {t('accept')}
+                        </Button>
+                      ) : null}
+
+                      {canPlanMeals || request.requesterProfileId === currentUserProfileId ? (
+                        <Button
+                          variant="destructive"
+                          type="button"
+                          onClick={() => void handleDeleteRequest(request.id)}
+                          disabled={deleteMealRequestMutation.isPending}
+                        >
+                          <HugeiconsIcon icon={Delete02Icon} data-icon="inline-start" aria-hidden="true" />
+                          {t('deleteRequest')}
                         </Button>
                       ) : null}
                     </div>

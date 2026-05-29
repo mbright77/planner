@@ -23,6 +23,7 @@ import {
   assignMealRequest,
   createMealPlan,
   createMealRequest,
+  deleteMealRequest,
   deleteMealPlan,
   updateMealPlan,
   type CreateMealPlanRequest,
@@ -102,6 +103,10 @@ type OfflineMutation = {
     }
   | {
       kind: 'meal-request.accept';
+      payload: { requestId: string };
+    }
+  | {
+      kind: 'meal-request.delete';
       payload: { requestId: string };
     }
 );
@@ -222,6 +227,9 @@ async function executeQueuedMutation(mutation: OfflineMutation) {
       return;
     case 'meal-request.accept':
       await acceptMealRequest(mutation.accessToken, mutation.payload.requestId);
+      return;
+    case 'meal-request.delete':
+      await deleteMealRequest(mutation.accessToken, mutation.payload.requestId);
       return;
   }
 }

@@ -30,6 +30,9 @@ public static class MealEndpoints
             .Produces<MealRequestResponse>(StatusCodes.Status200OK);
         meals.MapPost("/requests/{requestId:guid}/accept", AcceptRequestAsync)
             .Produces<MealRequestResponse>(StatusCodes.Status200OK);
+        meals.MapDelete("/requests/{requestId:guid}", DeleteRequestAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound);
 
         return app;
     }
@@ -381,6 +384,42 @@ public static class MealEndpoints
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return Results.Ok(ToResponse(mealRequest));
+    }
+
+    private static async Task<IResult> DeleteRequestAsync(
+        HttpContext httpContext,
+        Guid requestId,
+        PlannerDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        var membership = await GetMembershipAsync(httpContext, dbContext, cancellationToken);
+        if (membership is null)
+        {
+            return Results.NotFound();
+        }
+
+        var mealRequest = await dbContext.MealRequests
+            .FirstOrDefaultAsync(x => x.Id == requestId && x.FamilyId == membership.FamilyId, cancellationToken);
+
+        if (mealRequest is null)
+        {
+            return Results.NotFound();
+        }
+
+        var canPlanMeals = await CanCurrentUserPlanMealsAsync(membership, dbContext, cancellationToken);
+        if (!canPlanMeals)
+        {
+            var linkedProfileId = await GetLinkedProfileId(membership, dbContext, cancellationToken);
+            if (linkedProfileId != mealRequest.RequesterProfileId)
+            {
+                return Results.Forbid();
+            }
+        }
+
+        dbContext.MealRequests.Remove(mealRequest);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return Results.NoContent();
     }
 
     private static async Task<IResult?> ValidateMealRequestAsync(

@@ -17,8 +17,8 @@
   "fewerFields": "Fewer fields",
   "unassigned": "Unassigned",
   "saving": "Saving...",
-  "saveChangesForDate": "Save changes for {{date}}",
-  "saveDinnerForDate": "Save dinner for {{date}}",
+  "saveChangesForDate": "Save changes",
+  "saveDinnerForDate": "Save dinner",
   "loading": "Loading weekly meals...",
   "error": "Unable to load weekly meals.",
   "editDay": "Edit day",
@@ -41,6 +41,7 @@
   "saveAssignment": "Save assignment",
   "assignPerson": "Assign person",
   "accept": "Accept",
+  "deleteRequest": "Delete request",
   "noRequestsWaiting": "No requests are waiting for this day.",
   "fields": {
     "mealTitle": "Meal title",

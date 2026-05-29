@@ -2,7 +2,14 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { LanguageCircleIcon, LinkSquare01Icon, Mail01Icon, UserIcon } from '@hugeicons/core-free-icons';
+import {
+  ColorPickerIcon,
+  Delete02Icon,
+  LanguageCircleIcon,
+  LinkSquare01Icon,
+  Mail01Icon,
+  UserIcon,
+} from '@hugeicons/core-free-icons';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { useCreateFamilyInvite, useFamilyInvites } from '../../entities/invite/model/useFamilyInvites';
+import { useCreateFamilyInvite, useDeleteFamilyInvite, useFamilyInvites } from '../../entities/invite/model/useFamilyInvites';
 import {
   useCreateProfile,
   useProfiles,
@@ -43,6 +50,7 @@ export function FamilyPage() {
   const familyInvitesQuery = useFamilyInvites();
   const createProfileMutation = useCreateProfile();
   const createFamilyInviteMutation = useCreateFamilyInvite();
+  const deleteFamilyInviteMutation = useDeleteFamilyInvite();
   const updateProfileMutation = useUpdateProfile();
 
   const [displayName, setDisplayName] = useState('');
@@ -249,6 +257,7 @@ export function FamilyPage() {
             <div className="space-y-3">
               {familyInvitesQuery.data?.map((invite) => {
                 const inviteUrl = `${window.location.origin}/invite/${invite.token}`;
+                const isExpired = !invite.isAccepted && new Date(invite.expiresAtUtc) <= new Date();
 
                 return (
                   <article key={invite.id} className="rounded-xl border border-border bg-muted/20 p-3">
@@ -262,10 +271,21 @@ export function FamilyPage() {
                       </p>
                       <p className="break-all text-sm text-muted-foreground">{inviteUrl}</p>
                     </div>
-                    <div className="mt-2">
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
                       <Badge variant={invite.isAccepted ? 'default' : 'secondary'}>
                         {invite.isAccepted ? t('invites.accepted') : t('invites.pending')}
                       </Badge>
+                      {isExpired ? <Badge variant="outline">{t('invites.expired')}</Badge> : null}
+                      <Button
+                        variant="destructive"
+                        size="icon-sm"
+                        type="button"
+                        aria-label={t('invites.removeInviteAria', { email: invite.email })}
+                        onClick={() => deleteFamilyInviteMutation.mutate(invite.id)}
+                        disabled={deleteFamilyInviteMutation.isPending}
+                      >
+                        <HugeiconsIcon icon={Delete02Icon} aria-hidden="true" />
+                      </Button>
                     </div>
                   </article>
                 );
@@ -337,7 +357,7 @@ export function FamilyPage() {
               </div>
 
               {profile.linkedUserId === currentUserId ? (
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3">
                   <div className="flex flex-col gap-2">
                     <Label htmlFor={`language-${profile.id}`}>
                       <span className="inline-flex items-center gap-1">
@@ -368,7 +388,12 @@ export function FamilyPage() {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor={`theme-${profile.id}`}>{t('theme.label')}</Label>
+                    <Label htmlFor={`theme-${profile.id}`}>
+                      <span className="inline-flex items-center gap-1">
+                        <HugeiconsIcon icon={ColorPickerIcon} aria-hidden="true" />
+                        {t('theme.label')}
+                      </span>
+                    </Label>
                     <Select value={themePreference} onValueChange={handleThemeChange}>
                       <SelectTrigger id={`theme-${profile.id}`} className="w-full">
                         <SelectValue />

@@ -74,7 +74,6 @@ export function ShoppingPage() {
   const [label, setLabel] = useState('');
   const [category, setCategory] = useState(defaultCategories[0]);
   const [addedByProfileId, setAddedByProfileId] = useState<string>('');
-  const [showDetails, setShowDetails] = useState(false);
   const [formError, setFormError] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -94,7 +93,6 @@ export function ShoppingPage() {
     setLabel('');
     setCategory(defaultCategories[0]);
     setAddedByProfileId('');
-    setShowDetails(false);
     setFormError('');
   }
 
@@ -185,34 +183,24 @@ export function ShoppingPage() {
                     </Select>
                   </div>
 
-                  <Button
-                    variant="outline"
-                    type="button"
-                    onClick={() => setShowDetails((current) => !current)}
-                  >
-                    {showDetails ? t('hideExtraDetails') : t('showExtraDetails')}
-                  </Button>
-
-                  {showDetails ? (
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="shopping-added-by">{t('fields.addedBy')}</Label>
-                      <Select value={addedByProfileId} onValueChange={setAddedByProfileId}>
-                        <SelectTrigger id="shopping-added-by" className="w-full">
-                          <SelectValue placeholder={t('noProfile')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectItem value="">{t('noProfile')}</SelectItem>
-                            {bootstrapQuery.data?.profiles.map((profile) => (
-                              <SelectItem key={profile.id} value={profile.id}>
-                                {profile.displayName}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  ) : null}
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="shopping-added-by">{t('fields.addedBy')}</Label>
+                    <Select value={addedByProfileId} onValueChange={setAddedByProfileId}>
+                      <SelectTrigger id="shopping-added-by" className="w-full">
+                        <SelectValue placeholder={t('noProfile')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="">{t('noProfile')}</SelectItem>
+                          {bootstrapQuery.data?.profiles.map((profile) => (
+                            <SelectItem key={profile.id} value={profile.id}>
+                              {profile.displayName}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
                   {formError ? (
                     <Alert variant="destructive">

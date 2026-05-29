@@ -11,6 +11,7 @@ import {
 } from '@planner/api-client';
 
 import { env } from '../config/env';
+import { http } from './http';
 
 export type {
   AcceptFamilyInviteRequest,
@@ -34,4 +35,11 @@ export async function fetchFamilyInvite(token: string) {
 
 export async function acceptFamilyInvite(token: string, request: AcceptFamilyInviteRequest) {
   return acceptFamilyInviteRequest({ baseUrl: env.apiBaseUrl }, token, request);
+}
+
+export async function deleteFamilyInvite(accessToken: string, inviteId: string) {
+  return http<void>(`/api/v1/family-invites/${inviteId}`, {
+    accessToken,
+    method: 'DELETE',
+  });
 }

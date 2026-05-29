@@ -49,7 +49,9 @@
     "linkedTo": "Länkad till {{name}}",
     "expires": "Går ut {{date}}",
     "accepted": "Accepterad",
-    "pending": "Väntande"
+    "pending": "Väntande",
+    "expired": "Utgången",
+    "removeInviteAria": "Ta bort inbjudan för {{email}}"
   },
   "profile": {
     "eyebrow": "Profil",

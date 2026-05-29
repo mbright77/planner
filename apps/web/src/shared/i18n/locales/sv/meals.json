@@ -17,8 +17,8 @@
   "fewerFields": "Färre fält",
   "unassigned": "Otilldelad",
   "saving": "Sparar...",
-  "saveChangesForDate": "Spara ändringar för {{date}}",
-  "saveDinnerForDate": "Spara middag för {{date}}",
+  "saveChangesForDate": "Spara ändringar",
+  "saveDinnerForDate": "Spara middag",
   "loading": "Laddar veckans mat...",
   "error": "Det gick inte att ladda veckans mat.",
   "editDay": "Redigera dag",
@@ -41,6 +41,7 @@
   "saveAssignment": "Spara tilldelning",
   "assignPerson": "Tilldela person",
   "accept": "Acceptera",
+  "deleteRequest": "Radera önskemal",
   "noRequestsWaiting": "Inga önskemal väntar för denna dag.",
   "fields": {
     "mealTitle": "Måltidstitel",

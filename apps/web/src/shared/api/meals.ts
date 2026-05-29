@@ -60,3 +60,10 @@ export async function assignMealRequest(accessToken: string, requestId: string, 
 export async function acceptMealRequest(accessToken: string, requestId: string) {
   return acceptMealRequestRequest({ baseUrl: env.apiBaseUrl, accessToken }, requestId);
 }
+
+export async function deleteMealRequest(accessToken: string, requestId: string) {
+  return http<void>(`/api/v1/meals/requests/${requestId}`, {
+    accessToken,
+    method: 'DELETE',
+  });
+}

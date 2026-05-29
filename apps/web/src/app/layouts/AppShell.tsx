@@ -91,7 +91,7 @@ export function AppShell() {
       >
         {t('skipToContent')}
       </a>
-      <header className="sticky top-0 z-10 flex w-full min-w-0 items-center justify-between gap-4 border-b border-border/70 bg-background/95 px-5 py-4 backdrop-blur">
+      <header className="sticky top-0 z-30 flex w-full min-w-0 items-center justify-between gap-4 border-b border-border/70 bg-background/95 px-5 py-4 backdrop-blur">
         <div className="flex min-w-0 items-center gap-3">
           <div
             className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted font-semibold text-muted-foreground"

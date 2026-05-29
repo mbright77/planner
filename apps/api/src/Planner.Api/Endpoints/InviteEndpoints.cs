@@ -30,6 +30,9 @@ public static class InviteEndpoints
             .Produces<IReadOnlyList<FamilyInviteResponse>>(StatusCodes.Status200OK);
         familyInvites.MapPost(string.Empty, CreateInviteAsync)
             .Produces<FamilyInviteResponse>(StatusCodes.Status201Created);
+        familyInvites.MapDelete("/{inviteId:guid}", DeleteInviteAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound);
 
         return app;
     }
@@ -166,6 +169,37 @@ public static class InviteEndpoints
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return Results.Created($"/api/v1/invites/{invite.Token}", ToResponse(invite));
+    }
+
+    private static async Task<IResult> DeleteInviteAsync(
+        HttpContext httpContext,
+        Guid inviteId,
+        PlannerDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        var membership = await GetMembershipAsync(httpContext, dbContext, cancellationToken);
+        if (membership is null)
+        {
+            return Results.NotFound();
+        }
+
+        if (membership.Role != FamilyRole.Admin)
+        {
+            return Results.Forbid();
+        }
+
+        var invite = await dbContext.FamilyInvites
+            .FirstOrDefaultAsync(x => x.Id == inviteId && x.FamilyId == membership.FamilyId, cancellationToken);
+
+        if (invite is null)
+        {
+            return Results.NotFound();
+        }
+
+        dbContext.FamilyInvites.Remove(invite);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return Results.NoContent();
     }
 
     private static async Task<IResult> GetInviteAsync(

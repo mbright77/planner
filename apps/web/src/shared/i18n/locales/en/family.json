@@ -49,7 +49,9 @@
     "linkedTo": "Linked to {{name}}",
     "expires": "Expires {{date}}",
     "accepted": "Accepted",
-    "pending": "Pending"
+    "pending": "Pending",
+    "expired": "Expired",
+    "removeInviteAria": "Remove invite for {{email}}"
   },
   "profile": {
     "eyebrow": "Profile",

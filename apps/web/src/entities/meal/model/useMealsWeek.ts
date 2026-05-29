@@ -5,6 +5,7 @@ import {
   assignMealRequest,
   createMealPlan,
   createMealRequest,
+  deleteMealRequest,
   deleteMealPlan,
   fetchMealRequests,
   fetchMealsWeek,
@@ -375,6 +376,44 @@ export function useAcceptMealRequest(weekStart: string) {
       } catch {
         // ignore
       }
+    },
+    onSettled: async () => {
+      await invalidateMealQueries(queryClient, session?.accessToken, weekStart);
+    },
+  });
+}
+
+export function useDeleteMealRequest(weekStart: string) {
+  const { session } = useAuthSession();
+  const queryClient = useQueryClient();
+  const requestsQueryKey = mealRequestsKey(session?.accessToken, weekStart);
+
+  return useMutation({
+    mutationFn: (requestId: string) =>
+      runOrQueueOfflineMutation(
+        {
+          kind: 'meal-request.delete',
+          accessToken: session!.accessToken,
+          payload: { requestId },
+          invalidateKeys: [requestsQueryKey, mealsWeekKey(session?.accessToken, weekStart), ['dashboard-overview']],
+        },
+        () => deleteMealRequest(session!.accessToken, requestId),
+      ),
+    onMutate: async (requestId) => {
+      await queryClient.cancelQueries({ queryKey: requestsQueryKey });
+
+      const previousRequests = queryClient.getQueryData<MealRequestResponse[]>(requestsQueryKey);
+
+      queryClient.setQueryData<MealRequestResponse[]>(requestsQueryKey, (requests = []) =>
+        requests.filter((request) => request.id !== requestId),
+      );
+      await syncOfflineQueryData<MealRequestResponse[]>(queryClient, requestsQueryKey);
+
+      return { previousRequests };
+    },
+    onError: async (_error, _requestId, context) => {
+      queryClient.setQueryData(requestsQueryKey, context?.previousRequests);
+      await syncOfflineQueryData<MealRequestResponse[]>(queryClient, requestsQueryKey);
     },
     onSettled: async () => {
       await invalidateMealQueries(queryClient, session?.accessToken, weekStart);

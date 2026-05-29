@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthSession } from '../../../processes/auth-session/AuthSessionContext';
 import {
   createFamilyInvite,
+  deleteFamilyInvite,
   fetchFamilyInvites,
   type CreateFamilyInviteRequest,
   type FamilyInviteResponse,
@@ -55,6 +56,33 @@ export function useCreateFamilyInvite() {
       queryClient.setQueryData<FamilyInviteResponse[]>(queryKey, (invites = []) =>
         invites.map((currentInvite) => (currentInvite.id === context?.optimisticId ? invite : currentInvite)),
       );
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey });
+    },
+  });
+}
+
+export function useDeleteFamilyInvite() {
+  const { session } = useAuthSession();
+  const queryClient = useQueryClient();
+  const queryKey = familyInvitesKey(session?.accessToken);
+
+  return useMutation({
+    mutationFn: (inviteId: string) => deleteFamilyInvite(session!.accessToken, inviteId),
+    onMutate: async (inviteId) => {
+      await queryClient.cancelQueries({ queryKey });
+
+      const previousInvites = queryClient.getQueryData<FamilyInviteResponse[]>(queryKey);
+
+      queryClient.setQueryData<FamilyInviteResponse[]>(queryKey, (invites = []) =>
+        invites.filter((invite) => invite.id !== inviteId),
+      );
+
+      return { previousInvites };
+    },
+    onError: (_error, _inviteId, context) => {
+      queryClient.setQueryData(queryKey, context?.previousInvites);
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey });
