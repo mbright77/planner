@@ -73,7 +73,7 @@ export function ShoppingPage() {
 
   const [label, setLabel] = useState('');
   const [category, setCategory] = useState(defaultCategories[0]);
-  const [addedByProfileId, setAddedByProfileId] = useState<string>('');
+  const [addedByProfileId, setAddedByProfileId] = useState<string>('__none');
   const [formError, setFormError] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -92,7 +92,7 @@ export function ShoppingPage() {
   function resetDrawerForm() {
     setLabel('');
     setCategory(defaultCategories[0]);
-    setAddedByProfileId('');
+    setAddedByProfileId('__none');
     setFormError('');
   }
 
@@ -114,7 +114,7 @@ export function ShoppingPage() {
     await createShoppingItemMutation.mutateAsync({
       label: label.trim(),
       category,
-      addedByProfileId: addedByProfileId || null,
+      addedByProfileId: addedByProfileId === '__none' ? null : addedByProfileId,
     });
 
     resetDrawerForm();
@@ -185,13 +185,13 @@ export function ShoppingPage() {
 
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="shopping-added-by">{t('fields.addedBy')}</Label>
-                    <Select value={addedByProfileId} onValueChange={setAddedByProfileId}>
+                    <Select value={addedByProfileId} onValueChange={(value) => setAddedByProfileId(value)}>
                       <SelectTrigger id="shopping-added-by" className="w-full">
                         <SelectValue placeholder={t('noProfile')} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectItem value="">{t('noProfile')}</SelectItem>
+                          <SelectItem value="__none">{t('noProfile')}</SelectItem>
                           {bootstrapQuery.data?.profiles.map((profile) => (
                             <SelectItem key={profile.id} value={profile.id}>
                               {profile.displayName}

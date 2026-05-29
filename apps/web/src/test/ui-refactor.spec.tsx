@@ -210,6 +210,7 @@ vi.mock('../entities/meal/model/useMealsWeek', () => ({
   useCreateMealRequest: () => ({ isPending: false, mutateAsync: async () => undefined }),
   useAssignMealRequest: () => ({ isPending: false, mutateAsync: async () => undefined }),
   useAcceptMealRequest: () => ({ isPending: false, mutateAsync: async () => undefined }),
+  useDeleteMealRequest: () => ({ isPending: false, mutateAsync: async () => undefined }),
 }));
 
 vi.mock('../entities/shopping-item/model/useShoppingItems', () => ({
@@ -262,6 +263,7 @@ vi.mock('../entities/profile/model/useProfiles', () => ({
 vi.mock('../entities/invite/model/useFamilyInvites', () => ({
   useFamilyInvites: () => ({ data: [], isLoading: false, isError: false }),
   useCreateFamilyInvite: () => ({ isPending: false, mutateAsync: async () => undefined }),
+  useDeleteFamilyInvite: () => ({ isPending: false, mutate: () => undefined }),
 }));
 
 function renderShellRoute(path: string) {
@@ -436,7 +438,7 @@ describe('Phase 12 - Delete functionality and behavior regressions', () => {
 
     const mealTitle = await screen.findByPlaceholderText('Plan dinner');
     fireEvent.change(mealTitle, { target: { value: 'Taco Night' } });
-    fireEvent.click(screen.getByRole('button', { name: /Save dinner for/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Save dinner/i }));
 
     // After save the page switches to the edit form; the title is in the input value and the delete button aria-label
     await waitFor(() => expect(screen.getByRole('button', { name: /Delete Taco Night/i })).toBeInTheDocument());
