@@ -52,6 +52,7 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest,woff2}'],
         runtimeCaching: [
           {

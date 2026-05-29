@@ -10,6 +10,17 @@ initTheme();
 
 registerSW({
   immediate: true,
+  onRegisteredSW(_swUrl, registration) {
+    if (!registration) return;
+    // Poll for updates every hour so long-lived tabs pick up new versions.
+    setInterval(() => registration.update(), 60 * 60 * 1000);
+  },
+});
+
+// Reload the page as soon as a new SW takes control so users always run
+// the latest version without needing a manual refresh.
+navigator.serviceWorker.addEventListener('controllerchange', () => {
+  window.location.reload();
 });
 
 const route = new URLSearchParams(window.location.search).get('route');
