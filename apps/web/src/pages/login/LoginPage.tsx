@@ -103,6 +103,11 @@ export function LoginPage() {
     }
   }
 
+  function getSubmitLabel() {
+    if (isSubmitting) return mode === 'signin' ? t('submit.signingIn') : t('submit.saving');
+    return mode === 'signin' ? t('submit.signIn') : t('submit.createFamily');
+  }
+
   return (
     <main
       className="flex min-h-[calc(100dvh-7rem)] items-center justify-center bg-gradient-to-b from-muted/50 to-background px-4 py-8"
@@ -222,7 +227,7 @@ export function LoginPage() {
             ) : null}
 
             <Button className="w-full" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (mode === 'signin' ? t('submit.signingIn') : t('submit.saving')) : mode === 'signin' ? t('submit.signIn') : t('submit.createFamily')}
+              {getSubmitLabel()}
             </Button>
           </form>
         </CardContent>
