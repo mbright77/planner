@@ -222,7 +222,7 @@ export function LoginPage() {
             ) : null}
 
             <Button className="w-full" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? t('submit.saving') : mode === 'signin' ? t('submit.signIn') : t('submit.createFamily')}
+              {isSubmitting ? (mode === 'signin' ? t('submit.signingIn') : t('submit.saving')) : mode === 'signin' ? t('submit.signIn') : t('submit.createFamily')}
             </Button>
           </form>
         </CardContent>
