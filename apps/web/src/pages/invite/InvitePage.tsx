@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ApiError } from '@planner/api-client';
 import { fetchFamilyInvite, acceptFamilyInvite } from '../../shared/api/invites';
 import { useAuthSession } from '../../processes/auth-session/AuthSessionContext';
 
@@ -24,13 +25,15 @@ export function InvitePage() {
   const { t } = useTranslation('auth');
   const { token = '' } = useParams();
   const navigate = useNavigate();
-  const { setSession } = useAuthSession();
+  const { session, setSession, clearSession } = useAuthSession();
   const [inviteDetails, setInviteDetails] = useState<Awaited<ReturnType<typeof fetchFamilyInvite>> | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [colorKey, setColorKey] = useState(colorOptions[0]);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const isLinkedInvite = Boolean(inviteDetails?.profileId);
@@ -38,6 +41,7 @@ export function InvitePage() {
   useEffect(() => {
     setLoading(true);
     setError('');
+    setFieldErrors([]);
 
     void fetchFamilyInvite(token)
       .then((details) => {
@@ -50,28 +54,65 @@ export function InvitePage() {
       .finally(() => setLoading(false));
   }, [token]);
 
+  const passwordsMatch = password === passwordConfirmation;
+  const canSubmit = password.trim().length > 0 && passwordsMatch && (isLinkedInvite || displayName.trim().length > 0);
+
+  if (session) {
+    return (
+      <main className="flex min-h-[calc(100dvh-7rem)] items-center justify-center bg-gradient-to-b from-muted/50 to-background px-4 py-8">
+        <Card className="w-full max-w-xl">
+          <CardHeader className="gap-3">
+            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('invite.eyebrow')}</p>
+            <CardTitle className="text-2xl md:text-3xl">{t('invite.heading')}</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <Alert>
+              <AlertDescription>
+                {t('invite.alreadySignedIn')}
+              </AlertDescription>
+            </Alert>
+            <Button variant="outline" onClick={() => { clearSession(); }}>
+              {t('invite.signOut')}
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
+
   async function handleAccept(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!password.trim() || (!isLinkedInvite && !displayName.trim())) {
+    if (!canSubmit) {
       return;
     }
 
     setSubmitting(true);
     setError('');
+    setFieldErrors([]);
 
     try {
-      const session = await acceptFamilyInvite(token, {
+      const result = await acceptFamilyInvite(token, {
         email: email.trim().toLowerCase(),
         password,
         displayName: isLinkedInvite ? null : displayName.trim(),
         colorKey: isLinkedInvite ? null : colorKey,
       });
 
-      setSession({ accessToken: session.accessToken, expiresAtUtc: session.expiresAtUtc });
+      setSession({ accessToken: result.accessToken, expiresAtUtc: result.expiresAtUtc });
       navigate('/', { replace: true });
-    } catch {
-      setError(t('invite.errors.accept'));
+    } catch (err) {
+      if (err instanceof ApiError) {
+        try {
+          const body = JSON.parse(err.message) as { message?: string; errors?: string[] };
+          setFieldErrors(body.errors ?? []);
+          setError(body.message ?? t('invite.errors.accept'));
+        } catch {
+          setError(t('invite.errors.accept'));
+        }
+      } else {
+        setError(t('invite.errors.accept'));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -102,7 +143,16 @@ export function InvitePage() {
 
           {error ? (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>
+                {error}
+                {fieldErrors.length > 0 ? (
+                  <ul className="ml-4 mt-1 list-disc">
+                    {fieldErrors.map((fieldError, i) => (
+                      <li key={i}>{fieldError}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </AlertDescription>
             </Alert>
           ) : null}
 
@@ -135,6 +185,7 @@ export function InvitePage() {
                       value={email}
                       onChange={(event) => setEmail(event.target.value)}
                       type="email"
+                      readOnly
                     />
                   </div>
 
@@ -160,6 +211,19 @@ export function InvitePage() {
                     />
                   </div>
 
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="invite-password-confirmation">{t('fields.confirmPassword')}</Label>
+                    <Input
+                      id="invite-password-confirmation"
+                      value={passwordConfirmation}
+                      onChange={(event) => setPasswordConfirmation(event.target.value)}
+                      type="password"
+                    />
+                    {passwordConfirmation.length > 0 && !passwordsMatch ? (
+                      <p className="text-sm text-destructive">{t('invite.errors.passwordMismatch')}</p>
+                    ) : null}
+                  </div>
+
                   {isLinkedInvite ? null : (
                     <div className="flex flex-col gap-2">
                       <Label htmlFor="invite-profile-color">{t('fields.profileColor')}</Label>
@@ -180,7 +244,7 @@ export function InvitePage() {
                     </div>
                   )}
 
-                  <Button type="submit" disabled={submitting}>
+                  <Button type="submit" disabled={submitting || !canSubmit}>
                     {submitting ? t('invite.submitting') : t('invite.submit')}
                   </Button>
                 </form>
