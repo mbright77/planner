@@ -34,7 +34,8 @@
     "produce": "Frukt och grönt",
     "dairy": "Mejeri",
     "pantry": "Skafferi",
-    "household": "Hushåll"
+    "household": "Hushåll",
+    "other": "Övrigt"
   },
   "errors": {
     "itemName": "Ange ett varunamn innan du sparar."

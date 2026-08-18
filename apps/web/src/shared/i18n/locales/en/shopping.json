@@ -34,7 +34,8 @@
     "produce": "Produce",
     "dairy": "Dairy",
     "pantry": "Pantry",
-    "household": "Household"
+    "household": "Household",
+    "other": "Other"
   },
   "errors": {
     "itemName": "Add an item name before saving."

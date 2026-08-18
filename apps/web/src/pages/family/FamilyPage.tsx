@@ -10,6 +10,7 @@ import {
   Mail01Icon,
   UserIcon,
 } from '@hugeicons/core-free-icons';
+import { env } from '../../shared/config/env';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -256,7 +257,7 @@ export function FamilyPage() {
 
             <div className="space-y-3">
               {familyInvitesQuery.data?.map((invite) => {
-                const inviteUrl = `${window.location.origin}/invite/${invite.token}`;
+                const inviteUrl = `${window.location.origin}${env.appBasePath}invite/${invite.token}`;
                 const isExpired = !invite.isAccepted && new Date(invite.expiresAtUtc) <= new Date();
 
                 return (

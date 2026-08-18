@@ -45,7 +45,7 @@ import {
   useUpdateShoppingItem,
 } from '../../entities/shopping-item/model/useShoppingItems';
 
-const defaultCategories = ['produce', 'dairy', 'pantry', 'household'];
+const defaultCategories = ['produce', 'dairy', 'pantry', 'household', 'other'];
 
 function normalizeCategoryKey(category: string) {
   return category.trim().toLowerCase();
