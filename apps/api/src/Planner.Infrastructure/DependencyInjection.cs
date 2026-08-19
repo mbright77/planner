@@ -5,7 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Planner.Infrastructure.Auth;
 using Planner.Infrastructure.Identity;
+using Planner.Infrastructure.Integrations.Google;
 using Planner.Infrastructure.Persistence;
+using Planner.Infrastructure.Security;
 
 namespace Planner.Infrastructure;
 
@@ -39,6 +41,10 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ICalendarSeriesMaterializer, CalendarSeriesMaterializer>();
         services.AddHostedService<CalendarSeriesMaterializationWorker>();
+
+        services.AddOptions<GoogleOptions>()
+            .BindConfiguration(GoogleOptions.SectionName);
+        services.AddSingleton<ITokenCipher, AesGcmTokenCipher>();
 
         return services;
     }
