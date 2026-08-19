@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Planner.Api.Extensions;
 using Planner.Contracts.Dashboard;
 using Planner.Domain;
+using Planner.Infrastructure.Integrations.Google;
 using Planner.Infrastructure.Persistence;
 
 namespace Planner.Api.Endpoints;
@@ -23,6 +25,7 @@ public static class DashboardEndpoints
         HttpContext httpContext,
         DateOnly? date,
         PlannerDbContext dbContext,
+        IOptions<GoogleOptions> googleOptions,
         CancellationToken cancellationToken)
     {
         var membership = await GetMembershipAsync(httpContext, dbContext, cancellationToken);
@@ -169,6 +172,18 @@ public static class DashboardEndpoints
             })
             .ToArray();
 
+        var preference = await dbContext.UserCalendarPreferences
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.UserId == membership.UserId, cancellationToken);
+
+        var googleConnection = await dbContext.GoogleCalendarConnections
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.UserId == membership.UserId, cancellationToken);
+
+        var sources = new DashboardSourcesSummary(
+            (preference?.Sources ?? CalendarSourceSelection.Local).ToString(),
+            new DashboardGoogleSourceStatus(ResolveGoogleStatus(googleOptions.Value, googleConnection), null));
+
         var response = new DashboardOverviewResponse(
             targetDate,
             weekStart,
@@ -177,9 +192,20 @@ public static class DashboardEndpoints
             todayEvents,
             tonightMeal,
             new DashboardShoppingSummary(shoppingCount, shoppingPreviewLabels),
-            upcomingEvent);
+            upcomingEvent,
+            sources);
 
         return Results.Ok(response);
+    }
+
+    private static string ResolveGoogleStatus(GoogleOptions googleOptions, GoogleCalendarConnection? connection)
+    {
+        if (connection is not null)
+        {
+            return connection.Status == GoogleConnectionStatus.NeedsReauth ? "NeedsReauth" : "Connected";
+        }
+
+        return googleOptions.IsConfigured ? "NotConnected" : "NotConfigured";
     }
 
     private static Task<FamilyMembership?> GetMembershipAsync(

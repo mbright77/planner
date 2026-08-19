@@ -16,6 +16,7 @@ public static class PlannerEndpoints
         app.MapProfileEndpoints();
         app.MapShoppingEndpoints();
         app.MapCalendarEndpoints();
+        app.MapCalendarSourceEndpoints();
         app.MapMealEndpoints();
 
         if (app.ServiceProvider.GetRequiredService<IHostEnvironment>().IsDevelopment())

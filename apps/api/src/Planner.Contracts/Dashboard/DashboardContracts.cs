@@ -8,7 +8,16 @@ public sealed record DashboardOverviewResponse(
     IReadOnlyList<DashboardEventSummary> TodayEvents,
     DashboardMealSummary? TonightMeal,
     DashboardShoppingSummary Shopping,
-    DashboardUpcomingEventSummary? UpcomingEvent);
+    DashboardUpcomingEventSummary? UpcomingEvent,
+    DashboardSourcesSummary Sources);
+
+public sealed record DashboardSourcesSummary(
+    string Preference,
+    DashboardGoogleSourceStatus Google);
+
+public sealed record DashboardGoogleSourceStatus(
+    string Status,
+    IReadOnlyList<string>? FailedCalendarNames);
 
 public sealed record DashboardDaySummary(
     DateOnly Date,
