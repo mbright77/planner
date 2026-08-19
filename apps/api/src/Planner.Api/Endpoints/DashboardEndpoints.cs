@@ -31,15 +31,24 @@ public static class DashboardEndpoints
             return Results.NotFound();
         }
 
-        var familyTimeZone = ResolveTimeZone(membership.Family.Timezone);
+        var familyTimeZone = FamilyScheduleHelpers.ResolveTimeZone(membership.Family.Timezone);
         var familyNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, familyTimeZone);
         var targetDate = date ?? DateOnly.FromDateTime(familyNow.DateTime);
-        var weekStart = GetWeekStart(targetDate);
+        var weekStart = FamilyScheduleHelpers.GetWeekStart(targetDate);
         var weekEnd = weekStart.AddDays(6);
-        var weekStartUtc = new DateTimeOffset(weekStart.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
-        var weekEndExclusiveUtc = new DateTimeOffset(weekEnd.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
-        var dayStartUtc = new DateTimeOffset(targetDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
-        var dayEndExclusiveUtc = new DateTimeOffset(targetDate.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+
+        var weekStartUtc = new DateTimeOffset(
+            TimeZoneInfo.ConvertTimeToUtc(weekStart.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified), familyTimeZone),
+            TimeSpan.Zero);
+        var weekEndExclusiveUtc = new DateTimeOffset(
+            TimeZoneInfo.ConvertTimeToUtc(weekEnd.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified), familyTimeZone),
+            TimeSpan.Zero);
+        var dayStartUtc = new DateTimeOffset(
+            TimeZoneInfo.ConvertTimeToUtc(targetDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified), familyTimeZone),
+            TimeSpan.Zero);
+        var dayEndExclusiveUtc = new DateTimeOffset(
+            TimeZoneInfo.ConvertTimeToUtc(targetDate.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified), familyTimeZone),
+            TimeSpan.Zero);
         var now = DateTimeOffset.UtcNow;
 
         var weekEvents = await dbContext.CalendarEvents
@@ -145,7 +154,7 @@ public static class DashboardEndpoints
 
         var mealsByDate = weekMeals.ToDictionary(x => x.MealDate, x => x.Id);
         var eventCountsByDate = weekEvents
-            .GroupBy(x => DateOnly.FromDateTime(x.StartAtUtc.UtcDateTime))
+            .GroupBy(x => DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(x.StartAtUtc.UtcDateTime, familyTimeZone).Date))
             .ToDictionary(x => x.Key, x => x.Count());
 
         var week = Enumerable.Range(0, 7)
@@ -173,17 +182,6 @@ public static class DashboardEndpoints
         return Results.Ok(response);
     }
 
-    private static DateOnly GetWeekStart(DateOnly date)
-    {
-        var diff = date.DayOfWeek switch
-        {
-            DayOfWeek.Sunday => -6,
-            _ => DayOfWeek.Monday - date.DayOfWeek,
-        };
-
-        return date.AddDays(diff);
-    }
-
     private static Task<FamilyMembership?> GetMembershipAsync(
         HttpContext httpContext,
         PlannerDbContext dbContext,
@@ -195,21 +193,5 @@ public static class DashboardEndpoints
             .AsNoTracking()
             .Include(x => x.Family)
             .FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
-    }
-
-    private static TimeZoneInfo ResolveTimeZone(string timeZoneId)
-    {
-        try
-        {
-            return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-        }
-        catch (TimeZoneNotFoundException)
-        {
-            return TimeZoneInfo.Utc;
-        }
-        catch (InvalidTimeZoneException)
-        {
-            return TimeZoneInfo.Utc;
-        }
     }
 }

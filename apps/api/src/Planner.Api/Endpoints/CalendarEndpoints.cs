@@ -39,10 +39,10 @@ public static class CalendarEndpoints
             return Results.NotFound();
         }
 
-        var familyTimeZone = ResolveTimeZone(membership.Family.Timezone);
+        var familyTimeZone = FamilyScheduleHelpers.ResolveTimeZone(membership.Family.Timezone);
         var familyNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, familyTimeZone);
         var targetDate = start ?? DateOnly.FromDateTime(familyNow.DateTime);
-        var weekStart = GetWeekStart(targetDate);
+        var weekStart = FamilyScheduleHelpers.GetWeekStart(targetDate);
         var weekEnd = weekStart.AddDays(6);
 
         var weekStartLocal = weekStart.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified);
@@ -98,7 +98,7 @@ public static class CalendarEndpoints
             return Results.NotFound();
         }
 
-        var familyTimeZone = ResolveTimeZone(membership.Family.Timezone);
+        var familyTimeZone = FamilyScheduleHelpers.ResolveTimeZone(membership.Family.Timezone);
 
         var validation = await ValidateAssignedProfileAsync(membership.FamilyId, request.AssignedProfileId, dbContext, cancellationToken);
         if (validation is not null)
@@ -188,7 +188,7 @@ public static class CalendarEndpoints
             return Results.NotFound();
         }
 
-        var familyTimeZone = ResolveTimeZone(membership.Family.Timezone);
+        var familyTimeZone = FamilyScheduleHelpers.ResolveTimeZone(membership.Family.Timezone);
 
         var validation = await ValidateAssignedProfileAsync(membership.FamilyId, request.AssignedProfileId, dbContext, cancellationToken);
         if (validation is not null)
@@ -380,30 +380,4 @@ public static class CalendarEndpoints
             .FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
     }
 
-    private static DateOnly GetWeekStart(DateOnly date)
-    {
-        var diff = date.DayOfWeek switch
-        {
-            DayOfWeek.Sunday => -6,
-            _ => DayOfWeek.Monday - date.DayOfWeek,
-        };
-
-        return date.AddDays(diff);
-    }
-
-    private static TimeZoneInfo ResolveTimeZone(string timeZoneId)
-    {
-        try
-        {
-            return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-        }
-        catch (TimeZoneNotFoundException)
-        {
-            return TimeZoneInfo.Utc;
-        }
-        catch (InvalidTimeZoneException)
-        {
-            return TimeZoneInfo.Utc;
-        }
-    }
 }
