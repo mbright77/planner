@@ -26,6 +26,14 @@ public sealed class PlannerDbContext(DbContextOptions<PlannerDbContext> options)
 
     public DbSet<MealRequest> MealRequests => Set<MealRequest>();
 
+    public DbSet<UserCalendarPreference> UserCalendarPreferences => Set<UserCalendarPreference>();
+
+    public DbSet<GoogleCalendarConnection> GoogleCalendarConnections => Set<GoogleCalendarConnection>();
+
+    public DbSet<GoogleCalendarSubscription> GoogleCalendarSubscriptions => Set<GoogleCalendarSubscription>();
+
+    public DbSet<GoogleOAuthState> GoogleOAuthStates => Set<GoogleOAuthState>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
