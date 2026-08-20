@@ -43,8 +43,19 @@ public static class DependencyInjection
         services.AddHostedService<CalendarSeriesMaterializationWorker>();
 
         services.AddOptions<GoogleOptions>()
-            .BindConfiguration(GoogleOptions.SectionName);
+            .BindConfiguration(GoogleOptions.SectionName)
+            .Validate(
+                options => options.HasValidPostConnectRedirectUrl,
+                "Google:PostConnectRedirectUrl must be an absolute URL when Google is configured.")
+            .Validate(
+                options => options.HasValidTokenEncryptionKey,
+                "Google:TokenEncryptionKey must be a base64-encoded 32-byte key when Google is configured.")
+            .ValidateOnStart();
         services.AddSingleton<ITokenCipher, AesGcmTokenCipher>();
+        services.AddHttpClient<IGoogleOAuthClient, GoogleOAuthClient>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
 
         return services;
     }

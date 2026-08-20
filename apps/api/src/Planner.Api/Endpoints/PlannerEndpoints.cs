@@ -17,6 +17,7 @@ public static class PlannerEndpoints
         app.MapShoppingEndpoints();
         app.MapCalendarEndpoints();
         app.MapCalendarSourceEndpoints();
+        app.MapGoogleIntegrationEndpoints();
         app.MapMealEndpoints();
 
         if (app.ServiceProvider.GetRequiredService<IHostEnvironment>().IsDevelopment())

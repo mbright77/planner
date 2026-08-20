@@ -13,3 +13,5 @@ public sealed record GoogleConnectionSummary(
     int SelectedCalendarCount);
 
 public sealed record UpdateCalendarSourcesRequest(string Sources);
+
+public sealed record GoogleAuthorizationUrlResponse(string AuthorizationUrl);

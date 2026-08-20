@@ -3,19 +3,33 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Planner.ApiTests.Fakes;
+using Planner.Infrastructure.Integrations.Google;
 using Planner.Infrastructure.Persistence;
 
 namespace Planner.ApiTests;
 
-public sealed class ApiTestFactory : WebApplicationFactory<Program>
+public class ApiTestFactory : WebApplicationFactory<Program>
 {
     private SqliteConnection? _connection;
+
+    public FakeGoogleOAuthClient FakeGoogleOAuthClient { get; } = new();
+
+    // Empty by default so existing tests keep seeing the feature as unconfigured, matching
+    // production with a blank Google section. GoogleConfiguredApiTestFactory overrides this.
+    protected virtual IDictionary<string, string?> GoogleConfigurationOverrides => new Dictionary<string, string?>();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+
+        builder.ConfigureAppConfiguration((_, config) =>
+        {
+            config.AddInMemoryCollection(GoogleConfigurationOverrides);
+        });
 
         builder.ConfigureServices(services =>
         {
@@ -27,6 +41,9 @@ public sealed class ApiTestFactory : WebApplicationFactory<Program>
             _connection.Open();
 
             services.AddDbContext<PlannerDbContext>(options => options.UseSqlite(_connection));
+
+            services.RemoveAll<IGoogleOAuthClient>();
+            services.AddSingleton<IGoogleOAuthClient>(FakeGoogleOAuthClient);
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -43,6 +60,8 @@ public sealed class ApiTestFactory : WebApplicationFactory<Program>
 
         await dbContext.Database.EnsureDeletedAsync();
         await dbContext.Database.EnsureCreatedAsync();
+
+        FakeGoogleOAuthClient.Reset();
     }
 
     protected override void Dispose(bool disposing)

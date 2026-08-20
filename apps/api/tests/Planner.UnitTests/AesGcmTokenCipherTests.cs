@@ -78,16 +78,42 @@ public class AesGcmTokenCipherTests
     }
 
     [Fact]
-    public void Constructor_throws_when_key_is_not_32_bytes()
+    public void Encrypt_throws_when_key_is_not_32_bytes()
     {
         var shortKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
+        var cipher = CreateCipher(shortKey);
 
-        Assert.Throws<InvalidOperationException>(() => CreateCipher(shortKey));
+        Assert.Throws<InvalidOperationException>(() => cipher.Encrypt("plaintext"));
     }
 
     [Fact]
-    public void Constructor_throws_when_key_is_not_valid_base64()
+    public void Encrypt_throws_when_key_is_not_valid_base64()
     {
-        Assert.Throws<InvalidOperationException>(() => CreateCipher("not-valid-base64!!"));
+        var cipher = CreateCipher("not-valid-base64!!");
+
+        Assert.Throws<InvalidOperationException>(() => cipher.Encrypt("plaintext"));
+    }
+
+    [Fact]
+    public void Decrypt_throws_when_key_is_not_32_bytes()
+    {
+        // ResolveKey() is called independently from Encrypt and Decrypt (see the comment on
+        // that method), so this path needs its own coverage rather than relying on the Encrypt
+        // tests above.
+        var shortKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
+        var tokenCipher = CreateCipher(shortKey);
+
+        Assert.Throws<InvalidOperationException>(
+            () => tokenCipher.Decrypt([1, 2, 3], [4, 5, 6], [7, 8, 9], keyVersion: 1));
+    }
+
+    [Fact]
+    public void Constructing_with_a_blank_key_does_not_throw()
+    {
+        // Endpoints resolve ITokenCipher via DI even on routes reachable while Google is
+        // unconfigured; construction must stay side-effect-free so those routes don't 500.
+        var cipher = CreateCipher(string.Empty);
+
+        Assert.NotNull(cipher);
     }
 }
