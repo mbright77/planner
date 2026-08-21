@@ -18,6 +18,8 @@ public class ApiTestFactory : WebApplicationFactory<Program>
 
     public FakeGoogleOAuthClient FakeGoogleOAuthClient { get; } = new();
 
+    public FakeGoogleCalendarClient FakeGoogleCalendarClient { get; } = new();
+
     // Empty by default so existing tests keep seeing the feature as unconfigured, matching
     // production with a blank Google section. GoogleConfiguredApiTestFactory overrides this.
     protected virtual IDictionary<string, string?> GoogleConfigurationOverrides => new Dictionary<string, string?>();
@@ -45,6 +47,9 @@ public class ApiTestFactory : WebApplicationFactory<Program>
             services.RemoveAll<IGoogleOAuthClient>();
             services.AddSingleton<IGoogleOAuthClient>(FakeGoogleOAuthClient);
 
+            services.RemoveAll<IGoogleCalendarClient>();
+            services.AddSingleton<IGoogleCalendarClient>(FakeGoogleCalendarClient);
+
             var serviceProvider = services.BuildServiceProvider();
 
             using var scope = serviceProvider.CreateScope();
@@ -62,6 +67,7 @@ public class ApiTestFactory : WebApplicationFactory<Program>
         await dbContext.Database.EnsureCreatedAsync();
 
         FakeGoogleOAuthClient.Reset();
+        FakeGoogleCalendarClient.Reset();
     }
 
     protected override void Dispose(bool disposing)

@@ -56,6 +56,11 @@ public static class DependencyInjection
         {
             client.Timeout = TimeSpan.FromSeconds(5);
         });
+        services.AddHttpClient<IGoogleCalendarClient, GoogleCalendarClient>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
+        services.AddScoped<IGoogleCalendarSubscriptionService, GoogleCalendarSubscriptionService>();
 
         return services;
     }

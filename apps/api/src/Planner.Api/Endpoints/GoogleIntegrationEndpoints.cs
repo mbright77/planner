@@ -33,6 +33,15 @@ public static class GoogleIntegrationEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound);
 
+        authenticated.MapGet("/calendars", GetCalendarsAsync)
+            .Produces<GoogleCalendarListResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
+
+        authenticated.MapPut("/calendars", UpdateCalendarSelectionAsync)
+            .Produces<GoogleCalendarListResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound);
+
         return app;
     }
 
@@ -106,9 +115,12 @@ public static class GoogleIntegrationEndpoints
         PlannerDbContext dbContext,
         IGoogleOAuthClient oAuthClient,
         ITokenCipher tokenCipher,
+        IGoogleCalendarSubscriptionService subscriptionService,
         IOptions<GoogleOptions> googleOptions,
+        ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
+        var logger = loggerFactory.CreateLogger(nameof(GoogleIntegrationEndpoints));
         var options = googleOptions.Value;
         if (!options.IsConfigured)
         {
@@ -173,9 +185,11 @@ public static class GoogleIntegrationEndpoints
             return RedirectWithError(options, "membership_not_found");
         }
 
-        var connection = await dbContext.GoogleCalendarConnections
-            .Include(x => x.Subscriptions)
-            .FirstOrDefaultAsync(x => x.UserId == stateRow.UserId, cancellationToken);
+        var connection = await GetConnectionWithSubscriptionsAsync(stateRow.UserId, dbContext, cancellationToken);
+
+        // First connect and a different-account reconnect both start from zero subscriptions, so
+        // both get primary-only seeding below; a same-account reconnect preserves IsSelected as-is.
+        var seedPrimaryOnly = connection is null || connection.GoogleAccountSubject != subject;
 
         if (connection is null)
         {
@@ -187,13 +201,13 @@ public static class GoogleIntegrationEndpoints
             };
             dbContext.GoogleCalendarConnections.Add(connection);
         }
-        else if (connection.GoogleAccountSubject != subject)
+        else if (seedPrimaryOnly)
         {
             // Reconnecting under a different Google account: the old subscriptions belong to
-            // an account we can no longer read and would 404 forever, so drop them and let the
-            // calendar list be reseeded from scratch (primary-only seeding lands with the
-            // calendar-listing endpoints).
+            // an account we can no longer read and would 404 forever, so drop them and reseed
+            // from scratch below.
             dbContext.GoogleCalendarSubscriptions.RemoveRange(connection.Subscriptions);
+            connection.Subscriptions.Clear();
         }
 
         connection.GoogleAccountEmail = email;
@@ -205,6 +219,32 @@ public static class GoogleIntegrationEndpoints
         connection.LastError = null;
 
         GoogleRefreshTokenWriter.UpdateRefreshToken(connection, tokenResponse.RefreshToken, tokenCipher);
+
+        try
+        {
+            await subscriptionService.ReconcileAsync(connection, tokenResponse.AccessToken, cancellationToken);
+
+            if (seedPrimaryOnly)
+            {
+                foreach (var subscription in connection.Subscriptions)
+                {
+                    subscription.IsSelected = subscription.IsPrimary;
+                }
+            }
+        }
+        catch (Exception exception)
+        {
+            // The connection itself is still good; the user can retry from Family settings via
+            // "Refresh list" rather than losing the whole connect over a transient Google error.
+            logger.LogWarning(
+                exception, "Failed to reconcile Google calendars for connection {ConnectionId} during connect.", connection.Id);
+        }
+
+        // Runs regardless of whether reconciliation above succeeded, so it reflects reality either
+        // way - including the different-account case where the old subscriptions were already
+        // cleared and a failed reconcile would otherwise leave the preference pointed at Both/Google
+        // with nothing selected.
+        await SyncPreferenceWithSelectionAsync(dbContext, connection, cancellationToken);
 
         try
         {
@@ -230,8 +270,6 @@ public static class GoogleIntegrationEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(nameof(GoogleIntegrationEndpoints));
-
         var membership = await GetMembershipAsync(httpContext, dbContext, cancellationToken);
         if (membership is null)
         {
@@ -251,6 +289,7 @@ public static class GoogleIntegrationEndpoints
             return Results.NotFound();
         }
 
+        var logger = loggerFactory.CreateLogger(nameof(GoogleIntegrationEndpoints));
         await GoogleConnectionCleanup.TryRevokeAsync(connection, oAuthClient, tokenCipher, logger, cancellationToken);
 
         dbContext.GoogleCalendarConnections.Remove(connection);
@@ -266,6 +305,229 @@ public static class GoogleIntegrationEndpoints
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return Results.NoContent();
+    }
+
+    private static async Task<IResult> GetCalendarsAsync(
+        HttpContext httpContext,
+        bool? refresh,
+        PlannerDbContext dbContext,
+        IGoogleOAuthClient oAuthClient,
+        ITokenCipher tokenCipher,
+        IGoogleCalendarSubscriptionService subscriptionService,
+        IOptions<GoogleOptions> googleOptions,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
+    {
+        var membership = await GetMembershipAsync(httpContext, dbContext, cancellationToken);
+        if (membership is null)
+        {
+            return Results.NotFound();
+        }
+
+        if (!googleOptions.Value.IsConfigured)
+        {
+            return Results.NotFound();
+        }
+
+        var connection = await GetConnectionWithSubscriptionsAsync(membership.UserId, dbContext, cancellationToken);
+        if (connection is null)
+        {
+            return Results.NotFound();
+        }
+
+        if (refresh == true)
+        {
+            var logger = loggerFactory.CreateLogger(nameof(GoogleIntegrationEndpoints));
+
+            // A connection that has never synced (e.g. the initial connect's reconcile failed -
+            // see CallbackAsync) still needs primary-only seeding the first time this succeeds,
+            // exactly like a first connect would have gotten.
+            var seedPrimaryOnly = connection.CalendarsSyncedAtUtc is null;
+
+            var accessToken = await TryGetFreshAccessTokenAsync(connection, oAuthClient, tokenCipher, logger, cancellationToken);
+            if (accessToken is not null)
+            {
+                try
+                {
+                    await subscriptionService.ReconcileAsync(connection, accessToken, cancellationToken);
+
+                    if (seedPrimaryOnly)
+                    {
+                        foreach (var subscription in connection.Subscriptions)
+                        {
+                            subscription.IsSelected = subscription.IsPrimary;
+                        }
+                    }
+                }
+                catch (Exception exception)
+                {
+                    // Fall back to whatever is cached rather than failing the whole request over
+                    // a transient Google error - matches CallbackAsync's tolerance for the same call.
+                    logger.LogWarning(
+                        exception, "Failed to reconcile Google calendars for connection {ConnectionId}.", connection.Id);
+                }
+            }
+
+            await SyncPreferenceWithSelectionAsync(dbContext, connection, cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return Results.Ok(ToListResponse(connection));
+    }
+
+    private static async Task<IResult> UpdateCalendarSelectionAsync(
+        HttpContext httpContext,
+        UpdateGoogleCalendarSelectionRequest request,
+        PlannerDbContext dbContext,
+        IOptions<GoogleOptions> googleOptions,
+        CancellationToken cancellationToken)
+    {
+        var membership = await GetMembershipAsync(httpContext, dbContext, cancellationToken);
+        if (membership is null)
+        {
+            return Results.NotFound();
+        }
+
+        if (!googleOptions.Value.IsConfigured)
+        {
+            return Results.NotFound();
+        }
+
+        var connection = await GetConnectionWithSubscriptionsAsync(membership.UserId, dbContext, cancellationToken);
+        if (connection is null)
+        {
+            return Results.NotFound();
+        }
+
+        var requestedIds = (request.SelectedCalendarIds ?? []).ToHashSet();
+        var knownIds = connection.Subscriptions.Select(x => x.GoogleCalendarId).ToHashSet();
+
+        if (!requestedIds.IsSubsetOf(knownIds))
+        {
+            return Results.BadRequest(new { message = "One or more calendar ids do not belong to this connection." });
+        }
+
+        if (requestedIds.Count == 0)
+        {
+            // Unlike a reconciliation-driven drop to zero (GetCalendarsAsync/CallbackAsync, which
+            // downgrade the preference instead - there's no user action to reject there), this is
+            // a direct user request, so give them the chance to reconsider rather than silently
+            // switching them back to Local.
+            var preference = await dbContext.UserCalendarPreferences
+                .FirstOrDefaultAsync(x => x.UserId == membership.UserId, cancellationToken);
+            if (preference is not null && preference.Sources != CalendarSourceSelection.Local)
+            {
+                return Results.BadRequest(new { message = "Select at least one Google calendar while Google sources are enabled." });
+            }
+        }
+
+        foreach (var subscription in connection.Subscriptions)
+        {
+            subscription.IsSelected = requestedIds.Contains(subscription.GoogleCalendarId);
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return Results.Ok(ToListResponse(connection));
+    }
+
+    // Deliberately not the cached, reusable IGoogleAccessTokenProvider the plan calls for later
+    // (that lands once event-fetching also needs a fresh token) - this direct refresh is only
+    // exercised by a low-frequency, user-initiated call, so a stopgap here is proportionate.
+    private static async Task<string?> TryGetFreshAccessTokenAsync(
+        GoogleCalendarConnection connection,
+        IGoogleOAuthClient oAuthClient,
+        ITokenCipher tokenCipher,
+        ILogger logger,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var refreshToken = tokenCipher.Decrypt(
+                connection.RefreshTokenCipher, connection.RefreshTokenNonce, connection.RefreshTokenTag, connection.KeyVersion);
+            var tokenResponse = await oAuthClient.RefreshAsync(refreshToken, cancellationToken);
+
+            GoogleRefreshTokenWriter.UpdateRefreshToken(connection, tokenResponse.RefreshToken, tokenCipher);
+            connection.Status = GoogleConnectionStatus.Connected;
+            connection.LastErrorAtUtc = null;
+            connection.LastError = null;
+
+            return tokenResponse.AccessToken;
+        }
+        catch (OperationCanceledException)
+        {
+            // Not a Google auth failure - the client disconnected or the request was cancelled;
+            // let it propagate instead of marking a healthy connection NeedsReauth.
+            throw;
+        }
+        catch (Exception exception)
+        {
+            connection.Status = GoogleConnectionStatus.NeedsReauth;
+            connection.LastErrorAtUtc = DateTimeOffset.UtcNow;
+            connection.LastError = exception.Message;
+            logger.LogWarning(exception, "Failed to refresh the Google access token for connection {ConnectionId}.", connection.Id);
+
+            return null;
+        }
+    }
+
+    private static async Task SyncPreferenceWithSelectionAsync(
+        PlannerDbContext dbContext, GoogleCalendarConnection connection, CancellationToken cancellationToken)
+    {
+        var hasSelection = connection.Subscriptions.Any(x => x.IsSelected);
+        var preference = await dbContext.UserCalendarPreferences
+            .FirstOrDefaultAsync(x => x.UserId == connection.UserId, cancellationToken);
+        var now = DateTimeOffset.UtcNow;
+
+        if (hasSelection)
+        {
+            if (preference is null)
+            {
+                dbContext.UserCalendarPreferences.Add(new UserCalendarPreference
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = connection.UserId,
+                    FamilyId = connection.FamilyId,
+                    Sources = CalendarSourceSelection.Both,
+                    UpdatedAtUtc = now,
+                });
+            }
+            else if (preference.Sources == CalendarSourceSelection.Local)
+            {
+                preference.Sources = CalendarSourceSelection.Both;
+                preference.UpdatedAtUtc = now;
+            }
+        }
+        else if (preference is not null && preference.Sources != CalendarSourceSelection.Local)
+        {
+            // A background reconciliation (connect, or a "Refresh list" call) can legitimately
+            // drop the selection to zero - e.g. the only selected calendar was deleted or
+            // unshared at Google. There is no user action to reject here (contrast
+            // UpdateCalendarSelectionAsync's explicit-PUT case), so downgrade rather than leaving
+            // the preference pointed at a source with nothing behind it.
+            preference.Sources = CalendarSourceSelection.Local;
+            preference.UpdatedAtUtc = now;
+        }
+    }
+
+    private static Task<GoogleCalendarConnection?> GetConnectionWithSubscriptionsAsync(
+        string userId, PlannerDbContext dbContext, CancellationToken cancellationToken)
+    {
+        return dbContext.GoogleCalendarConnections
+            .Include(x => x.Subscriptions)
+            .FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
+    }
+
+    private static GoogleCalendarListResponse ToListResponse(GoogleCalendarConnection connection)
+    {
+        var calendars = connection.Subscriptions
+            .OrderByDescending(x => x.IsPrimary)
+            .ThenBy(x => x.Summary, StringComparer.OrdinalIgnoreCase)
+            .Select(x => new GoogleCalendarSummary(
+                x.GoogleCalendarId, x.Summary, x.ColorHex, x.AccessRole, x.IsPrimary, x.IsSelected))
+            .ToArray();
+
+        return new GoogleCalendarListResponse(calendars, connection.CalendarsSyncedAtUtc);
     }
 
     private static IResult RedirectWithError(GoogleOptions options, string reason)

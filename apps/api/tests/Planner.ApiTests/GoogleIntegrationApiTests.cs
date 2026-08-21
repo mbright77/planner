@@ -130,6 +130,11 @@ public sealed class GoogleIntegrationApiTests(GoogleConfiguredApiTestFactory fac
 
         factory.FakeGoogleOAuthClient.NextExchangeResponse = new GoogleTokenResponse(
             "access-token", "refresh-token-value", 3600, BuildIdToken("connected@example.com", "subject-1"), "granted-scope");
+        factory.FakeGoogleCalendarClient.CalendarsToReturn =
+        [
+            new GoogleCalendarListEntry("primary@group.calendar.google.com", "Primary", null, null, null, "owner", true),
+            new GoogleCalendarListEntry("holidays@group.calendar.google.com", "Holidays", null, null, null, "reader", false),
+        ];
 
         using var callbackClient = CreateNonRedirectingClient();
         var response = await callbackClient.GetAsync($"/api/v1/integrations/google/callback?code=code-1&state={Uri.EscapeDataString(state)}");
@@ -138,13 +143,27 @@ public sealed class GoogleIntegrationApiTests(GoogleConfiguredApiTestFactory fac
 
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<PlannerDbContext>();
-        var connection = await dbContext.GoogleCalendarConnections.SingleAsync(x => x.UserId == bootstrap.Membership.UserId);
+        var connection = await dbContext.GoogleCalendarConnections
+            .Include(x => x.Subscriptions)
+            .SingleAsync(x => x.UserId == bootstrap.Membership.UserId);
 
         Assert.Equal("connected@example.com", connection.GoogleAccountEmail);
         Assert.Equal("subject-1", connection.GoogleAccountSubject);
         Assert.Equal(GoogleConnectionStatus.Connected, connection.Status);
         Assert.Equal(bootstrap.FamilyId, connection.FamilyId);
         Assert.NotEmpty(connection.RefreshTokenCipher);
+        Assert.NotNull(connection.CalendarsSyncedAtUtc);
+
+        // First-ever connect seeds the primary calendar only.
+        Assert.Equal(2, connection.Subscriptions.Count);
+        var primary = Assert.Single(connection.Subscriptions, x => x.GoogleCalendarId == "primary@group.calendar.google.com");
+        Assert.True(primary.IsSelected);
+        var holidays = Assert.Single(connection.Subscriptions, x => x.GoogleCalendarId == "holidays@group.calendar.google.com");
+        Assert.False(holidays.IsSelected);
+
+        // A calendar got selected, so the still-Local preference upgrades to Both.
+        var preference = await dbContext.UserCalendarPreferences.SingleAsync(x => x.UserId == bootstrap.Membership.UserId);
+        Assert.Equal(CalendarSourceSelection.Both, preference.Sources);
     }
 
     [Fact]
@@ -167,6 +186,13 @@ public sealed class GoogleIntegrationApiTests(GoogleConfiguredApiTestFactory fac
 
         factory.FakeGoogleOAuthClient.NextExchangeResponse = new GoogleTokenResponse(
             "access-token", "refresh-token", 3600, BuildIdToken("same@example.com", "subject-1"), "scope");
+        // Google still reports both calendars on reconnect, so reconciliation must find them by
+        // id and preserve IsSelected rather than treating them as newly discovered.
+        factory.FakeGoogleCalendarClient.CalendarsToReturn =
+        [
+            new GoogleCalendarListEntry("calendar-0@group.calendar.google.com", "Calendar 0", null, null, null, "owner", true),
+            new GoogleCalendarListEntry("calendar-1@group.calendar.google.com", "Calendar 1", null, null, null, "owner", false),
+        ];
 
         using var callbackClient = CreateNonRedirectingClient();
         var response = await callbackClient.GetAsync($"/api/v1/integrations/google/callback?code=code-1&state={Uri.EscapeDataString(state)}");
@@ -202,6 +228,12 @@ public sealed class GoogleIntegrationApiTests(GoogleConfiguredApiTestFactory fac
 
         factory.FakeGoogleOAuthClient.NextExchangeResponse = new GoogleTokenResponse(
             "access-token", "refresh-token", 3600, BuildIdToken("different@example.com", "subject-new"), "scope");
+        // The new account has its own calendar set, unrelated to the old one's ids.
+        factory.FakeGoogleCalendarClient.CalendarsToReturn =
+        [
+            new GoogleCalendarListEntry("new-primary@group.calendar.google.com", "New Primary", null, null, null, "owner", true),
+            new GoogleCalendarListEntry("new-secondary@group.calendar.google.com", "New Secondary", null, null, null, "reader", false),
+        ];
 
         using var callbackClient = CreateNonRedirectingClient();
         var response = await callbackClient.GetAsync($"/api/v1/integrations/google/callback?code=code-1&state={Uri.EscapeDataString(state)}");
@@ -214,9 +246,17 @@ public sealed class GoogleIntegrationApiTests(GoogleConfiguredApiTestFactory fac
             .ToListAsync();
         var connection = await dbContext.GoogleCalendarConnections.SingleAsync(x => x.Id == connectionId);
 
-        Assert.Empty(subscriptions);
         Assert.Equal("subject-new", connection.GoogleAccountSubject);
         Assert.Equal("different@example.com", connection.GoogleAccountEmail);
+
+        // Old subscriptions (calendar-0/calendar-1) are gone, and the new account's calendars
+        // were reseeded primary-only, exactly like a first connect.
+        Assert.Equal(2, subscriptions.Count);
+        Assert.DoesNotContain(subscriptions, x => x.GoogleCalendarId.StartsWith("calendar-", StringComparison.Ordinal));
+        var newPrimary = Assert.Single(subscriptions, x => x.GoogleCalendarId == "new-primary@group.calendar.google.com");
+        Assert.True(newPrimary.IsSelected);
+        var newSecondary = Assert.Single(subscriptions, x => x.GoogleCalendarId == "new-secondary@group.calendar.google.com");
+        Assert.False(newSecondary.IsSelected);
     }
 
     [Fact]

@@ -8,7 +8,13 @@ public sealed class FakeGoogleOAuthClient : IGoogleOAuthClient
 
     public Exception? NextExchangeException { get; set; }
 
+    public GoogleTokenResponse? NextRefreshResponse { get; set; }
+
+    public Exception? NextRefreshException { get; set; }
+
     public List<(string Code, string CodeVerifier, string RedirectUri)> ExchangeCalls { get; } = [];
+
+    public List<string> RefreshCalls { get; } = [];
 
     public List<string> RevokedTokens { get; } = [];
 
@@ -37,7 +43,19 @@ public sealed class FakeGoogleOAuthClient : IGoogleOAuthClient
 
     public Task<GoogleTokenResponse> RefreshAsync(string refreshToken, CancellationToken cancellationToken)
     {
-        throw new NotSupportedException("Not exercised until the access-token provider lands.");
+        RefreshCalls.Add(refreshToken);
+
+        if (NextRefreshException is not null)
+        {
+            throw NextRefreshException;
+        }
+
+        if (NextRefreshResponse is null)
+        {
+            throw new InvalidOperationException("Set FakeGoogleOAuthClient.NextRefreshResponse before triggering a refresh in a test.");
+        }
+
+        return Task.FromResult(NextRefreshResponse);
     }
 
     public Task RevokeAsync(string token, CancellationToken cancellationToken)
@@ -52,7 +70,10 @@ public sealed class FakeGoogleOAuthClient : IGoogleOAuthClient
     {
         NextExchangeResponse = null;
         NextExchangeException = null;
+        NextRefreshResponse = null;
+        NextRefreshException = null;
         ExchangeCalls.Clear();
+        RefreshCalls.Clear();
         RevokedTokens.Clear();
     }
 }
