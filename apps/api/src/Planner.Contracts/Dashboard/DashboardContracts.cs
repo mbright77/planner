@@ -25,13 +25,18 @@ public sealed record DashboardDaySummary(
     bool HasMeal);
 
 public sealed record DashboardEventSummary(
-    Guid Id,
+    string Id,
     string Title,
     string? Notes,
     DateTimeOffset StartAtUtc,
     DateTimeOffset EndAtUtc,
     Guid? AssignedProfileId,
-    bool IsPast);
+    bool IsPast,
+    string Source,
+    string? SourceLabel,
+    string? SourceColorHex,
+    bool IsAllDay,
+    bool IsReadOnly);
 
 public sealed record DashboardMealSummary(
     Guid Id,
@@ -44,7 +49,7 @@ public sealed record DashboardShoppingSummary(
     IReadOnlyList<string> PreviewLabels);
 
 public sealed record DashboardUpcomingEventSummary(
-    Guid Id,
+    string Id,
     string Title,
     DateTimeOffset StartAtUtc,
     DateTimeOffset EndAtUtc,

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Planner.Infrastructure.Auth;
+using Planner.Infrastructure.Calendar;
 using Planner.Infrastructure.Identity;
 using Planner.Infrastructure.Integrations.Google;
 using Planner.Infrastructure.Persistence;
@@ -64,6 +65,7 @@ public static class DependencyInjection
         services.AddScoped<IGoogleCalendarSubscriptionService, GoogleCalendarSubscriptionService>();
         services.AddScoped<IGoogleAccessTokenProvider, GoogleAccessTokenProvider>();
         services.AddScoped<IGoogleCalendarEventReader, GoogleCalendarEventReader>();
+        services.AddScoped<ICalendarAggregator, CalendarAggregator>();
 
         return services;
     }

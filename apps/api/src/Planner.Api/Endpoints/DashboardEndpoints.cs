@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Planner.Api.Extensions;
 using Planner.Contracts.Dashboard;
 using Planner.Domain;
+using Planner.Infrastructure.Calendar;
 using Planner.Infrastructure.Integrations.Google;
 using Planner.Infrastructure.Persistence;
 
@@ -26,6 +27,7 @@ public static class DashboardEndpoints
         DateOnly? date,
         PlannerDbContext dbContext,
         IOptions<GoogleOptions> googleOptions,
+        ICalendarAggregator calendarAggregator,
         CancellationToken cancellationToken)
     {
         var membership = await GetMembershipAsync(httpContext, dbContext, cancellationToken);
@@ -52,27 +54,30 @@ public static class DashboardEndpoints
         var dayEndExclusiveUtc = new DateTimeOffset(
             TimeZoneInfo.ConvertTimeToUtc(targetDate.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified), familyTimeZone),
             TimeSpan.Zero);
-        var now = DateTimeOffset.UtcNow;
 
-        var weekEvents = await dbContext.CalendarEvents
+        var preference = await dbContext.UserCalendarPreferences
             .AsNoTracking()
-            .Where(x => x.FamilyId == membership.FamilyId)
-            .Select(x => new
-            {
-                x.Id,
-                x.Title,
-                x.Notes,
-                x.StartAtUtc,
-                x.EndAtUtc,
-                x.AssignedProfileId,
-            })
-            .ToListAsync(cancellationToken);
+            .FirstOrDefaultAsync(x => x.UserId == membership.UserId, cancellationToken);
 
-        weekEvents = weekEvents
-            .Where(x => x.StartAtUtc >= weekStartUtc && x.StartAtUtc < weekEndExclusiveUtc)
-            .OrderBy(x => x.StartAtUtc)
-            .ToList();
+        var googleConnection = await dbContext.GoogleCalendarConnections
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.UserId == membership.UserId, cancellationToken);
 
+        var effectiveSources = preference?.Sources ?? CalendarSourceSelection.Local;
+
+        // Use the aggregator to get merged events
+        var aggregationResult = await calendarAggregator.AggregateAsync(
+            membership.FamilyId,
+            weekStartUtc,
+            weekEndExclusiveUtc,
+            dayStartUtc,
+            dayEndExclusiveUtc,
+            familyTimeZone,
+            googleConnection,
+            effectiveSources,
+            cancellationToken);
+
+        // Fetch meals
         var weekMeals = await dbContext.MealPlans
             .AsNoTracking()
             .Where(x => x.FamilyId == membership.FamilyId)
@@ -107,18 +112,6 @@ public static class DashboardEndpoints
             .AsNoTracking()
             .CountAsync(x => x.FamilyId == membership.FamilyId && !x.IsCompleted, cancellationToken);
 
-        var todayEvents = weekEvents
-            .Where(x => x.StartAtUtc >= dayStartUtc && x.StartAtUtc < dayEndExclusiveUtc)
-            .Select(x => new DashboardEventSummary(
-                x.Id,
-                x.Title,
-                x.Notes,
-                x.StartAtUtc,
-                x.EndAtUtc,
-                x.AssignedProfileId,
-                x.EndAtUtc < now))
-            .ToArray();
-
         var tonightMealData = weekMeals.FirstOrDefault(x => x.MealDate == targetDate);
         var tonightMeal = tonightMealData is null
             ? null
@@ -128,35 +121,20 @@ public static class DashboardEndpoints
                 tonightMealData.Notes,
                 tonightMealData.OwnerProfileId);
 
-        var upcomingEventData = await dbContext.CalendarEvents
-            .AsNoTracking()
-            .Where(x => x.FamilyId == membership.FamilyId)
-            .Select(x => new
-            {
-                x.Id,
-                x.Title,
-                x.StartAtUtc,
-                x.EndAtUtc,
-                x.AssignedProfileId,
-            })
-            .ToListAsync(cancellationToken);
-
-        var nextUpcomingEvent = upcomingEventData
-            .Where(x => x.StartAtUtc >= now)
-            .OrderBy(x => x.StartAtUtc)
-            .FirstOrDefault();
-
-        var upcomingEvent = nextUpcomingEvent is null
+        // Map next upcoming event to summary
+        var upcomingEvent = aggregationResult.NextUpcomingEvent is null
             ? null
             : new DashboardUpcomingEventSummary(
-                nextUpcomingEvent.Id,
-                nextUpcomingEvent.Title,
-                nextUpcomingEvent.StartAtUtc,
-                nextUpcomingEvent.EndAtUtc,
-                nextUpcomingEvent.AssignedProfileId);
+                aggregationResult.NextUpcomingEvent.Id,
+                aggregationResult.NextUpcomingEvent.Title,
+                aggregationResult.NextUpcomingEvent.StartAtUtc,
+                aggregationResult.NextUpcomingEvent.EndAtUtc,
+                aggregationResult.NextUpcomingEvent.AssignedProfileId);
 
         var mealsByDate = weekMeals.ToDictionary(x => x.MealDate, x => x.Id);
-        var eventCountsByDate = weekEvents
+        
+        // Count events by date from merged week events
+        var eventCountsByDate = aggregationResult.WeekEvents
             .GroupBy(x => DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(x.StartAtUtc.UtcDateTime, familyTimeZone).Date))
             .ToDictionary(x => x.Key, x => x.Count());
 
@@ -172,24 +150,19 @@ public static class DashboardEndpoints
             })
             .ToArray();
 
-        var preference = await dbContext.UserCalendarPreferences
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.UserId == membership.UserId, cancellationToken);
-
-        var googleConnection = await dbContext.GoogleCalendarConnections
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.UserId == membership.UserId, cancellationToken);
+        // Map Google status to string
+        var googleStatusString = MapGoogleStatus(googleOptions.Value, googleConnection, aggregationResult.GoogleStatus, aggregationResult.FailedCalendarNames);
 
         var sources = new DashboardSourcesSummary(
-            (preference?.Sources ?? CalendarSourceSelection.Local).ToString(),
-            new DashboardGoogleSourceStatus(ResolveGoogleStatus(googleOptions.Value, googleConnection), null));
+            effectiveSources.ToString(),
+            new DashboardGoogleSourceStatus(googleStatusString, aggregationResult.FailedCalendarNames));
 
         var response = new DashboardOverviewResponse(
             targetDate,
             weekStart,
             weekEnd,
             week,
-            todayEvents,
+            aggregationResult.TodayEvents,
             tonightMeal,
             new DashboardShoppingSummary(shoppingCount, shoppingPreviewLabels),
             upcomingEvent,
@@ -198,15 +171,36 @@ public static class DashboardEndpoints
         return Results.Ok(response);
     }
 
-    private static string ResolveGoogleStatus(GoogleOptions googleOptions, GoogleCalendarConnection? connection)
+    private static string MapGoogleStatus(
+        GoogleOptions googleOptions,
+        GoogleCalendarConnection? connection,
+        GoogleSourceStatus aggregationStatus,
+        IReadOnlyList<string> failedCalendarNames)
     {
+        // If there's a connection, use its status or the aggregation status
         if (connection is not null)
         {
+            // If aggregation detected a problem, use that
+            if (aggregationStatus != GoogleSourceStatus.Ok)
+            {
+                return aggregationStatus switch
+                {
+                    GoogleSourceStatus.NeedsReauth => "NeedsReauth",
+                    GoogleSourceStatus.Error => "Error",
+                    GoogleSourceStatus.Partial => "Partial",
+                    _ => "Connected"
+                };
+            }
+            
+            // Otherwise use the connection's stored status
             return connection.Status == GoogleConnectionStatus.NeedsReauth ? "NeedsReauth" : "Connected";
         }
 
+        // No connection - check if Google is configured
         return googleOptions.IsConfigured ? "NotConnected" : "NotConfigured";
     }
+
+
 
     private static Task<FamilyMembership?> GetMembershipAsync(
         HttpContext httpContext,
