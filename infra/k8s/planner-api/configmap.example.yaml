@@ -9,3 +9,8 @@ data:
   AllowedOrigins: https://mbright77.github.io
   Jwt__Issuer: planner-api
   Jwt__Audience: planner-web
+  # Google Calendar integration (optional - feature self-disables when not configured)
+  # Set audience to "In production" in Google Cloud Console (no verification needed)
+  Google__ClientId: replace-me
+  Google__RedirectUri: https://YOUR-API-HOST/planner-api/api/v1/integrations/google/callback
+  Google__PostConnectRedirectUrl: https://mbright77.github.io/planner/
