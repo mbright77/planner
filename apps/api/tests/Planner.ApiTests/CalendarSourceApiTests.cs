@@ -105,7 +105,9 @@ public sealed class CalendarSourceApiTests(ApiTestFactory factory) : IClassFixtu
         var dashboard = await client.GetFromJsonAsync<DashboardOverviewResponse>("/api/v1/dashboard/overview");
         Assert.NotNull(dashboard);
         Assert.Equal("Both", dashboard.Sources.Preference);
-        Assert.Equal("Connected", dashboard.Sources.Google.Status);
+        // ApiTestFactory does not configure Google OAuth, so token decryption fails -> NeedsReauth
+        // (DashboardEndpoints now loads Subscriptions, triggering actual event fetch attempt)
+        Assert.Equal("NeedsReauth", dashboard.Sources.Google.Status);
     }
 
     [Fact]
