@@ -425,6 +425,7 @@ public static class GoogleIntegrationEndpoints
             subscription.IsSelected = requestedIds.Contains(subscription.GoogleCalendarId);
         }
 
+        await SyncPreferenceWithSelectionAsync(dbContext, connection, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return Results.Ok(ToListResponse(connection));

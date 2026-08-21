@@ -19,17 +19,20 @@ public static class GoogleCalendarEventMapper
 
         if (entry.IsAllDay)
         {
-            if (entry.StartDate is null || entry.EndDate is null)
+            if (entry.StartDate is null)
             {
                 return null;
             }
 
-            // end.date is already exclusive per the Google Calendar API, so no -1 day fudge -
+            // For all-day events, end.date is optional in Google's API. If not provided,
+            // default to the same day (single-day all-day event).
+            // end.date is exclusive per the Google Calendar API, so no -1 day fudge -
             // matches the same family-local-midnight conversion CalendarEndpoints already does.
+            var endDate = entry.EndDate ?? entry.StartDate.Value;
             startAtUtc = TimeZoneInfo.ConvertTimeToUtc(
                 entry.StartDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified), familyTimeZone);
             endAtUtc = TimeZoneInfo.ConvertTimeToUtc(
-                entry.EndDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified), familyTimeZone);
+                endDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified), familyTimeZone);
         }
         else
         {

@@ -61,6 +61,7 @@ public static class DashboardEndpoints
 
         var googleConnection = await dbContext.GoogleCalendarConnections
             .AsNoTracking()
+            .Include(x => x.Subscriptions)
             .FirstOrDefaultAsync(x => x.UserId == membership.UserId, cancellationToken);
 
         var effectiveSources = preference?.Sources ?? CalendarSourceSelection.Local;

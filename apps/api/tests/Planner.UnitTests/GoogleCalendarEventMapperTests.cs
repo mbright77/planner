@@ -62,6 +62,26 @@ public class GoogleCalendarEventMapperTests
     }
 
     [Fact]
+    public void Map_an_all_day_event_without_end_date_defaults_to_single_day()
+    {
+        var subscription = CreateSubscription();
+        // Google Calendar API allows all-day events without end.date (defaults to same day)
+        var entry = new GoogleCalendarEventEntry(
+            "event-single-day", "confirmed", "Birthday", null, true,
+            new DateOnly(2026, 6, 15), null, null, null, false);
+
+        var mapped = GoogleCalendarEventMapper.Map(entry, subscription, StockholmTimeZone);
+
+        Assert.NotNull(mapped);
+        Assert.True(mapped.IsAllDay);
+        // Stockholm is UTC+2 in June (DST) - local midnight June 15th is 22:00 UTC June 14th.
+        Assert.Equal(new DateTimeOffset(2026, 6, 14, 22, 0, 0, TimeSpan.Zero), mapped.StartAtUtc);
+        // End defaults to same day, so June 15th midnight Stockholm = June 14th 22:00 UTC
+        // But since end is exclusive and defaults to same day as start, it becomes June 15th 22:00 UTC
+        Assert.Equal(new DateTimeOffset(2026, 6, 15, 22, 0, 0, TimeSpan.Zero), mapped.EndAtUtc);
+    }
+
+    [Fact]
     public void Map_a_timed_event_crossing_midnight_preserves_the_correct_utc_instants()
     {
         var subscription = CreateSubscription();
