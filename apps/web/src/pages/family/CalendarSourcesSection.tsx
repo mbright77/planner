@@ -28,6 +28,8 @@ import {
   useUpdateGoogleCalendarSelection,
 } from '../../entities/calendar-source/model/useCalendarSources';
 
+import type { GoogleCalendarSummary, GoogleAuthorizationUrlResponse } from '@planner/api-client';
+
 type CalendarSourcesSectionProps = {
   profileId: string;
 };
@@ -56,11 +58,11 @@ export function CalendarSourcesSection({ profileId }: CalendarSourcesSectionProp
   const isConfigured = calendarSourcesQuery.data?.isGoogleConfigured ?? false;
   const connection = calendarSourcesQuery.data?.connection;
   const currentSources = calendarSourcesQuery.data?.sources ?? 'Local';
-  const isConnected = connection !== null && connection.status === 'Connected';
-  const isNeedsReauth = connection !== null && connection.status === 'NeedsReauth';
+  const isConnected = connection !== null && connection !== undefined && connection.status === 'Connected';
+  const isNeedsReauth = connection !== null && connection !== undefined && connection.status === 'NeedsReauth';
 
   const calendars = googleCalendarsQuery.data?.calendars ?? [];
-  const selectedCalendarIds = calendars.filter((c) => c.isSelected).map((c) => c.googleCalendarId);
+  const selectedCalendarIds = calendars.filter((c: GoogleCalendarSummary) => c.isSelected).map((c: GoogleCalendarSummary) => c.googleCalendarId);
 
   const hasSelection = selectedCalendarIds.length > 0;
   const canSelectGoogle = isConnected && hasSelection;
@@ -71,7 +73,7 @@ export function CalendarSourcesSection({ profileId }: CalendarSourcesSectionProp
 
   function handleConnect() {
     startGoogleAuthMutation.mutate(undefined, {
-      onSuccess: (response) => {
+      onSuccess: (response: GoogleAuthorizationUrlResponse) => {
         window.location.assign(response.authorizationUrl);
       },
     });
@@ -88,7 +90,7 @@ export function CalendarSourcesSection({ profileId }: CalendarSourcesSectionProp
   function handleCalendarToggle(calendarId: string, checked: boolean) {
     const newSelected = checked
       ? [...selectedCalendarIds, calendarId]
-      : selectedCalendarIds.filter((id) => id !== calendarId);
+      : selectedCalendarIds.filter((id: string) => id !== calendarId);
 
     updateGoogleCalendarSelectionMutation.mutate({ selectedCalendarIds: newSelected });
   }
@@ -213,7 +215,7 @@ export function CalendarSourcesSection({ profileId }: CalendarSourcesSectionProp
                 <p className="text-sm text-muted-foreground">{t('calendarSources.noCalendars')}</p>
               ) : (
                 <div className="max-h-[300px] overflow-y-auto space-y-2">
-                  {calendars.map((calendar) => (
+                  {calendars.map((calendar: GoogleCalendarSummary) => (
                     <div
                       key={calendar.googleCalendarId}
                       className="flex items-center justify-between gap-3 rounded-lg border border-border p-3"
@@ -245,7 +247,7 @@ export function CalendarSourcesSection({ profileId }: CalendarSourcesSectionProp
               )}
 
               {hasSelection && currentSources === 'Local' ? (
-                <Alert variant="info" className="mt-3">
+                <Alert variant="default" className="mt-3">
                   <AlertDescription>{t('calendarSources.enableGoogleHint')}</AlertDescription>
                 </Alert>
               ) : null}

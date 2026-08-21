@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { useAuthSession } from '../../../../processes/auth-session/AuthSessionContext';
+import { useAuthSession } from '../../../processes/auth-session/AuthSessionContext';
 import {
   disconnectGoogleCalendar,
   fetchCalendarSources,
@@ -13,7 +13,7 @@ import {
   type GoogleCalendarListResponse,
   type UpdateCalendarSourcesRequest,
   type UpdateGoogleCalendarSelectionRequest,
-} from '../../../../shared/api/calendarSources';
+} from '../../../shared/api/calendarSources';
 
 const calendarSourcesKey = (accessToken: string | undefined) =>
   ['calendar-sources', accessToken] as const;
