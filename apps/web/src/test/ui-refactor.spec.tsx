@@ -1,8 +1,17 @@
 /// <reference types="node" />
 
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
 
 import { AppShell } from '../app/layouts/AppShell';
 import { CalendarPage } from '../pages/calendar/CalendarPage';
@@ -95,6 +104,10 @@ const dashboardState = {
       previewLabels: [] as string[],
     },
     upcomingEvent: null as { id: string; title: string; startAtUtc: string; endAtUtc: string; assignedProfileId: string | null } | null,
+    sources: {
+      preference: 'Local',
+      google: { status: 'Ok', failedCalendarNames: null },
+    },
   },
   isLoading: false,
   isError: false,
@@ -266,19 +279,43 @@ vi.mock('../entities/invite/model/useFamilyInvites', () => ({
   useDeleteFamilyInvite: () => ({ isPending: false, mutate: () => undefined }),
 }));
 
+vi.mock('../entities/calendar-source/model/useCalendarSources', () => ({
+  useCalendarSources: () => ({
+    data: {
+      sources: 'Local',
+      isGoogleConfigured: false,
+      connection: null,
+    },
+    isLoading: false,
+    isError: false,
+  }),
+  useDisconnectGoogleCalendar: () => ({ isPending: false, mutate: () => undefined }),
+  useGoogleCalendars: () => ({
+    data: { calendars: [], calendarsSyncedAtUtc: null },
+    isLoading: false,
+    isError: false,
+    refetch: () => {},
+  }),
+  useStartGoogleAuthorization: () => ({ isPending: false, mutate: () => undefined }),
+  useUpdateCalendarSources: () => ({ isPending: false, mutate: () => undefined }),
+  useUpdateGoogleCalendarSelection: () => ({ isPending: false, mutate: () => undefined }),
+}));
+
 function renderShellRoute(path: string) {
   return render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route element={<AppShell />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/meals" element={<MealsPage />} />
-          <Route path="/shopping" element={<ShoppingPage />} />
-          <Route path="/family" element={<FamilyPage />} />
-        </Route>
-      </Routes>
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route element={<AppShell />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/meals" element={<MealsPage />} />
+            <Route path="/shopping" element={<ShoppingPage />} />
+            <Route path="/family" element={<FamilyPage />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 

@@ -1,9 +1,27 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@planner/api-client';
+import type React from 'react';
 
 import { AppShell } from './AppShell';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
+
+function renderWithProviders(ui: React.ReactElement) {
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>{ui}</MemoryRouter>
+    </QueryClientProvider>,
+  );
+}
 
 const clearSession = vi.fn();
 const networkState = { isOnline: false };
@@ -104,22 +122,14 @@ afterEach(() => {
 
 describe('AppShell', () => {
   it('renders a skip link and main landmark', () => {
-    render(
-      <MemoryRouter>
-        <AppShell />
-      </MemoryRouter>,
-    );
+    renderWithProviders(<AppShell />);
 
     expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveAttribute('href', '#main-content');
     expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
   });
 
   it('announces offline state with a polite status region', () => {
-    render(
-      <MemoryRouter>
-        <AppShell />
-      </MemoryRouter>,
-    );
+    renderWithProviders(<AppShell />);
 
     expect(screen.getByRole('status')).toHaveTextContent('Offline mode: showing cached planner data when available.');
   });
@@ -129,11 +139,7 @@ describe('AppShell', () => {
     offlineMutationState.hasBlockingFailure = true;
     offlineMutationState.latestFailureMessage = 'An offline change conflicted with newer planner data and needs review.';
 
-    render(
-      <MemoryRouter>
-        <AppShell />
-      </MemoryRouter>,
-    );
+    renderWithProviders(<AppShell />);
 
     expect(screen.getByRole('alert')).toHaveTextContent(
       'An offline change conflicted with newer planner data and needs review.',
@@ -146,11 +152,7 @@ describe('AppShell', () => {
     bootstrapState.isError = true;
     bootstrapState.error = new ApiError(401, 'Unauthorized');
 
-    render(
-      <MemoryRouter>
-        <AppShell />
-      </MemoryRouter>,
-    );
+    renderWithProviders(<AppShell />);
 
     await waitFor(() => expect(clearSession).toHaveBeenCalledTimes(1));
   });
