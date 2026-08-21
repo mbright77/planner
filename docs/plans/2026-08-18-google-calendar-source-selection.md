@@ -523,11 +523,24 @@ next-upcoming event all derive from the same merged set. Merge rules:
    > `string` to accommodate Google's opaque IDs, with new `Source`/`SourceLabel`/`SourceColorHex`/
    > `IsAllDay`/`IsReadOnly` fields. Verified with `dotnet build`/`dotnet test` (85 backend tests
    > green) and all existing tests pass.
-9. **Regenerate the api-client** (`pnpm --filter @planner/api-client generate`) and add the six
+9. ✅ **DONE** — **Regenerate the api-client** (`pnpm --filter @planner/api-client generate`) and add the six
    wrapper functions to `packages/api-client/src/index.ts` by hand.
-10. **Frontend.** API wrappers → query hooks → `useGoogleConnectReturn` in `AppShell` →
+   
+   > Committed as `30322755`. Regenerated OpenAPI types from running backend and added 9 type
+   > exports + 6 wrapper functions (getCalendarSources, updateCalendarSources, startGoogleAuthorization,
+   > getGoogleCalendars, updateGoogleCalendarSelection, disconnectGoogleCalendar).
+10. ✅ **DONE** — **Frontend.** API wrappers → query hooks → `useGoogleConnectReturn` in `AppShell` →
     FamilyPage block and calendar picker →
     HomePage rendering → i18n (all four JSON files).
+    
+   > Committed as `94e625f0`. Added:
+   > - `apps/web/src/shared/api/calendarSources.ts` - 6 API wrapper functions
+   > - `apps/web/src/entities/calendar-source/model/useCalendarSources.ts` - 6 query/mutation hooks
+   > - `AppShell.tsx` - OAuth callback return handling with query invalidation
+   > - `CalendarSourcesSection.tsx` - Full calendar source settings component
+   > - `FamilyPage.tsx` - Integrated CalendarSourcesSection
+   > - `HomePage.tsx` - Google event rendering with source badges, all-day support, status alerts
+   > - i18n translations in en/sv family.json and home.json
 11. **Infra + docs.** Secret/ConfigMap examples, `appsettings` placeholders, and a short
     `docs/runbooks/google-calendar.md` covering Google Cloud console setup and the
     reconnect path.
