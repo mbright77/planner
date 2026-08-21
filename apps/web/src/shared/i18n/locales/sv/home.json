@@ -15,6 +15,8 @@
   "todayEventsAria": "Dagens kalenderhändelser",
   "todayTitle": "Dagens aktiviteter",
   "startsAt": "Startar {{time}}",
+  "allDayEvent": "Heldagshändelse",
+  "allDay": "Hela dagen",
   "assignedFallback": "Familj",
   "emptyToday": "Inget planerat idag - njut av dagen!",
   "snapshotAria": "Översikt över mat och shopping",
@@ -25,5 +27,10 @@
   "itemsLeft_one": "{{count}} vara kvar",
   "itemsLeft_other": "{{count}} varor kvar",
   "openShoppingItemsAria": "Öppna shoppingvaror",
-  "emptyList": "Listan är tom just nu."
+  "emptyList": "Listan är tom just nu.",
+  "googleNeedsReauth": "Din Google Calendar-anslutning måste anslutas igen.",
+  "googleReconnectLink": "Anslut nu",
+  "googlePartialError": "Vissa Google-kalendrar kunde inte laddas: {{calendars}}",
+  "googleError": "Misslyckades att ladda Google Calendar-händelser.",
+  "unknown": "Okänd"
 }

@@ -95,5 +95,42 @@
       "deleteFamily": "Det gick inte att radera familjen."
     },
     "backToFamilySettings": "Tillbaka till familjeinstallningar"
+  },
+  "calendarSources": {
+    "title": "Kalenderkällor",
+    "description": "Välj vilka kalendrar som ska visas i Översikten. Anslut ditt Google-konto för att inkludera Google Calendar-händelser.",
+    "sourceLabel": "Översiktskällor",
+    "sourceOptions": {
+      "local": "Endast lokal",
+      "google": "Endast Google",
+      "both": "Lokal + Google"
+    },
+    "googleConnection": "Google Calendar",
+    "googleConnectionHint": "Anslut ditt Google-konto för att inkludera händelser från Google Calendar.",
+    "connect": "Anslut Google Calendar",
+    "connected": "Ansluten",
+    "disconnect": "Koppla från",
+    "reconnect": "Anslut igen",
+    "connectSuccess": "Google Calendar ansluten framgångsrikt!",
+    "connectError": "Misslyckades att ansluta Google Calendar.",
+    "showCalendarPicker": "Visa kalenderväljare",
+    "calendarPickerTitle": "Välj kalendrar",
+    "calendarPickerHint": "Välj vilka Google-kalendrar som ska inkluderas i din Översikt.",
+    "refreshList": "Uppdatera lista",
+    "loadError": "Misslyckades att ladda kalendrar. Försök igen.",
+    "noCalendars": "Inga kalendrar hittades i ditt Google-konto.",
+    "primary": "Primär",
+    "enableGoogleHint": "Aktivera Google-källor för att se dessa kalendrar i din Översikt.",
+    "noSelectionWarning": "Vänligen välj minst en kalender för att använda Google som källa.",
+    "errors": {
+      "invalid_request": "Ogiltig förfrågan. Försök igen.",
+      "invalid_state": "Anslutningslänken har gått ut. Försök ansluta igen.",
+      "expired_state": "Anslutningslänken har gått ut. Försök ansluta igen.",
+      "token_exchange_failed": "Misslyckades att autentisera med Google. Försök igen.",
+      "missing_identity": "Kunde inte verifiera din identitet. Försök igen.",
+      "membership_not_found": "Din familjemedlemskap hittades inte. Försök igen.",
+      "connection_conflict": "En anslutningskonflikt uppstod. Försök igen.",
+      "unknown": "Ett okänt fel uppstod."
+    }
   }
 }

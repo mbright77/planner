@@ -95,5 +95,42 @@
       "deleteFamily": "Unable to delete family."
     },
     "backToFamilySettings": "Back to family settings"
+  },
+  "calendarSources": {
+    "title": "Calendar sources",
+    "description": "Choose which calendars feed your Overview. Connect your Google account to include Google Calendar events.",
+    "sourceLabel": "Overview sources",
+    "sourceOptions": {
+      "local": "Local only",
+      "google": "Google only",
+      "both": "Local + Google"
+    },
+    "googleConnection": "Google Calendar",
+    "googleConnectionHint": "Connect your Google account to include events from Google Calendar.",
+    "connect": "Connect Google Calendar",
+    "connected": "Connected",
+    "disconnect": "Disconnect",
+    "reconnect": "Reconnect",
+    "connectSuccess": "Google Calendar connected successfully!",
+    "connectError": "Failed to connect Google Calendar.",
+    "showCalendarPicker": "Show calendar picker",
+    "calendarPickerTitle": "Select calendars",
+    "calendarPickerHint": "Choose which Google calendars to include in your Overview.",
+    "refreshList": "Refresh list",
+    "loadError": "Failed to load calendars. Please try again.",
+    "noCalendars": "No calendars found in your Google account.",
+    "primary": "Primary",
+    "enableGoogleHint": "Enable Google sources to see these calendars in your Overview.",
+    "noSelectionWarning": "Please select at least one calendar to use Google as a source.",
+    "errors": {
+      "invalid_request": "Invalid request. Please try again.",
+      "invalid_state": "The connection link has expired. Please try connecting again.",
+      "expired_state": "The connection link has expired. Please try connecting again.",
+      "token_exchange_failed": "Failed to authenticate with Google. Please try again.",
+      "missing_identity": "Could not verify your identity. Please try again.",
+      "membership_not_found": "Your family membership was not found. Please try again.",
+      "connection_conflict": "A connection conflict occurred. Please try again.",
+      "unknown": "An unknown error occurred."
+    }
   }
 }

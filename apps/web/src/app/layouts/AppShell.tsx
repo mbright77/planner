@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ApiError } from '@planner/api-client';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -19,6 +19,7 @@ import { HttpError } from '../../shared/api/http';
 import { useAppLanguage } from '../../shared/i18n/useAppLanguage';
 import { useOfflineMutationState } from '../../shared/lib/offlineMutationQueue';
 import { useNetworkStatus } from '../../shared/lib/useNetworkStatus';
+import { useQueryClient } from '@tanstack/react-query';
 
 const navigation = [
   { to: '/', labelKey: 'nav.home', icon: 'home' },
@@ -48,11 +49,35 @@ function AppIcon({ name }: { name: (typeof navigation)[number]['icon'] | 'signou
 export function AppShell() {
   const { t } = useTranslation('common');
   const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryClient = useQueryClient();
   const { clearSession } = useAuthSession();
   const bootstrapQuery = useBootstrap();
   useAppLanguage(bootstrapQuery.data);
   const { failedCount, hasBlockingFailure, latestFailureMessage, pendingCount, isFlushing } = useOfflineMutationState();
   const { isOnline } = useNetworkStatus();
+
+  useEffect(() => {
+    const googleCalendarParam = searchParams.get('googleCalendar');
+    const reasonParam = searchParams.get('reason');
+
+    if (googleCalendarParam === 'connected' || googleCalendarParam === 'error') {
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('googleCalendar');
+      newSearchParams.delete('reason');
+      setSearchParams(newSearchParams, { replace: true });
+
+      void queryClient.invalidateQueries({ queryKey: ['calendar-sources'] });
+      void queryClient.invalidateQueries({ queryKey: ['google-calendars'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] });
+
+      navigate('/family', {
+        replace: true,
+        state: { googleCalendarResult: googleCalendarParam, googleCalendarReason: reasonParam },
+      });
+    }
+  }, [searchParams, setSearchParams, navigate, queryClient]);
 
   useEffect(() => {
     if (!isOnline || !bootstrapQuery.isError || !bootstrapQuery.error) {

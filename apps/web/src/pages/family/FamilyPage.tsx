@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
+  Calendar03Icon,
   ColorPickerIcon,
   Delete02Icon,
   LanguageCircleIcon,
@@ -16,6 +17,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -26,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { useCreateFamilyInvite, useDeleteFamilyInvite, useFamilyInvites } from '../../entities/invite/model/useFamilyInvites';
 import {
@@ -33,6 +36,7 @@ import {
   useProfiles,
   useUpdateProfile,
 } from '../../entities/profile/model/useProfiles';
+import { CalendarSourcesSection } from './CalendarSourcesSection';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 import { getStoredTheme, setTheme, type AppTheme } from '../../shared/lib/theme';
 
@@ -410,6 +414,8 @@ export function FamilyPage() {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <CalendarSourcesSection profileId={profile.id} />
                 </div>
               ) : null}
             </CardContent>
