@@ -37,6 +37,13 @@ export GHCR_TOKEN="${GHCR_TOKEN:-}"
 export GHCR_EMAIL="${GHCR_EMAIL:-actions@github.com}"
 export GHCR_IMAGE_PULL_SECRET_NAME="${GHCR_IMAGE_PULL_SECRET_NAME:-ghcr-pull-secret}"
 
+# Google Calendar integration (optional - feature self-disables when not configured)
+export GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID:-}"
+export GOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET:-}"
+export GOOGLE_REDIRECT_URI="${GOOGLE_REDIRECT_URI:-}"
+export GOOGLE_POST_CONNECT_REDIRECT_URL="${GOOGLE_POST_CONNECT_REDIRECT_URL:-}"
+export GOOGLE_TOKEN_ENCRYPTION_KEY="${GOOGLE_TOKEN_ENCRYPTION_KEY:-}"
+
 cd "${DEPLOY_ROOT}"
 
 kubectl create namespace "${BACKEND_K8S_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
@@ -56,11 +63,16 @@ kubectl -n "${BACKEND_K8S_NAMESPACE}" create configmap "${BACKEND_K8S_DEPLOYMENT
   --from-literal=AllowedOrigins="${ALLOWED_ORIGINS}" \
   --from-literal=Jwt__Issuer="${JWT_ISSUER}" \
   --from-literal=Jwt__Audience="${JWT_AUDIENCE}" \
+  --from-literal=Google__ClientId="${GOOGLE_CLIENT_ID}" \
+  --from-literal=Google__RedirectUri="${GOOGLE_REDIRECT_URI}" \
+  --from-literal=Google__PostConnectRedirectUrl="${GOOGLE_POST_CONNECT_REDIRECT_URL}" \
   --dry-run=client -o yaml | kubectl apply -f -
 
 kubectl -n "${BACKEND_K8S_NAMESPACE}" create secret generic "${BACKEND_K8S_DEPLOYMENT_NAME}-secrets" \
   --from-literal=ConnectionStrings__Planner="${PLANNER_CONNECTION_STRING}" \
   --from-literal=Jwt__SigningKey="${PLANNER_JWT_SIGNING_KEY}" \
+  --from-literal=Google__ClientSecret="${GOOGLE_CLIENT_SECRET}" \
+  --from-literal=Google__TokenEncryptionKey="${GOOGLE_TOKEN_ENCRYPTION_KEY}" \
   --dry-run=client -o yaml | kubectl apply -f -
 
 IMAGE_PULL_SECRETS_BLOCK=""
