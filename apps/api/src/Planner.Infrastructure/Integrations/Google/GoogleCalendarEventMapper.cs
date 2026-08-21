@@ -24,11 +24,13 @@ public static class GoogleCalendarEventMapper
                 return null;
             }
 
-            // For all-day events, end.date is optional in Google's API. If not provided,
-            // default to the same day (single-day all-day event).
+            // For all-day events, end.date is exclusive and optional in Google's API.
+            // If not provided, default to start date + 1 day to represent a single-day event
+            // (Google uses end.date as exclusive, so a single-day event on 2026-06-15 has
+            // start: "2026-06-15", end: "2026-06-16").
             // end.date is exclusive per the Google Calendar API, so no -1 day fudge -
             // matches the same family-local-midnight conversion CalendarEndpoints already does.
-            var endDate = entry.EndDate ?? entry.StartDate.Value;
+            var endDate = entry.EndDate ?? entry.StartDate.Value.AddDays(1);
             startAtUtc = TimeZoneInfo.ConvertTimeToUtc(
                 entry.StartDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified), familyTimeZone);
             endAtUtc = TimeZoneInfo.ConvertTimeToUtc(
