@@ -51,6 +51,7 @@ public static class DependencyInjection
                 options => options.HasValidTokenEncryptionKey,
                 "Google:TokenEncryptionKey must be a base64-encoded 32-byte key when Google is configured.")
             .ValidateOnStart();
+        services.AddMemoryCache();
         services.AddSingleton<ITokenCipher, AesGcmTokenCipher>();
         services.AddHttpClient<IGoogleOAuthClient, GoogleOAuthClient>(client =>
         {
@@ -61,6 +62,8 @@ public static class DependencyInjection
             client.Timeout = TimeSpan.FromSeconds(5);
         });
         services.AddScoped<IGoogleCalendarSubscriptionService, GoogleCalendarSubscriptionService>();
+        services.AddScoped<IGoogleAccessTokenProvider, GoogleAccessTokenProvider>();
+        services.AddScoped<IGoogleCalendarEventReader, GoogleCalendarEventReader>();
 
         return services;
     }

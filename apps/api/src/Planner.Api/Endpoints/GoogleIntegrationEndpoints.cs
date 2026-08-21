@@ -311,8 +311,7 @@ public static class GoogleIntegrationEndpoints
         HttpContext httpContext,
         bool? refresh,
         PlannerDbContext dbContext,
-        IGoogleOAuthClient oAuthClient,
-        ITokenCipher tokenCipher,
+        IGoogleAccessTokenProvider accessTokenProvider,
         IGoogleCalendarSubscriptionService subscriptionService,
         IOptions<GoogleOptions> googleOptions,
         ILoggerFactory loggerFactory,
@@ -344,7 +343,7 @@ public static class GoogleIntegrationEndpoints
             // exactly like a first connect would have gotten.
             var seedPrimaryOnly = connection.CalendarsSyncedAtUtc is null;
 
-            var accessToken = await TryGetFreshAccessTokenAsync(connection, oAuthClient, tokenCipher, logger, cancellationToken);
+            var accessToken = await accessTokenProvider.GetAccessTokenAsync(connection, cancellationToken);
             if (accessToken is not null)
             {
                 try
@@ -429,46 +428,6 @@ public static class GoogleIntegrationEndpoints
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return Results.Ok(ToListResponse(connection));
-    }
-
-    // Deliberately not the cached, reusable IGoogleAccessTokenProvider the plan calls for later
-    // (that lands once event-fetching also needs a fresh token) - this direct refresh is only
-    // exercised by a low-frequency, user-initiated call, so a stopgap here is proportionate.
-    private static async Task<string?> TryGetFreshAccessTokenAsync(
-        GoogleCalendarConnection connection,
-        IGoogleOAuthClient oAuthClient,
-        ITokenCipher tokenCipher,
-        ILogger logger,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var refreshToken = tokenCipher.Decrypt(
-                connection.RefreshTokenCipher, connection.RefreshTokenNonce, connection.RefreshTokenTag, connection.KeyVersion);
-            var tokenResponse = await oAuthClient.RefreshAsync(refreshToken, cancellationToken);
-
-            GoogleRefreshTokenWriter.UpdateRefreshToken(connection, tokenResponse.RefreshToken, tokenCipher);
-            connection.Status = GoogleConnectionStatus.Connected;
-            connection.LastErrorAtUtc = null;
-            connection.LastError = null;
-
-            return tokenResponse.AccessToken;
-        }
-        catch (OperationCanceledException)
-        {
-            // Not a Google auth failure - the client disconnected or the request was cancelled;
-            // let it propagate instead of marking a healthy connection NeedsReauth.
-            throw;
-        }
-        catch (Exception exception)
-        {
-            connection.Status = GoogleConnectionStatus.NeedsReauth;
-            connection.LastErrorAtUtc = DateTimeOffset.UtcNow;
-            connection.LastError = exception.Message;
-            logger.LogWarning(exception, "Failed to refresh the Google access token for connection {ConnectionId}.", connection.Id);
-
-            return null;
-        }
     }
 
     private static async Task SyncPreferenceWithSelectionAsync(
