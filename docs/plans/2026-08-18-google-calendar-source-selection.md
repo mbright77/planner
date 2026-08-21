@@ -541,9 +541,16 @@ next-upcoming event all derive from the same merged set. Merge rules:
    > - `FamilyPage.tsx` - Integrated CalendarSourcesSection
    > - `HomePage.tsx` - Google event rendering with source badges, all-day support, status alerts
    > - i18n translations in en/sv family.json and home.json
-11. **Infra + docs.** Secret/ConfigMap examples, `appsettings` placeholders, and a short
+11. ✅ **DONE** — **Infra + docs.** Secret/ConfigMap examples, `appsettings` placeholders, and a short
     `docs/runbooks/google-calendar.md` covering Google Cloud console setup and the
     reconnect path.
+    
+   > Committed as `db38d978`. Added:
+   > - Google__ClientSecret and Google__TokenEncryptionKey to secret.example.yaml
+   > - Google__ClientId, Google__RedirectUri, Google__PostConnectRedirectUrl to configmap.example.yaml
+   > - Empty Google: {} placeholders to appsettings.json and appsettings.Development.json
+   > - docs/runbooks/google-calendar.md with complete setup, configuration, troubleshooting,
+   >   and operational documentation
 
 ---
 
