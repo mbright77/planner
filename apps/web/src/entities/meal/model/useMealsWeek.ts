@@ -91,6 +91,7 @@ export function useCreateMealPlan(weekStart: string) {
           mealDate: request.mealDate,
           title: request.title,
           notes: request.notes,
+          recipeUrl: request.recipeUrl,
           ownerProfileId: request.ownerProfileId,
         };
 
@@ -330,6 +331,7 @@ export function useAcceptMealRequest(weekStart: string) {
           mealDate: acceptedRequest.requestedForDate,
           title: acceptedRequest.title,
           notes: acceptedRequest.notes,
+          recipeUrl: null,
           ownerProfileId: acceptedRequest.assigneeProfileId,
         };
 
@@ -456,6 +458,7 @@ export function useUpdateMealPlan(weekStart: string) {
                 mealDate: request.mealDate,
                 title: request.title,
                 notes: request.notes,
+                recipeUrl: request.recipeUrl,
                 ownerProfileId: request.ownerProfileId,
               },
             ])

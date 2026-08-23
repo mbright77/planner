@@ -70,7 +70,7 @@ public sealed class CoreFlowsApiTests(ApiTestFactory factory) : IClassFixture<Ap
 
         var mealResponse = await client.PostAsJsonAsync(
             "/api/v1/meals",
-            new CreateMealPlanRequest(today, "Lasagna", "Extra salad on the side", profile.Id));
+            new CreateMealPlanRequest(today, "Lasagna", "Extra salad on the side", "https://example.com/recipes/lasagna", profile.Id));
         Assert.Equal(HttpStatusCode.Created, mealResponse.StatusCode);
 
         var dashboard = await client.GetFromJsonAsync<DashboardOverviewResponse>($"/api/v1/dashboard/overview?date={today:yyyy-MM-dd}");
@@ -80,6 +80,7 @@ public sealed class CoreFlowsApiTests(ApiTestFactory factory) : IClassFixture<Ap
         Assert.Contains(dashboard.TodayEvents, x => x.Title == "Soccer Practice");
         Assert.NotNull(dashboard.TonightMeal);
         Assert.Equal("Lasagna", dashboard.TonightMeal.Title);
+        Assert.Equal("https://example.com/recipes/lasagna", dashboard.TonightMeal.RecipeUrl);
         Assert.Equal(1, dashboard.Shopping.OpenItemsCount);
         Assert.Contains("Milk", dashboard.Shopping.PreviewLabels);
 
@@ -333,11 +334,52 @@ public sealed class CoreFlowsApiTests(ApiTestFactory factory) : IClassFixture<Ap
 
         var planResponse = await memberClient.PostAsJsonAsync(
             "/api/v1/meals",
-            new CreateMealPlanRequest(DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1), "Pasta", null, profile.Id));
+            new CreateMealPlanRequest(DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1), "Pasta", null, null, profile.Id));
         Assert.Equal(HttpStatusCode.Forbidden, planResponse.StatusCode);
 
         var acceptRequestResponse = await memberClient.PostAsync($"/api/v1/meals/requests/{createdRequest.Id}/accept", null);
         Assert.Equal(HttpStatusCode.Forbidden, acceptRequestResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task Meal_plan_recipe_url_round_trips_and_rejects_invalid_urls()
+    {
+        await factory.ResetDatabaseAsync();
+        using var client = factory.CreateClient();
+
+        var authResponse = await RegisterAsync(client);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse.AccessToken);
+
+        var mealDate = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        var invalidResponse = await client.PostAsJsonAsync(
+            "/api/v1/meals",
+            new CreateMealPlanRequest(mealDate, "Tacos", null, "not-a-url", null));
+        Assert.Equal(HttpStatusCode.BadRequest, invalidResponse.StatusCode);
+
+        var createResponse = await client.PostAsJsonAsync(
+            "/api/v1/meals",
+            new CreateMealPlanRequest(mealDate, "Tacos", null, "https://example.com/recipes/tacos", null));
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+        var createdMeal = await createResponse.Content.ReadFromJsonAsync<MealPlanResponse>();
+        Assert.NotNull(createdMeal);
+        Assert.Equal("https://example.com/recipes/tacos", createdMeal.RecipeUrl);
+
+        var invalidUpdateResponse = await client.PutAsJsonAsync(
+            $"/api/v1/meals/{createdMeal.Id}",
+            new UpdateMealPlanRequest(mealDate, "Tacos", null, "ftp://example.com/recipe", null));
+        Assert.Equal(HttpStatusCode.BadRequest, invalidUpdateResponse.StatusCode);
+
+        var updateResponse = await client.PutAsJsonAsync(
+            $"/api/v1/meals/{createdMeal.Id}",
+            new UpdateMealPlanRequest(mealDate, "Tacos", null, "https://example.com/recipes/tacos-v2", null));
+        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+
+        var weekly = await client.GetFromJsonAsync<WeeklyMealsResponse>($"/api/v1/meals/week?start={mealDate:yyyy-MM-dd}");
+        Assert.NotNull(weekly);
+        var updatedMeal = Assert.Single(weekly.Meals, x => x.Id == createdMeal.Id);
+        Assert.Equal("https://example.com/recipes/tacos-v2", updatedMeal.RecipeUrl);
     }
 
     [Fact]

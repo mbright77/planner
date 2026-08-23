@@ -48,6 +48,9 @@
     "mealTitlePlaceholder": "Plan dinner",
     "owner": "Owner",
     "notes": "Notes",
+    "recipeUrl": "Recipe link",
+    "recipeUrlPlaceholder": "https://example.com/recipe",
+    "recipeLink": "Recipe",
     "requestTitle": "Request title",
     "requestTitlePlaceholder": "Request a meal idea",
     "assignPerson": "Assign person"

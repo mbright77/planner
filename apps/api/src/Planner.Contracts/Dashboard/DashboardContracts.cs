@@ -42,6 +42,7 @@ public sealed record DashboardMealSummary(
     Guid Id,
     string Title,
     string? Notes,
+    string? RecipeUrl,
     Guid? OwnerProfileId);
 
 public sealed record DashboardShoppingSummary(

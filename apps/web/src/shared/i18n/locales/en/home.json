@@ -23,6 +23,7 @@
   "dinner": "Dinner",
   "noDinner": "No dinner plan yet",
   "openMealsCta": "Open Meals to plan tonight.",
+  "recipeLink": "Recipe",
   "groceries": "Groceries",
   "itemsLeft_one": "{{count}} item left",
   "itemsLeft_other": "{{count}} items left",

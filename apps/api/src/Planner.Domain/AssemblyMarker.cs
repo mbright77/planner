@@ -214,6 +214,8 @@ public sealed class MealPlan
 
     public string? Notes { get; set; }
 
+    public string? RecipeUrl { get; set; }
+
     public DateTimeOffset CreatedAtUtc { get; set; }
 
     public Guid? OwnerProfileId { get; set; }

@@ -218,6 +218,16 @@ export function HomePage() {
               ) : (
                 <p className="text-sm text-muted-foreground">{t('openMealsCta')}</p>
               )}
+              {dashboardQuery.data.tonightMeal?.recipeUrl ? (
+                <a
+                  href={dashboardQuery.data.tonightMeal.recipeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  {t('recipeLink')}
+                </a>
+              ) : null}
             </CardContent>
           </Card>
 

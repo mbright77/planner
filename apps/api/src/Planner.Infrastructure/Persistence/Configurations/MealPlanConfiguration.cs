@@ -22,6 +22,9 @@ public sealed class MealPlanConfiguration : IEntityTypeConfiguration<MealPlan>
         builder.Property(x => x.Notes)
             .HasMaxLength(1000);
 
+        builder.Property(x => x.RecipeUrl)
+            .HasMaxLength(2048);
+
         builder.Property(x => x.CreatedAtUtc)
             .IsRequired();
 

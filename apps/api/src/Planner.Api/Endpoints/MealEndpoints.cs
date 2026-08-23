@@ -65,6 +65,7 @@ public static class MealEndpoints
                 x.MealDate,
                 x.Title,
                 x.Notes,
+                x.RecipeUrl,
                 x.OwnerProfileId))
             .ToListAsync(cancellationToken);
 
@@ -88,7 +89,7 @@ public static class MealEndpoints
             return Results.Forbid();
         }
 
-        var validation = await ValidateMealRequestAsync(membership.FamilyId, request.Title, request.OwnerProfileId, dbContext, cancellationToken);
+        var validation = await ValidateMealRequestAsync(membership.FamilyId, request.Title, request.RecipeUrl, request.OwnerProfileId, dbContext, cancellationToken);
         if (validation is not null)
         {
             return validation;
@@ -110,6 +111,7 @@ public static class MealEndpoints
             MealDate = request.MealDate,
             Title = request.Title.Trim(),
             Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
+            RecipeUrl = string.IsNullOrWhiteSpace(request.RecipeUrl) ? null : request.RecipeUrl.Trim(),
             OwnerProfileId = request.OwnerProfileId,
             CreatedAtUtc = DateTimeOffset.UtcNow,
         };
@@ -138,7 +140,7 @@ public static class MealEndpoints
             return Results.Forbid();
         }
 
-        var validation = await ValidateMealRequestAsync(membership.FamilyId, request.Title, request.OwnerProfileId, dbContext, cancellationToken);
+        var validation = await ValidateMealRequestAsync(membership.FamilyId, request.Title, request.RecipeUrl, request.OwnerProfileId, dbContext, cancellationToken);
         if (validation is not null)
         {
             return validation;
@@ -164,6 +166,7 @@ public static class MealEndpoints
         mealPlan.MealDate = request.MealDate;
         mealPlan.Title = request.Title.Trim();
         mealPlan.Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim();
+        mealPlan.RecipeUrl = string.IsNullOrWhiteSpace(request.RecipeUrl) ? null : request.RecipeUrl.Trim();
         mealPlan.OwnerProfileId = request.OwnerProfileId;
 
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -425,6 +428,7 @@ public static class MealEndpoints
     private static async Task<IResult?> ValidateMealRequestAsync(
         Guid familyId,
         string title,
+        string? recipeUrl,
         Guid? ownerProfileId,
         PlannerDbContext dbContext,
         CancellationToken cancellationToken)
@@ -432,6 +436,19 @@ public static class MealEndpoints
         if (string.IsNullOrWhiteSpace(title))
         {
             return Results.BadRequest(new { message = "Meal title is required." });
+        }
+
+        if (!string.IsNullOrWhiteSpace(recipeUrl))
+        {
+            var trimmedRecipeUrl = recipeUrl.Trim();
+            var isValidRecipeUrl = trimmedRecipeUrl.Length <= 2048
+                && Uri.TryCreate(trimmedRecipeUrl, UriKind.Absolute, out var recipeUri)
+                && (recipeUri.Scheme == Uri.UriSchemeHttp || recipeUri.Scheme == Uri.UriSchemeHttps);
+
+            if (!isValidRecipeUrl)
+            {
+                return Results.BadRequest(new { message = "Recipe link must be a valid http(s) URL." });
+            }
         }
 
         if (!ownerProfileId.HasValue)
@@ -495,6 +512,7 @@ public static class MealEndpoints
             mealPlan.MealDate,
             mealPlan.Title,
             mealPlan.Notes,
+            mealPlan.RecipeUrl,
             mealPlan.OwnerProfileId);
     }
 

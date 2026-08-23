@@ -5,6 +5,7 @@ public sealed record MealPlanResponse(
     DateOnly MealDate,
     string Title,
     string? Notes,
+    string? RecipeUrl,
     Guid? OwnerProfileId);
 
 public sealed record WeeklyMealsResponse(
@@ -16,12 +17,14 @@ public sealed record CreateMealPlanRequest(
     DateOnly MealDate,
     string Title,
     string? Notes,
+    string? RecipeUrl,
     Guid? OwnerProfileId);
 
 public sealed record UpdateMealPlanRequest(
     DateOnly MealDate,
     string Title,
     string? Notes,
+    string? RecipeUrl,
     Guid? OwnerProfileId);
 
 public sealed record MealRequestResponse(

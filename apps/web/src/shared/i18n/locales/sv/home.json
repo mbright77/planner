@@ -23,6 +23,7 @@
   "dinner": "Middag",
   "noDinner": "Ingen middagsplan ännu",
   "openMealsCta": "Öppna Mat för att planera ikväll.",
+  "recipeLink": "Recept",
   "groceries": "Inköpslista",
   "itemsLeft_one": "{{count}} vara kvar",
   "itemsLeft_other": "{{count}} varor kvar",

@@ -1567,6 +1567,7 @@ export interface components {
       mealDate: string;
       title: string;
       notes: string | null;
+      recipeUrl: string | null;
       /** Format: uuid */
       ownerProfileId: string | null;
     };
@@ -1621,6 +1622,7 @@ export interface components {
       id: string;
       title: string;
       notes: string | null;
+      recipeUrl: string | null;
       /** Format: uuid */
       ownerProfileId: string | null;
     } | null;
@@ -1726,6 +1728,7 @@ export interface components {
       mealDate: string;
       title: string;
       notes: string | null;
+      recipeUrl: string | null;
       /** Format: uuid */
       ownerProfileId: string | null;
     };
@@ -1816,6 +1819,7 @@ export interface components {
       mealDate: string;
       title: string;
       notes: string | null;
+      recipeUrl: string | null;
       /** Format: uuid */
       ownerProfileId: string | null;
     };

@@ -116,6 +116,7 @@ export function MealsPage() {
   const [selectedDate, setSelectedDate] = useState(initialSelectedDate);
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
+  const [recipeUrl, setRecipeUrl] = useState('');
   const [ownerProfileId, setOwnerProfileId] = useState('');
   const [requestTitle, setRequestTitle] = useState('');
   const [requestNotes, setRequestNotes] = useState('');
@@ -126,6 +127,7 @@ export function MealsPage() {
   const [editingMealId, setEditingMealId] = useState<string | null>(null);
   const [editingMealTitle, setEditingMealTitle] = useState('');
   const [editingMealNotes, setEditingMealNotes] = useState('');
+  const [editingMealRecipeUrl, setEditingMealRecipeUrl] = useState('');
   const [editingMealOwnerProfileId, setEditingMealOwnerProfileId] = useState('');
   const [mealEditError, setMealEditError] = useState('');
   const [assigningRequestId, setAssigningRequestId] = useState<string | null>(null);
@@ -187,6 +189,7 @@ export function MealsPage() {
       setEditingMealId(selectedMeal.id);
       setEditingMealTitle(selectedMeal.title);
       setEditingMealNotes(selectedMeal.notes ?? '');
+      setEditingMealRecipeUrl(selectedMeal.recipeUrl ?? '');
       setEditingMealOwnerProfileId(selectedMeal.ownerProfileId ?? '');
       setMealEditError('');
       return;
@@ -195,6 +198,7 @@ export function MealsPage() {
     setEditingMealId(null);
     setEditingMealTitle('');
     setEditingMealNotes('');
+    setEditingMealRecipeUrl('');
     setEditingMealOwnerProfileId('');
     setMealEditError('');
   }, [selectedMeal]);
@@ -241,11 +245,13 @@ export function MealsPage() {
       mealDate: selectedDate,
       title: title.trim(),
       notes: notes.trim() || null,
+      recipeUrl: recipeUrl.trim() || null,
       ownerProfileId: ownerProfileId || null,
     });
 
     setTitle('');
     setNotes('');
+    setRecipeUrl('');
     setOwnerProfileId('');
     setShowMealOptions(false);
   }
@@ -291,6 +297,7 @@ export function MealsPage() {
         mealDate: selectedDate,
         title: editingMealTitle.trim(),
         notes: editingMealNotes.trim() || null,
+        recipeUrl: editingMealRecipeUrl.trim() || null,
         ownerProfileId: editingMealOwnerProfileId || null,
       },
     });
@@ -411,6 +418,18 @@ export function MealsPage() {
                 {selectedMealOwner ? (
                   <span className={getProfileColorChipClass(selectedMealOwner.colorKey)}>{selectedMealOwner.displayName}</span>
                 ) : null}
+                {selectedMeal.recipeUrl ? (
+                  <div>
+                    <a
+                      href={selectedMeal.recipeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                    >
+                      {t('fields.recipeLink')}
+                    </a>
+                  </div>
+                ) : null}
               </>
             ) : (
               <p className="text-sm text-muted-foreground">{t('noMealPlanned')}</p>
@@ -480,6 +499,17 @@ export function MealsPage() {
                       value={editingMealNotes}
                       onChange={(event) => setEditingMealNotes(event.target.value)}
                       rows={3}
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="meal-edit-recipe-url">{t('fields.recipeUrl')}</Label>
+                    <Input
+                      id="meal-edit-recipe-url"
+                      value={editingMealRecipeUrl}
+                      onChange={(event) => setEditingMealRecipeUrl(event.target.value)}
+                      placeholder={t('fields.recipeUrlPlaceholder')}
+                      type="url"
                     />
                   </div>
                 </>
@@ -567,6 +597,17 @@ export function MealsPage() {
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="meal-notes">{t('fields.notes')}</Label>
                     <Textarea id="meal-notes" value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="meal-recipe-url">{t('fields.recipeUrl')}</Label>
+                    <Input
+                      id="meal-recipe-url"
+                      value={recipeUrl}
+                      onChange={(event) => setRecipeUrl(event.target.value)}
+                      placeholder={t('fields.recipeUrlPlaceholder')}
+                      type="url"
+                    />
                   </div>
                 </>
               ) : null}

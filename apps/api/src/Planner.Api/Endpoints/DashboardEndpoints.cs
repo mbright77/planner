@@ -90,6 +90,7 @@ public static class DashboardEndpoints
                 x.MealDate,
                 x.Title,
                 x.Notes,
+                x.RecipeUrl,
                 x.OwnerProfileId,
             })
             .ToListAsync(cancellationToken);
@@ -120,6 +121,7 @@ public static class DashboardEndpoints
                 tonightMealData.Id,
                 tonightMealData.Title,
                 tonightMealData.Notes,
+                tonightMealData.RecipeUrl,
                 tonightMealData.OwnerProfileId);
 
         // Map next upcoming event to summary

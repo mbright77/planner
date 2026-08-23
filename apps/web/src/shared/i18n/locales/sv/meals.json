@@ -48,6 +48,9 @@
     "mealTitlePlaceholder": "Planera middag",
     "owner": "Ansvarig",
     "notes": "Anteckningar",
+    "recipeUrl": "Receptlänk",
+    "recipeUrlPlaceholder": "https://exempel.se/recept",
+    "recipeLink": "Recept",
     "requestTitle": "Önskemaltitel",
     "requestTitlePlaceholder": "Önska en matidé",
     "assignPerson": "Tilldela person"
