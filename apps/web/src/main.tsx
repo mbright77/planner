@@ -8,12 +8,38 @@ import { initTheme } from './shared/lib/theme';
 
 initTheme();
 
+// vite-plugin-pwa's autoUpdate registration never actually sends the
+// SKIP_WAITING message, so a new worker installs but sits waiting forever
+// until every open tab/window is closed. Send it ourselves so updates take
+// effect immediately instead of requiring the user to clear site data.
+function skipWaitingIfWaiting(registration: ServiceWorkerRegistration) {
+  registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+}
+
 registerSW({
   immediate: true,
   onRegisteredSW(_swUrl, registration) {
     if (!registration) return;
+
+    skipWaitingIfWaiting(registration);
+
+    registration.addEventListener('updatefound', () => {
+      registration.installing?.addEventListener('statechange', () => {
+        skipWaitingIfWaiting(registration);
+      });
+    });
+
     // Poll for updates every hour so long-lived tabs pick up new versions.
     setInterval(() => registration.update(), 60 * 60 * 1000);
+
+    // Re-check whenever the app regains focus, since an installed Android
+    // PWA can sit backgrounded for days and miss the hourly timer entirely.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        registration.update();
+        skipWaitingIfWaiting(registration);
+      }
+    });
   },
 });
 
