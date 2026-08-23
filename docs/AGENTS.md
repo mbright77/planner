@@ -5,6 +5,7 @@ This document is the detailed reference for agents working in this repository. S
 ## Current Stack
 
 - Frontend: React 19, TypeScript, Vite, React Router, TanStack Query, react-i18next (i18n).
+- Styling: Tailwind CSS v4 + shadcn/ui, tokens in `apps/web/src/app/styles/index.css` — see [`docs/DESIGN.md`](../DESIGN.md) for the full stack.
 - Backend: ASP.NET Core minimal API on .NET 9.
 - Database: PostgreSQL via EF Core + Npgsql.
 - Auth: ASP.NET Identity + JWT access token.
@@ -15,7 +16,6 @@ This document is the detailed reference for agents working in this repository. S
 
 Some planned items are target-state, not yet implemented:
 
-- Frontend styling uses plain CSS in `apps/web/src/app/styles/index.css`, not Tailwind.
 - Frontend forms currently use local `useState`, not React Hook Form + Zod.
 - Auth session is currently stored in `localStorage` under `planner.session`, not an in-memory access token plus refresh-cookie flow.
 - Backend uses feature-grouped minimal API endpoint files directly; `Planner.Application` is mostly a placeholder right now.
@@ -34,6 +34,8 @@ Recent repository changes (important for agents):
 - PWA is now installable with Workbox-backed precaching and runtime caching for static assets and API responses.
 - Offline read support: protected queries fall back to IndexedDB-backed cache when the browser is offline.
 - Offline write support: mutations on shopping, calendar, and meals queue in IndexedDB and flush when reconnected.
+- Frontend styling migrated to Tailwind CSS v4 + shadcn/ui (component primitives under `apps/web/src/components/ui/`); the "plain CSS, no Tailwind" rule that used to be documented here no longer applies — see `docs/DESIGN.md`.
+- Google Calendar integration was added end-to-end: per-user calendar source selection (`Local`/`Google`/`Both`), server-side OAuth (PKCE, encrypted refresh tokens, no Google token ever reaches the browser), multi-calendar selection, and Overview aggregation that merges local events with selected Google calendars and degrades gracefully (`NeedsReauth`/`Partial`/`Error`) rather than failing the page. See `docs/plans/2026-08-18-google-calendar-source-selection.md` for the full design and `docs/runbooks/google-calendar.md` for Google Cloud console setup, configuration, and troubleshooting.
 
 When adding new work, follow the current implementation patterns unless the task explicitly asks for a broader architectural migration.
 
@@ -214,16 +216,16 @@ Current page style:
 
 ### Styling
 
-Current styling lives in `apps/web/src/app/styles/index.css`.
+The full styling stack (Tailwind CSS v4, shadcn/ui, tokens, theming) is documented in
+[`docs/DESIGN.md`](../DESIGN.md). Global tokens and theme variables live in
+`apps/web/src/app/styles/index.css`.
 
 Conventions:
 
-- Reuse existing utility-like class names before adding new ones.
-- Add new feature classes to `index.css` in the same style as existing ones.
+- Reuse existing shadcn/ui components (`apps/web/src/components/ui/`) before adding new ones.
+- Style with Tailwind utility classes directly in JSX rather than adding new custom CSS classes.
 - Preserve the existing visual language: soft cards, rounded corners, subtle borders, warm coral/red palette.
-- Respect mobile-first layout; desktop enhancements go in media queries.
-
-Do not introduce Tailwind.
+- Respect mobile-first layout; desktop enhancements go in responsive utility variants.
 
 ### Internationalization (i18n)
 
@@ -340,6 +342,7 @@ Implemented and usable today:
 - Calendar
 - Meals
 - Meal requests
+- Google Calendar integration: per-user Overview source selection (Local/Google/Both), server-side OAuth, multi-calendar selection — see `docs/runbooks/google-calendar.md`
 - Internationalization (i18n): English and Swedish language support with profile-based language preference
 - PWA: installable app with offline read/write support
 
@@ -382,7 +385,7 @@ If you add a new slice today, the default should look like this:
   - add API wrapper in `shared/api/<feature>.ts`
   - add TanStack Query hooks in `entities/<entity>/model`
   - add/update route page in `pages/<feature>`
-  - add CSS classes in `app/styles/index.css`
+  - style with Tailwind utility classes and existing shadcn/ui components (`components/ui/`)
   - use `useBootstrap()` when profile/family display context is needed
 
 ## Files Worth Reading First
@@ -406,7 +409,7 @@ If you add a new slice today, the default should look like this:
 - Do not hand-edit migrations.
 - Do not add a new architectural layer just for one feature.
 - Do not refactor auth/session storage during unrelated work.
-- Do not introduce Tailwind-based patterns into the existing plain-CSS pages unless the task is a styling migration.
+- Do not hand-roll new custom CSS classes when an existing Tailwind utility or shadcn/ui component already does the job.
 - Do not trust client-supplied family scope.
 - Do not skip `bootstrap` invalidation when mutations affect bootstrap-visible data.
 - Do not redesign the current planner UI into a generic admin dashboard.

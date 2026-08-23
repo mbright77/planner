@@ -202,6 +202,8 @@ Use GitHub Actions variables for non-sensitive backend deployment settings.
 - `ALLOWED_ORIGINS=https://mbright77.github.io`
 - `JWT_ISSUER=planner-api`
 - `JWT_AUDIENCE=planner-web`
+- `GOOGLE_REDIRECT_URI` (optional — Google Calendar integration, e.g. `https://hub.brightmatter.net/planner-api/api/v1/integrations/google/callback`)
+- `GOOGLE_POST_CONNECT_REDIRECT_URL` (optional, e.g. `https://mbright77.github.io/planner/`)
 
 ## Backend GitHub Actions Secrets
 
@@ -213,6 +215,9 @@ Use GitHub Actions secrets for sensitive values.
 - `GHCR_EMAIL`
 - `PLANNER_CONNECTION_STRING`
 - `PLANNER_JWT_SIGNING_KEY`
+- `GOOGLE_CLIENT_ID` (optional — Google Calendar integration; feature self-disables when unset)
+- `GOOGLE_CLIENT_SECRET` (optional)
+- `GOOGLE_TOKEN_ENCRYPTION_KEY` (optional — base64-encoded 32-byte AES key)
 
 
 
@@ -226,6 +231,9 @@ Recommended non-sensitive runtime keys for `planner-api-config`:
 - `AllowedOrigins`
 - `Jwt__Issuer`
 - `Jwt__Audience`
+- `Google__ClientId` (optional — Google Calendar integration; feature self-disables when unset)
+- `Google__RedirectUri` (optional)
+- `Google__PostConnectRedirectUrl` (optional)
 
 ## Kubernetes Secret Keys
 
@@ -233,6 +241,8 @@ Recommended sensitive runtime keys for `planner-api-secrets`:
 
 - `ConnectionStrings__Planner`
 - `Jwt__SigningKey`
+- `Google__ClientSecret` (optional — Google Calendar integration)
+- `Google__TokenEncryptionKey` (optional — base64-encoded 32-byte AES key)
 
 ## Runtime Values
 
@@ -246,7 +256,16 @@ Jwt__Issuer=planner-api
 Jwt__Audience=planner-web
 ConnectionStrings__Planner=Host=postgres;Port=5432;Database=planner;Username=planner_app;Password=...
 Jwt__SigningKey=<secret>
+Google__ClientId=<optional>
+Google__ClientSecret=<optional>
+Google__RedirectUri=<optional>
+Google__PostConnectRedirectUrl=<optional>
+Google__TokenEncryptionKey=<optional>
 ```
+
+Google Calendar integration is optional and self-disables when `Google__ClientId`/`Google__ClientSecret`
+are blank — see [`docs/runbooks/google-calendar.md`](runbooks/google-calendar.md) for Google Cloud
+console setup and the full configuration walkthrough.
 
 ## Manual First Migration
 

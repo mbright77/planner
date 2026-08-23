@@ -55,3 +55,4 @@ dotnet test planner.sln
 - [`docs/AGENTS.md`](docs/AGENTS.md) — architecture and conventions for coding agents
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — deployment topology and CI/CD
 - [`docs/DESIGN.md`](docs/DESIGN.md) — design tokens and visual language
+- [`docs/runbooks/google-calendar.md`](docs/runbooks/google-calendar.md) — Google Calendar integration setup and troubleshooting
