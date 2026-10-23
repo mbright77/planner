@@ -59,5 +59,15 @@
     "addDinnerTitle": "Ange en middagstitel innan du sparar.",
     "addRequestTitle": "Ange ett kort önskemal innan du skickar.",
     "addDinnerTitleChanges": "Ange en middagstitel innan du sparar ändringar."
+  },
+  "moveMeal": "Flytta måltid",
+  "move": {
+    "title": "Flytta {{title}}",
+    "newDate": "Nytt datum: {{date}}",
+    "ok": "OK",
+    "cancel": "Avbryt",
+    "success": "Måltid flyttad",
+    "failed": "Måltiden flyttades inte",
+    "conflict": "Det finns redan en måltid planerad den dagen."
   }
 }

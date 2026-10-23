@@ -383,6 +383,45 @@ public sealed class CoreFlowsApiTests(ApiTestFactory factory) : IClassFixture<Ap
     }
 
     [Fact]
+    public async Task Meal_plan_can_move_to_another_week_and_conflicts_on_occupied_day()
+    {
+        await factory.ResetDatabaseAsync();
+        using var client = factory.CreateClient();
+
+        var authResponse = await RegisterAsync(client);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse.AccessToken);
+
+        var mealDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        var nextWeekDate = mealDate.AddDays(7);
+
+        var createdMeal = await (await client.PostAsJsonAsync(
+            "/api/v1/meals",
+            new CreateMealPlanRequest(mealDate, "Tacos", null, null, null))).Content.ReadFromJsonAsync<MealPlanResponse>();
+        var blockingMeal = await (await client.PostAsJsonAsync(
+            "/api/v1/meals",
+            new CreateMealPlanRequest(nextWeekDate.AddDays(1), "Soup", null, null, null))).Content.ReadFromJsonAsync<MealPlanResponse>();
+        Assert.NotNull(createdMeal);
+        Assert.NotNull(blockingMeal);
+
+        var conflictResponse = await client.PutAsJsonAsync(
+            $"/api/v1/meals/{createdMeal.Id}",
+            new UpdateMealPlanRequest(blockingMeal.MealDate, "Tacos", null, null, null));
+        Assert.Equal(HttpStatusCode.Conflict, conflictResponse.StatusCode);
+
+        var moveResponse = await client.PutAsJsonAsync(
+            $"/api/v1/meals/{createdMeal.Id}",
+            new UpdateMealPlanRequest(nextWeekDate, "Tacos", null, null, null));
+        Assert.Equal(HttpStatusCode.OK, moveResponse.StatusCode);
+
+        var currentWeek = await client.GetFromJsonAsync<WeeklyMealsResponse>($"/api/v1/meals/week?start={mealDate:yyyy-MM-dd}");
+        var nextWeek = await client.GetFromJsonAsync<WeeklyMealsResponse>($"/api/v1/meals/week?start={nextWeekDate:yyyy-MM-dd}");
+        Assert.NotNull(currentWeek);
+        Assert.NotNull(nextWeek);
+        Assert.DoesNotContain(currentWeek.Meals, x => x.Id == createdMeal.Id);
+        Assert.Contains(nextWeek.Meals, x => x.Id == createdMeal.Id && x.MealDate == nextWeekDate);
+    }
+
+    [Fact]
     public async Task User_can_delete_account_when_family_still_has_another_member()
     {
         await factory.ResetDatabaseAsync();

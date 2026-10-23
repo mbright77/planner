@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   ArrowLeft01Icon,
@@ -37,69 +38,9 @@ import {
   useUpdateMealPlan,
 } from '../../entities/meal/model/useMealsWeek';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
-
-function getWeekStart(date: Date) {
-  const utcDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-  const day = utcDate.getUTCDay();
-  const diff = day === 0 ? -6 : 1 - day;
-
-  utcDate.setUTCDate(utcDate.getUTCDate() + diff);
-
-  return utcDate;
-}
-
-function formatDateOnly(value: Date) {
-  return value.toISOString().slice(0, 10);
-}
-
-function buildWeekDays(weekStart: string, locale: string) {
-  const startDate = new Date(`${weekStart}T00:00:00.000Z`);
-
-  return Array.from({ length: 7 }, (_, index) => {
-    const current = new Date(startDate);
-    current.setUTCDate(startDate.getUTCDate() + index);
-
-    return {
-      key: formatDateOnly(current),
-      label: current.toLocaleDateString(locale, { weekday: 'short', timeZone: 'UTC' }),
-      dayNumber: current.toLocaleDateString(locale, { day: 'numeric', timeZone: 'UTC' }),
-    };
-  });
-}
-
-function formatWeekRange(weekStart: string, locale: string) {
-  const start = new Date(`${weekStart}T00:00:00.000Z`);
-  const end = new Date(start);
-  end.setUTCDate(start.getUTCDate() + 6);
-
-  return `${start.toLocaleDateString(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' })} - ${end.toLocaleDateString(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' })}`;
-}
-
-function formatLongDate(value: string, locale: string) {
-  return new Date(`${value}T00:00:00`).toLocaleDateString(locale, {
-    weekday: 'long',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-function shiftWeekDate(weekStart: string, selectedDate: string, direction: -1 | 1) {
-  const nextWeekStart = new Date(`${weekStart}T00:00:00.000Z`);
-  nextWeekStart.setUTCDate(nextWeekStart.getUTCDate() + direction * 7);
-
-  const selectedOffsetDays = Math.round(
-    (new Date(`${selectedDate}T00:00:00.000Z`).getTime() - new Date(`${weekStart}T00:00:00.000Z`).getTime()) /
-      (24 * 60 * 60 * 1000),
-  );
-
-  const nextSelectedDate = new Date(nextWeekStart);
-  nextSelectedDate.setUTCDate(nextWeekStart.getUTCDate() + Math.max(0, Math.min(6, selectedOffsetDays)));
-
-  return {
-    nextWeekStart: formatDateOnly(nextWeekStart),
-    nextSelectedDate: formatDateOnly(nextSelectedDate),
-  };
-}
+import { MoveMealDrawer } from './MoveMealDrawer';
+import { WeekDayPicker } from './WeekDayPicker';
+import { formatDateOnly, formatLongDate, formatWeekRange, getWeekStart, shiftWeekDate } from './weekDays';
 
 function getProfileColorChipClass(colorKey: string | null | undefined) {
   return colorKey ? `profile-color-chip profile-color-chip-${colorKey}` : 'profile-color-chip';
@@ -133,6 +74,7 @@ export function MealsPage() {
   const [assigningRequestId, setAssigningRequestId] = useState<string | null>(null);
   const [assigningRequestProfileId, setAssigningRequestProfileId] = useState('');
   const [confirmDeleteMealId, setConfirmDeleteMealId] = useState<string | null>(null);
+  const [showMoveDrawer, setShowMoveDrawer] = useState(false);
   const [hasUserNavigatedWeek, setHasUserNavigatedWeek] = useState(false);
 
   const bootstrapQuery = useBootstrap();
@@ -147,11 +89,11 @@ export function MealsPage() {
   const updateMealPlanMutation = useUpdateMealPlan(weekStart);
   const deleteMealPlanMutation = useDeleteMealPlan(weekStart);
 
-  const weekDays = useMemo(() => buildWeekDays(weekStart, locale), [weekStart, locale]);
   const canPlanMeals = bootstrapQuery.data?.membership.canPlanMeals ?? true;
   const mealsByDate = useMemo(() => {
     return new Map((mealsWeekQuery.data?.meals ?? []).map((meal) => [meal.mealDate, meal]));
   }, [mealsWeekQuery.data?.meals]);
+  const mealDates = useMemo(() => new Set(mealsByDate.keys()), [mealsByDate]);
   const requestsByDate = useMemo(() => {
     const grouped = new Map<string, typeof mealRequestsQuery.data>();
 
@@ -163,6 +105,10 @@ export function MealsPage() {
 
     return grouped;
   }, [mealRequestsQuery.data]);
+
+  const requestCounts = useMemo(() => {
+    return new Map([...requestsByDate].map(([date, requests]) => [date, requests?.length ?? 0]));
+  }, [requestsByDate]);
 
   const selectedMeal = mealsByDate.get(selectedDate);
   const selectedRequests = requestsByDate.get(selectedDate) ?? [];
@@ -303,6 +249,30 @@ export function MealsPage() {
     });
   }
 
+  async function handleMoveMeal(newDate: string) {
+    if (!selectedMeal) {
+      return;
+    }
+
+    try {
+      await updateMealPlanMutation.mutateAsync({
+        mealId: selectedMeal.id,
+        request: {
+          mealDate: newDate,
+          title: selectedMeal.title,
+          notes: selectedMeal.notes,
+          recipeUrl: selectedMeal.recipeUrl,
+          ownerProfileId: selectedMeal.ownerProfileId,
+        },
+      });
+      setShowMoveDrawer(false);
+      toast.success(t('move.success'));
+    } catch (error) {
+      const isConflict = (error as { status?: number }).status === 409;
+      toast.error(t('move.failed'), isConflict ? { description: t('move.conflict') } : undefined);
+    }
+  }
+
   async function handleAssignRequest(requestId: string) {
     await assignMealRequestMutation.mutateAsync({
       requestId,
@@ -352,41 +322,16 @@ export function MealsPage() {
         </CardHeader>
 
         <CardContent>
-          <div className="grid grid-cols-7 gap-2" aria-label={t('planningDaysAria')}>
-            {weekDays.map((day) => {
-              const isSelected = day.key === selectedDate;
-              const meal = mealsByDate.get(day.key);
-              const requests = requestsByDate.get(day.key) ?? [];
-              const statusLabel = meal
-                ? t('mealSet')
-                : requests.length > 0
-                  ? t('requestsCount', { count: requests.length })
-                  : t('open');
-
-              return (
-                <Button
-                  key={day.key}
-                  type="button"
-                  variant={isSelected ? 'default' : 'outline'}
-                  className="h-auto flex-col gap-0.5 py-2"
-                  aria-label={`${day.label} ${day.dayNumber}, ${statusLabel}`}
-                  onClick={() => handleSelectDay(day.key)}
-                >
-                  <span className="text-[11px] uppercase opacity-80">{day.label}</span>
-                  <span className="text-sm font-semibold">{day.dayNumber}</span>
-                  {meal ? (
-                    <HugeiconsIcon icon={Tick02Icon} size={14} aria-hidden="true" />
-                  ) : requests.length > 0 ? (
-                    <span className="text-[10px] font-medium" aria-hidden="true">
-                      {requests.length}
-                    </span>
-                  ) : (
-                    <span className="h-3.5" aria-hidden="true" />
-                  )}
-                </Button>
-              );
-            })}
-          </div>
+          <WeekDayPicker
+            weekStart={weekStart}
+            selectedDate={selectedDate}
+            locale={locale}
+            mealDates={mealDates}
+            requestCounts={requestCounts}
+            onSelect={handleSelectDay}
+            onShiftWeek={handleShiftWeek}
+            showWeekNav={false}
+          />
         </CardContent>
       </Card>
 
@@ -526,6 +471,9 @@ export function MealsPage() {
                   {updateMealPlanMutation.isPending
                     ? t('saving')
                     : t('saveChangesForDate')}
+                </Button>
+                <Button variant="outline" type="button" onClick={() => setShowMoveDrawer(true)}>
+                  {t('moveMeal')}
                 </Button>
                 <Button
                   variant={confirmDeleteMealId === selectedMeal.id ? 'destructive' : 'outline'}
@@ -793,6 +741,18 @@ export function MealsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {selectedMeal ? (
+        <MoveMealDrawer
+          meal={selectedMeal}
+          currentWeekStart={weekStart}
+          locale={locale}
+          open={showMoveDrawer}
+          isPending={updateMealPlanMutation.isPending}
+          onOpenChange={setShowMoveDrawer}
+          onConfirm={(newDate) => void handleMoveMeal(newDate)}
+        />
+      ) : null}
     </section>
   );
 }

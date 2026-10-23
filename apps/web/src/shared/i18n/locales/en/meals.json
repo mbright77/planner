@@ -59,5 +59,15 @@
     "addDinnerTitle": "Add a dinner title before saving.",
     "addRequestTitle": "Add a short request before sending it.",
     "addDinnerTitleChanges": "Add a dinner title before saving changes."
+  },
+  "moveMeal": "Move meal",
+  "move": {
+    "title": "Move {{title}}",
+    "newDate": "New date: {{date}}",
+    "ok": "OK",
+    "cancel": "Cancel",
+    "success": "Meal moved",
+    "failed": "Meal not moved",
+    "conflict": "A meal is already planned for that day."
   }
 }

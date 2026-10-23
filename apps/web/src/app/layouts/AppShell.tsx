@@ -13,6 +13,7 @@ import {
 } from '@hugeicons/core-free-icons';
 
 import { Button } from '@/components/ui/button';
+import { Toaster } from '@/components/ui/sonner';
 import { useAuthSession } from '../../processes/auth-session/AuthSessionContext';
 import { useBootstrap } from '../../processes/family-bootstrap/useBootstrap';
 import { HttpError } from '../../shared/api/http';
@@ -197,6 +198,7 @@ export function AppShell() {
           </NavLink>
         ))}
       </nav>
+      <Toaster position="top-center" />
     </div>
   );
 }
